@@ -3,6 +3,7 @@
 #include <MapWizard/AllGeometry.h>
 #include <MapWizard/MainTerrain.h>
 
+
 class TerrainGen
 {
 public:
@@ -52,7 +53,7 @@ public:
 	TOptional<TSharedPtr<Node>> create_segment(TArray<TSharedPtr<Node>>& array, TSharedPtr<Node> start_point,
 											   TSharedPtr<Node> end_point, bool to_exect_point, point_type type,
 											   double max_length) const;
-	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point);
+	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point, bool is_through_river);
 	void shrink_roads();
 	void point_shift(FVector& point);
 	void get_closed_figures(TArray<TSharedPtr<Node>> lines, TArray<District>& fig_array, int figure_threshold);
@@ -62,11 +63,12 @@ public:
 	TArray<TSharedPtr<Node>> river;
 	TArray<TSharedPtr<Node>> guiding_river;
 	TArray<TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> bridges;
+	TArray<TTuple<FVector, FVector>> bridge_points;
 	TArray<TSharedPtr<Node>> road_centers;
 	TArray<FVector> map_points_array;
 	TArray<TSharedPtr<Node>> map_borders_array;
 	TArray<TSharedPtr<Node>> guididng_roads_array;
 	TArray<WeightedPoint> weighted_points;
 	TArray<TSharedPtr<Node>> roads;
-	TArray<FVector> borders_array;
+	TArray<FVector> soft_borders_array;
 };

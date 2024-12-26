@@ -1,82 +1,62 @@
 ﻿#include "MainTerrain.h"
+// #include "Camera/CameraComponent.h"
+#include "OrthographicCameraActor.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Actor.h"
 #include "ProceduralObjectMeshActor.h"
 #include "TerrainGen.h"
 
 
 // #include "Async/AsyncWork.h"
 
-AMainTerrain::AMainTerrain() :
-	BaseMaterial(nullptr), WaterMaterial(nullptr), DocsMaterial(nullptr), RoyalMaterial(nullptr),
-	ResidenceMaterial(nullptr), LuxuryMaterial(nullptr), SlumsMaterial(nullptr)
+AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
+                             , WaterMaterial(nullptr)
+                             , DocsMaterial(nullptr)
+                             , RoyalMaterial(nullptr)
+                             , ResidenceMaterial(nullptr)
+                             , LuxuryMaterial(nullptr)
+                             , SlumsMaterial(nullptr)
+                             , MapParams()
+                             , BaseComponent(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
-// void AMainTerrain::OnMouseOver(UPrimitiveComponent* Component)
-// {
-// 	if (BaseMaterial)
-// 	{
-// 		Component->SetMaterial(0, BaseMaterial);
-// 	}
-// }
-// void AMainTerrain::OnMouseOutRoyal(UPrimitiveComponent* Component)
-// {
-// 	if (Component && RoyalMaterial)
-// 	{
-// 		Component->SetMaterial(0, RoyalMaterial);
-// 	}
-// }
-// void AMainTerrain::OnMouseOutDock(UPrimitiveComponent* Component)
-// {
-// 	if (Component && DocsMaterial)
-// 	{
-// 		Component->SetMaterial(0, DocsMaterial);
-// 	}
-// }
-// void AMainTerrain::OnMouseOutLuxury(UPrimitiveComponent* Component)
-// {
-// 	if (Component && LuxuryMaterial)
-// 	{
-// 		Component->SetMaterial(0, LuxuryMaterial);
-// 	}
-// }
-// void AMainTerrain::OnMouseOutResidential(UPrimitiveComponent* Component)
-// {
-// 	if (Component && ResidenceMaterial)
-// 	{
-// 		Component->SetMaterial(0, ResidenceMaterial);
-// 	}
-// }
-// void AMainTerrain::OnMouseOutSlums(UPrimitiveComponent* Component)
-// {
-// 	if (Component && SlumsMaterial)
-// 	{
-// 		Component->SetMaterial(0, SlumsMaterial);
-// 	}
-// }
-
 void AMainTerrain::BeginPlay()
 {
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (PlayerController)
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
+
+	if (FoundActors.Num() > 0)
 	{
-		PlayerController->bShowMouseCursor = true; // Показываем курсор
-		PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
-		PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
+		AActor* OrthographicCamera = FoundActors[0];
+
+		FVector NewLocation = FVector(1500.0f, 1500.0f, 4000.0f);
+		OrthographicCamera->SetActorLocation(NewLocation);
+		FRotator DownwardRotation = FRotator(-90.0f, 0.0f, 0.0f);
+		OrthographicCamera->SetActorRotation(DownwardRotation);
+
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+		if (PlayerController)
+		{
+			PlayerController->bShowMouseCursor = true; // Показываем курсор
+			PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
+			PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
+			// PlayerController->SetViewTargetWithBlend(OrthographicCamera);
+		}
+
+		PrimaryActorTick.bCanEverTick = true;
+		Super::BeginPlay();
+
+		MapParams.update_me();
+		TerrainGen gen(MapParams);
+		gen.create_terrain(roads, figures_array, river_figure, map_borders_array, debug_points_array);
+		draw_all_2d();
+		AActor* ViewTarget = PlayerController->GetViewTarget();
+		if (ViewTarget)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName());
+		}
 	}
-
-	PrimaryActorTick.bCanEverTick = true;
-	Super::BeginPlay();
-
-	MapParams.update_me();
-	TerrainGen gen(MapParams);
-	gen.create_terrain(roads, figures_array, river_figure, map_borders_array, debug_points_array);
-	draw_all_2d();
-	AActor* ViewTarget = PlayerController->GetViewTarget();
-	if (ViewTarget)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName());
-	}
-
 	// FVector CameraLocation = FVector(0, 0, av_distance);
 	// ViewTarget->SetActorLocation(CameraLocation);
 	//
@@ -105,13 +85,6 @@ void AMainTerrain::Tick(float DeltaTime)
 void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
 								  float ExtrusionHeight)
 {
-	// if (!Mesh)
-	// {
-	// 	Mesh = NewObject<UProceduralMeshComponent>(this, TEXT("GeneratedMesh"));
-	// 	Mesh->SetupAttachment(RootComponent);
-	// 	Mesh->RegisterComponent();
-	// }
-
 	int32 NumVertices = BaseVertices.Num();
 	if (NumVertices < 3)
 	{
@@ -462,6 +435,11 @@ void AMainTerrain::draw_all_2d()
 				end_point.Z = 1.1f;
 				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Red, true, -1, 0, 3);
 			}
+			// auto start_point = b->get_FVector();
+			// auto end_point = bconn->node->get_FVector();
+			// start_point.Z = 1.1f;
+			// end_point.Z = 1.1f;
+			// DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 2);
 		}
 	}
 
