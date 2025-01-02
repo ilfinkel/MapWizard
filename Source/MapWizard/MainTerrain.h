@@ -18,7 +18,25 @@ enum class ECityPlan : uint8
 	radial_circle UMETA(DisplayName = "radial-circle"),
 	rectangular UMETA(DisplayName = "rectangular"),
 	combined UMETA(DisplayName = "combined")
+};
 
+UENUM(BlueprintType)
+enum class EWaterType : uint8
+{
+	none UMETA(DisplayName = "none"),
+	river UMETA(DisplayName = "river")
+};
+
+
+UENUM(BlueprintType)
+enum class EDrawStage : uint8
+{
+	river UMETA(DisplayName = "river(1)"),
+	create_guiding_roads UMETA(DisplayName = "create_guiding_roads(2)"),
+	create_usual_roads UMETA(DisplayName = "create_usual_roads(3)"),
+	shrink_roads UMETA(DisplayName = "shrink_roads(4)"),
+	process_blocks UMETA(DisplayName = "process_blocks(5)"),
+	process_houses UMETA(DisplayName = "process_houses(6)")
 };
 
 USTRUCT(BlueprintType)
@@ -39,8 +57,12 @@ struct FMapParams
 	double max_road_length = 95;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double river_road_distance = 20;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CityPlan")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "City Plan")
 	ECityPlan city_plan = ECityPlan::combined;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drawing Stage")
+	EDrawStage draw_stage = EDrawStage::process_houses;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Type")
+	EWaterType water_type = EWaterType::river;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -140,9 +162,9 @@ private:
 	void draw_all_3d();
 	void draw_all_2d();
 	void get_cursor_hit_location();
-	TArray<TSharedPtr<Node>> map_borders_array;
-	TArray<District> figures_array;
-	TArray<FVector> debug_points_array;
-	TArray<TSharedPtr<Node>> roads;
+	TArray<TSharedPtr<Node>> map_borders_array{};
+	TArray<District> figures_array{};
+	TArray<FVector> debug_points_array{};
+	TArray<TSharedPtr<Node>> roads{};
 	District river_figure;
 };
