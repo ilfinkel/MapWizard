@@ -13,7 +13,7 @@ AOrthographicCameraActor::AOrthographicCameraActor()
 	CameraComponent->ProjectionMode = ECameraProjectionMode::Orthographic;
 
 	// Устанавливаем ширину ортографической камеры (подбирается под ваш проект)
-	CameraComponent->OrthoWidth = 2048.0f;
+	CameraComponent->OrthoWidth = 4000.0f;
 
 	// Дополнительные параметры камеры (по желанию)
 	CameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 1000.0f)); // Расположим камеру выше сцены

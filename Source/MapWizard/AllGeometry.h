@@ -14,6 +14,7 @@ enum point_type
 	river,
 	wall
 };
+
 enum block_type
 {
 	royal,
@@ -27,18 +28,27 @@ enum block_type
 
 struct WeightedPoint
 {
-	WeightedPoint(const FVector& point_, const double weight_) : point(point_), weight(weight_) {};
+	WeightedPoint(const FVector& point_, const double weight_) : point(point_)
+	                                                           , weight(weight_)
+	{
+	};
 	FVector point;
 	double weight;
 };
 
 struct Point
 {
-	Point(double X, double Y, double Z) : point(FVector(X, Y, Z)) {};
+	Point(double X, double Y, double Z) : point(FVector(X, Y, Z))
+	{
+	};
 
-	Point() : point(FVector(0, 0, 0)) {};
+	Point() : point(FVector(0, 0, 0))
+	{
+	};
 
-	Point(FVector node_) : Point(node_.X, node_.Y, node_.Z) {};
+	Point(FVector node_) : Point(node_.X, node_.Y, node_.Z)
+	{
+	};
 	~Point() { blocks_nearby.Empty(); }
 	FVector point;
 	point_type type;
@@ -60,7 +70,8 @@ struct Point
 
 struct Conn
 {
-	Conn(TSharedPtr<Node> node_, TSharedPtr<TArray<TSharedPtr<Point>>> figure_) : node(node_), figure(figure_)
+	Conn(TSharedPtr<Node> node_, TSharedPtr<TArray<TSharedPtr<Point>>> figure_) : node(node_)
+	                                                                            , figure(figure_)
 	{
 		not_in_figure = false;
 	}
@@ -75,7 +86,6 @@ struct Conn
 		figure->Empty();
 		node.Reset();
 	}
-	// Conn(TSharedPtr<Node> node_) :node( node_ ) {}
 	TSharedPtr<Node> node;
 	TSharedPtr<TArray<TSharedPtr<Point>>> figure;
 	bool not_in_figure;
@@ -84,13 +94,23 @@ struct Conn
 
 struct Node
 {
-	Node(double X, double Y, double Z, int debug_ind = 0) :
-		point(MakeShared<Point>(FVector(X, Y, Z))), debug_ind_(debug_ind) {};
+	Node(double X, double Y, double Z, int debug_ind = 0) : point(MakeShared<Point>(FVector(X, Y, Z)))
+	                                                      , debug_ind_(debug_ind)
+	{
+	};
 
-	Node() : point(MakeShared<Point>(FVector(0, 0, 0))) {};
+	Node() : point(MakeShared<Point>(FVector(0, 0, 0)))
+	{
+	};
 
-	Node(FVector node_) : point(MakeShared<Point>(node_.X, node_.Y, node_.Z)) {};
-	~Node() { conn.Empty(); }
+	Node(FVector node_) : point(MakeShared<Point>(node_.X, node_.Y, node_.Z))
+	{
+	};
+	~Node()
+	{
+		conn.Empty();
+		point.Reset();
+	}
 	TArray<TSharedPtr<Conn>> conn;
 	void set_FVector(FVector point_) { point->point = point_; }
 	void set_FVector_X(double X) { point->point.X = X; }
@@ -115,14 +135,20 @@ protected:
 
 public:
 	int debug_ind_;
+	bool unshrinkable;
 };
+
 struct House
 {
-	House(TArray<FVector> figure_, double height_) : house_figure(figure_), height(height_) {};
+	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
+	                                               , height(height_)
+	{
+	};
 	~House() { house_figure.Empty(); }
 	TArray<FVector> house_figure;
 	double height;
 };
+
 struct District
 {
 	District()
@@ -162,7 +188,7 @@ class MAPWIZARD_API AllGeometry
 {
 public:
 	static TOptional<FVector> is_intersect(const FVector& line1_begin, const FVector& line1_end,
-										   const FVector& line2_begin, const FVector& line2_end, bool is_opened);
+	                                       const FVector& line2_begin, const FVector& line2_end, bool is_opened);
 
 
 	static TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>> is_intersect_array(
@@ -171,25 +197,25 @@ public:
 	static TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>> is_intersect_array(
 		FVector line1_begin, FVector line1_end, const TArray<TSharedPtr<Node>>& lines, bool is_opened);
 	static TOptional<FVector> is_intersect_array(FVector line_begin, FVector line_end,
-												 const TArray<FVector>& array_point, bool is_opened);
+	                                             const TArray<FVector>& array_point, bool is_opened);
 	static TOptional<TSharedPtr<Node>> is_intersect_array_clear(const TSharedPtr<Node>& line1_begin,
-																const TSharedPtr<Node>& line1_end,
-																const TArray<TSharedPtr<Node>>& lines, bool is_opened);
+	                                                            const TSharedPtr<Node>& line1_end,
+	                                                            const TArray<TSharedPtr<Node>>& lines, bool is_opened);
 	static int is_intersect_array_count(const TSharedPtr<Node>& line_begin, const TSharedPtr<Node>& line_end,
-										const TArray<TSharedPtr<Node>>& lines, bool is_opened);
+	                                    const TArray<TSharedPtr<Node>>& lines, bool is_opened);
 	static TOptional<FVector> is_intersect_array_clear(const FVector& line_begin, const FVector& line_end,
-													   const TArray<TSharedPtr<Node>>& lines, bool is_opened);
+	                                                   const TArray<TSharedPtr<Node>>& lines, bool is_opened);
 	static FVector create_segment_at_angle(const FVector& line_begin, const FVector& line_end,
-										   const FVector& line_beginPoint, double angle_in_degrees, double length);
+	                                       const FVector& line_beginPoint, double angle_in_degrees, double length);
 	static float calculate_angle(const FVector& A, const FVector& B, const FVector& C, bool is_clockwork = false);
 	static float calculate_angle_clock(const FVector& A, const FVector& B, const FVector& C, bool is_clockwork = false);
 	static float calculate_angle_counterclock(const FVector& A, const FVector& B, const FVector& C,
-											  bool is_clockwork = false);
+	                                          bool is_clockwork = false);
 	static float get_poygon_area(const TArray<TSharedPtr<Point>>& Vertices);
 	static float get_poygon_area(const TArray<Point>& Vertices);
 	static bool IsConvex(const FVector& Prev, const FVector& Curr, const FVector& Next);
 	static bool IsEar(TArray<FVector> Vertices, int32 PrevIndex, int32 CurrIndex, int32 NextIndex,
-					  TArray<int32> RemainingVertices);
+	                  TArray<int32> RemainingVertices);
 	static bool IsPointInTriangle(const FVector& Point, const FVector& A, const FVector& B, const FVector& C);
 
 	static void TriangulatePolygon(const TArray<FVector>& Polygon, TArray<int32>& Triangles);

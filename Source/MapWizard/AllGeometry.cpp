@@ -105,7 +105,7 @@ bool District::shrink_size(TArray<Point>& Vertices, float road, float main_road)
 		auto Curr = i;
 		auto Next = (i + 1) % NumVertices;
 		auto angle1 =
-			AllGeometry::calculate_angle_clock(Vertices[Prev].point, Vertices[Curr].point, Vertices[Next].point);
+		AllGeometry::calculate_angle_clock(Vertices[Prev].point, Vertices[Curr].point, Vertices[Next].point);
 		float road_height1 = road;
 		float road_height2 = road;
 		if (Vertices[Prev].type == point_type::main_road && Vertices[Curr].type == point_type::main_road)
@@ -117,19 +117,19 @@ bool District::shrink_size(TArray<Point>& Vertices, float road, float main_road)
 			road_height2 = main_road;
 		}
 		FVector parralel1_beg = AllGeometry::create_segment_at_angle(Vertices[Prev].point, Vertices[Curr].point,
-																	 Vertices[Prev].point, 90, road_height1);
+			Vertices[Prev].point, 90, road_height1);
 		FVector parralel2_beg = AllGeometry::create_segment_at_angle(Vertices[Curr].point, Vertices[Next].point,
-																	 Vertices[Next].point, 90, road_height2);
+			Vertices[Next].point, 90, road_height2);
 		FVector parralel1_end =
-			AllGeometry::create_segment_at_angle(Vertices[Prev].point, Vertices[Curr].point, parralel1_beg, 0, 5000);
+		AllGeometry::create_segment_at_angle(Vertices[Prev].point, Vertices[Curr].point, parralel1_beg, 0, 5000);
 		FVector parralel2_end =
-			AllGeometry::create_segment_at_angle(Vertices[Next].point, Vertices[Curr].point, parralel2_beg, 0, 5000);
+		AllGeometry::create_segment_at_angle(Vertices[Next].point, Vertices[Curr].point, parralel2_beg, 0, 5000);
 		parralel1_beg.Z = 0;
 		parralel2_beg.Z = 0;
 		parralel1_end.Z = 0;
 		parralel2_end.Z = 0;
 		auto intersection =
-			AllGeometry::is_intersect(parralel1_beg, parralel1_end, parralel2_beg, parralel2_end, false);
+		AllGeometry::is_intersect(parralel1_beg, parralel1_end, parralel2_beg, parralel2_end, false);
 
 		if (intersection.IsSet())
 		{
@@ -144,7 +144,7 @@ bool District::shrink_size(TArray<Point>& Vertices, float road, float main_road)
 				for (int j = 1; j <= figure.Num(); j++)
 				{
 					if (AllGeometry::point_to_seg_distance(Vertices[j - 1].point, Vertices[j % figure.Num()].point,
-														   intersection.GetValue()) < road)
+						intersection.GetValue()) < road)
 					{
 						is_valid = false;
 						break;
@@ -172,7 +172,7 @@ TOptional<FVector> District::is_line_intersect(FVector point1, FVector point2)
 	for (int i = 1; i <= NumVertices; i++)
 	{
 		TOptional<FVector> intersect = AllGeometry::is_intersect(point1, point2, self_figure[i - 1].point,
-																 self_figure[i % NumVertices].point, false);
+			self_figure[i % NumVertices].point, false);
 		if (intersect.IsSet())
 		{
 			return intersect.GetValue();
@@ -211,7 +211,7 @@ bool District::create_house(TArray<FVector> given_line, double width, double hei
 	for (int i = 1; i < given_line.Num(); i++)
 	{
 		FVector point =
-			AllGeometry::create_segment_at_angle(given_line[i - 1], given_line[i], given_line[i], -90, width / 2);
+		AllGeometry::create_segment_at_angle(given_line[i - 1], given_line[i], given_line[i], -90, width / 2);
 		if (!is_point_in_self_figure(point))
 		{
 			return false;
@@ -219,8 +219,8 @@ bool District::create_house(TArray<FVector> given_line, double width, double hei
 		this_figure.Add(point);
 	}
 	FVector point2 =
-		AllGeometry::create_segment_at_angle(this_figure[given_line.Num() - 1], given_line[given_line.Num() - 1],
-											 given_line[given_line.Num() - 1], 0, width / 2);
+	AllGeometry::create_segment_at_angle(this_figure[given_line.Num() - 1], given_line[given_line.Num() - 1],
+		given_line[given_line.Num() - 1], 0, width / 2);
 	if (!is_point_in_self_figure(point2))
 	{
 		return false;
@@ -229,7 +229,7 @@ bool District::create_house(TArray<FVector> given_line, double width, double hei
 	for (int i = given_line.Num() - 1; i > 0; i--)
 	{
 		FVector point =
-			AllGeometry::create_segment_at_angle(given_line[i], given_line[i - 1], given_line[i - 1], -90, width / 2);
+		AllGeometry::create_segment_at_angle(given_line[i], given_line[i - 1], given_line[i - 1], -90, width / 2);
 		if (!is_point_in_self_figure(point))
 		{
 			return false;
@@ -297,7 +297,7 @@ void Node::print_connections()
 
 
 TOptional<FVector> AllGeometry::is_intersect(const FVector& line1_begin, const FVector& line1_end,
-											 const FVector& line2_begin, const FVector& line2_end, bool is_opened)
+                                             const FVector& line2_begin, const FVector& line2_end, bool is_opened)
 {
 	double dx1 = line1_end.X - line1_begin.X;
 	double dy1 = line1_end.Y - line1_begin.Y;
@@ -323,9 +323,9 @@ TOptional<FVector> AllGeometry::is_intersect(const FVector& line1_begin, const F
 		}
 		if (!is_opened &&
 			(FVector::Distance(intersectionPoint, line2_begin) > TNumericLimits<double>::Min() &&
-			 FVector::Distance(intersectionPoint, line2_end) > TNumericLimits<double>::Min() &&
-			 FVector::Distance(intersectionPoint, line1_begin) > TNumericLimits<double>::Min() &&
-			 FVector::Distance(intersectionPoint, line1_end) > TNumericLimits<double>::Min()))
+				FVector::Distance(intersectionPoint, line2_end) > TNumericLimits<double>::Min() &&
+				FVector::Distance(intersectionPoint, line1_begin) > TNumericLimits<double>::Min() &&
+				FVector::Distance(intersectionPoint, line1_end) > TNumericLimits<double>::Min()))
 		{
 			return intersectionPoint;
 		}
@@ -346,8 +346,9 @@ TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>> AllGeomet
 	{
 		for (auto& conn : line->conn)
 		{
+			if (!conn.IsValid()) continue;
 			TOptional<FVector> int_point = is_intersect(line_begin->get_FVector(), line_end->get_FVector(),
-														line->get_FVector(), conn->node->get_FVector(), is_opened);
+				line->get_FVector(), conn->node->get_FVector(), is_opened);
 			if (int_point.IsSet())
 			{
 				double dist_to_line = FVector::Dist(line_begin->get_FVector(), int_point.GetValue());
@@ -381,48 +382,50 @@ TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>> AllGeomet
 	{
 		for (auto& conn : line->conn)
 		{
+			if (!conn.IsValid())continue;
 			TOptional<FVector> int_point =
-				is_intersect(line_begin, line_end, line->get_FVector(), conn->node->get_FVector(), is_opened);
+			is_intersect(line_begin, line_end, line->get_FVector(), conn->node->get_FVector(), is_opened);
 			if (int_point.IsSet())
 			{
-				double dist_to_line = FVector::Dist(line_begin, int_point.GetValue());
+				double dist_to_line = FVector::Distance(line_begin, int_point.GetValue());
 				if (dist_to_line < dist)
 				{
-					// point_line = PointLine(line->node, conn->node);
 					point_line = TTuple<TSharedPtr<Node>, TSharedPtr<Node>>{line, conn->node};
-
 					dist = dist_to_line;
 					intersect_point_final = int_point.GetValue();
 				}
 			}
 		}
 	}
-	if (dist == TNumericLimits<double>::Max())
+	if (dist < TNumericLimits<double>::Max())
 	{
-		return TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>>();
+		TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> final_tuple{intersect_point_final, point_line};
+		return final_tuple;
 	}
-	TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> final_tuple{intersect_point_final, point_line};
-	return final_tuple;
+	return TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>>();
 }
 TOptional<FVector> AllGeometry::is_intersect_array(FVector line_begin, FVector line_end,
-												   const TArray<FVector>& array_point, bool is_opened)
+                                                   const TArray<FVector>& array_point, bool is_opened)
 {
 	int NumVertices = array_point.Num();
+	double dist = TNumericLimits<double>::Max();
+	FVector final_point(0, 0, 0);
 	for (int i = 1; i <= NumVertices; i++)
 	{
 		TOptional<FVector> intersect =
-			AllGeometry::is_intersect(line_begin, line_end, array_point[i - 1], array_point[i % NumVertices], false);
-		if (intersect.IsSet())
+		AllGeometry::is_intersect(line_begin, line_end, array_point[i - 1], array_point[i % NumVertices], is_opened);
+		if (intersect.IsSet() && FVector::Distance(intersect.GetValue(), line_begin) < dist)
 		{
-			return intersect.GetValue();
+			final_point = intersect.GetValue();
 		}
 	}
+	if (dist < TNumericLimits<double>::Max()) return final_point;
 	return TOptional<FVector>();
 }
 
 TOptional<TSharedPtr<Node>> AllGeometry::is_intersect_array_clear(const TSharedPtr<Node>& line_begin,
-																  const TSharedPtr<Node>& line_end,
-																  const TArray<TSharedPtr<Node>>& lines, bool is_opened)
+                                                                  const TSharedPtr<Node>& line_end,
+                                                                  const TArray<TSharedPtr<Node>>& lines, bool is_opened)
 {
 	auto inter_segment = is_intersect_array(line_begin, line_end, lines, is_opened);
 	if (!inter_segment.IsSet())
@@ -430,20 +433,21 @@ TOptional<TSharedPtr<Node>> AllGeometry::is_intersect_array_clear(const TSharedP
 		return TOptional<TSharedPtr<Node>>();
 	}
 	return FVector::Dist(inter_segment->Key, inter_segment->Value.Key->get_FVector()) <
-			FVector::Dist(inter_segment->Key, inter_segment->Value.Value->get_FVector())
-		? inter_segment->Value.Key
-		: inter_segment->Value.Value;
+	       FVector::Dist(inter_segment->Key, inter_segment->Value.Value->get_FVector())
+		       ? inter_segment->Value.Key
+		       : inter_segment->Value.Value;
 }
 int AllGeometry::is_intersect_array_count(const TSharedPtr<Node>& line_begin, const TSharedPtr<Node>& line_end,
-										  const TArray<TSharedPtr<Node>>& lines, bool is_opened)
+                                          const TArray<TSharedPtr<Node>>& lines, bool is_opened)
 {
 	int count = 0;
 	for (auto l : lines)
 	{
 		for (auto& conn : l->conn)
 		{
+			if (!conn.IsValid())continue;
 			if (is_intersect(line_begin->get_FVector(), line_end->get_FVector(), l->get_FVector(),
-							 conn->node->get_FVector(), is_opened))
+				conn->node->get_FVector(), is_opened))
 			{
 				count++;
 			}
@@ -453,7 +457,7 @@ int AllGeometry::is_intersect_array_count(const TSharedPtr<Node>& line_begin, co
 }
 
 TOptional<FVector> AllGeometry::is_intersect_array_clear(const FVector& line_begin, const FVector& line_end,
-														 const TArray<TSharedPtr<Node>>& lines, bool is_opened)
+                                                         const TArray<TSharedPtr<Node>>& lines, bool is_opened)
 {
 	auto inter_segment = is_intersect_array(line_begin, line_end, lines, is_opened);
 	if (!inter_segment.IsSet())
@@ -461,13 +465,13 @@ TOptional<FVector> AllGeometry::is_intersect_array_clear(const FVector& line_beg
 		return TOptional<FVector>();
 	}
 	return FVector::Dist(inter_segment->Key, inter_segment->Value.Key->get_FVector()) <
-			FVector::Dist(inter_segment->Key, inter_segment->Value.Value->get_FVector())
-		? inter_segment->Value.Key->get_FVector()
-		: inter_segment->Value.Value->get_FVector();
+	       FVector::Dist(inter_segment->Key, inter_segment->Value.Value->get_FVector())
+		       ? inter_segment->Value.Key->get_FVector()
+		       : inter_segment->Value.Value->get_FVector();
 }
 
 FVector AllGeometry::create_segment_at_angle(const FVector& line_begin, const FVector& line_end,
-											 const FVector& line_beginPoint, double angle_in_degrees, double length)
+                                             const FVector& line_beginPoint, double angle_in_degrees, double length)
 {
 	FVector line_direction = (line_end - line_begin).GetSafeNormal();
 	FVector rotated_direction = line_direction.RotateAngleAxis(angle_in_degrees, FVector(0.f, 0.f, 1.f));
@@ -565,7 +569,7 @@ bool AllGeometry::IsConvex(const FVector& Prev, const FVector& Curr, const FVect
 	return FVector::CrossProduct(Edge1, Edge2).Z <= 0;
 }
 bool AllGeometry::IsEar(const TArray<FVector> Vertices, int32 PrevIndex, int32 CurrIndex, int32 NextIndex,
-						const TArray<int32> RemainingVertices)
+                        const TArray<int32> RemainingVertices)
 {
 	FVector A = Vertices[PrevIndex];
 	FVector B = Vertices[CurrIndex];
@@ -585,7 +589,9 @@ bool AllGeometry::IsEar(const TArray<FVector> Vertices, int32 PrevIndex, int32 C
 bool AllGeometry::IsPointInTriangle(const FVector& Point, const FVector& A, const FVector& B, const FVector& C)
 {
 	auto Sign = [](const FVector& P1, const FVector& P2, const FVector& P3)
-	{ return (P1.X - P3.X) * (P2.Y - P3.Y) - (P2.X - P3.X) * (P1.Y - P3.Y); };
+	{
+		return (P1.X - P3.X) * (P2.Y - P3.Y) - (P2.X - P3.X) * (P1.Y - P3.Y);
+	};
 
 	// Вычисляем знаки
 	float D1 = Sign(Point, A, B);
@@ -656,7 +662,7 @@ void AllGeometry::TriangulatePolygon(const TArray<FVector>& Vertices, TArray<int
 
 			// Угол проверяем здесь
 			float Angle = AllGeometry::calculate_angle_counterclock(Vertices[PrevIndex], Vertices[CurrIndex],
-																	Vertices[NextIndex]);
+				Vertices[NextIndex]);
 			if (Angle >= 180.0f)
 			{
 				continue; // Пропускаем невыпуклые углы
@@ -689,7 +695,14 @@ bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 	FVector point2 = point_;
 	point2.Y += 5000;
 	int times_to_hit = 0;
+	if (figure.Num() < 3) return false;
+	FVector figure0 = figure[0];
+	if (figure[0] != figure.Last())
+	{
+		figure.Add(figure0);
+	}
 	int fig_num = figure.Num();
+
 	TOptional<FVector> old_intersec;
 	for (int i = 1; i < fig_num; i++)
 	{
