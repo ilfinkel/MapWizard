@@ -39,7 +39,7 @@ District::District(TArray<TSharedPtr<Point>> figure_)
 	figure = figure_;
 
 	area = AllGeometry::get_poygon_area(figure);
-	type = block_type::unknown;
+	type = district_type::unknown;
 	// if (area < 50000)
 	// {
 	// 	set_type(block_type::empty);
@@ -47,12 +47,12 @@ District::District(TArray<TSharedPtr<Point>> figure_)
 	get_self_figure();
 }
 
-void District::set_type(block_type type_)
+void District::set_type(district_type type_)
 {
 	type = type_;
 	for (int i = 0; i < figure.Num() - 2; i++)
 	{
-		figure[i]->blocks_nearby.Add(type_);
+		figure[i]->districts_nearby.Add(type_);
 	}
 }
 bool District::is_point_in_self_figure(FVector point_)

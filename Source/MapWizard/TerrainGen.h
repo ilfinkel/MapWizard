@@ -3,7 +3,6 @@
 #include <MapWizard/AllGeometry.h>
 #include <MapWizard/MainTerrain.h>
 
-
 class TerrainGen
 {
 public:
@@ -27,7 +26,6 @@ public:
 
 	bool did_river_multiplied = false;
 
-	TArray<District> figures_array;
 	District river_figure;
 	TerrainGen(FMapParams& map_params) : center(map_params.center)
 	                                   , av_distance(map_params.av_distance)
@@ -71,9 +69,10 @@ public:
 	void point_shift(FVector& point);
 	void get_closed_figures(TArray<TSharedPtr<Node>> lines, TArray<District>& fig_array, int figure_threshold);
 	void get_river_figure();
-	void process_blocks(TArray<District>& blocks);
+	void process_districts(TArray<District>& districts);
 	static void process_houses(District& block);
-	void create_special_district(FVector& point, FVector& base_point, TArray<FVector>& figure);
+	void create_special_district(TArray<FVector>& figure, point_type type);
+	void create_circle(FVector point, double radius, district_type type);
 	void empty_all()
 	{
 		for (auto& node : river)
@@ -113,6 +112,7 @@ public:
 		}
 		roads.Reset();
 	}
+	TArray<District> figures_array;
 	TArray<TSharedPtr<Node>> river{};
 	TArray<TSharedPtr<Node>> guiding_river{};
 	TArray<TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> bridges{};
@@ -123,4 +123,6 @@ public:
 	TArray<WeightedPoint> weighted_points{};
 	TArray<TSharedPtr<Node>> roads{};
 	TArray<FVector> soft_borders_array{};
+	TSharedPtr<Node> central_node;
+	TArray<TTuple<FVector, district_type>> custom_districts;
 };

@@ -206,8 +206,8 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 
 	// for (auto b : bridges)
 	// {
-	// 	FVector point1 = AllGeometry::create_segment_at_angle((b.Key->get_FVector() + b.Value->get_FVector()) / 2, b.Key->get_FVector(), b.Key->get_FVector(), 0, 0.1);
-	// 	FVector point2 = AllGeometry::create_segment_at_angle((b.Key->get_FVector() + b.Value->get_FVector()) / 2, b.Value->get_FVector(), b.Value->get_FVector(), 0, 0.1);
+	// 	FVector point1 = AllGeometry::create_segment_at_angle((b.Key->get_FVector() + b.Value->get_FVector()) / 2, b.Key->get_FVector(), b.Key->get_FVector(), 0, 0.01);
+	// 	FVector point2 = AllGeometry::create_segment_at_angle((b.Key->get_FVector() + b.Value->get_FVector()) / 2, b.Value->get_FVector(), b.Value->get_FVector(), 0, 0.01);
 	// 	bridge_points.Add(TTuple<FVector, FVector>(point1, point2));
 	// }
 	bridges.Empty();
@@ -281,21 +281,29 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 	{
 		shrink_roads();
 	}
+
+	if (central_node.IsValid())
+	{
+		auto central_point = central_node->get_FVector();
+		central_node = nullptr;
+		create_circle(central_point, 200, district_type::royal);
+	}
+
 	double EndTime8 = FPlatformTime::Seconds();
 	double StartTime9 = FPlatformTime::Seconds();
 	get_closed_figures(roads, figures_array, 200);
 	double EndTime9 = FPlatformTime::Seconds();
 	double StartTime10 = FPlatformTime::Seconds();
 
-	if (draw_stage >= EDrawStage::process_blocks)
+	if (draw_stage >= EDrawStage::process_districts)
 	{
-		process_blocks(figures_array);
+		process_districts(figures_array);
 	}
 	double EndTime10 = FPlatformTime::Seconds();
 
 	for (int i = 0; i < roads.Num(); i++)
 	{
-		if (roads[i]->conn.Num() != roads[i]->get_point()->blocks_nearby.Num())
+		if (roads[i]->conn.Num() != roads[i]->get_point()->districts_nearby.Num())
 		{
 			FVector def_point = roads[i]->get_FVector();
 			debug_points_array_.Add(def_point);
@@ -311,6 +319,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 		}
 	}
 	double EndTime11 = FPlatformTime::Seconds();
+
 	[[maybe_unused]] double time1 = EndTime1 - StartTime1;
 	[[maybe_unused]] double time3 = EndTime3 - StartTime3;
 	[[maybe_unused]] double time4 = EndTime4 - StartTime4;
@@ -321,6 +330,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 	[[maybe_unused]] double time9 = EndTime9 - StartTime9;
 	[[maybe_unused]] double time10 = EndTime10 - StartTime10;
 	[[maybe_unused]] double time11 = EndTime11 - StartTime11;
+
 	figures_array_ = figures_array;
 	river_figure_ = river_figure;
 	map_borders_array_ = map_borders_array;
@@ -627,6 +637,7 @@ void TerrainGen::create_guiding_roads()
 				closest_center = r;
 			}
 		}
+		central_node = closest_center;
 		roads.Empty();
 		roads.AddUnique(closest_center);
 		road_centers.Empty();
@@ -651,11 +662,11 @@ void TerrainGen::create_guiding_roads()
 			trade_path1_end = trade_path1_end_point->Key;
 			trade_path1_end = AllGeometry::create_segment_at_angle(
 				closest_center->get_FVector(), trade_path1_end, closest_center->get_FVector(),
-				0, FVector::Distance(closest_center->get_FVector(), trade_path1_end) - 0.1f);
+				0, FVector::Distance(closest_center->get_FVector(), trade_path1_end) - 0.01f);
 			trade_path2_end = trade_path2_end_point->Key;
 			trade_path2_end = AllGeometry::create_segment_at_angle(
 				closest_center->get_FVector(), trade_path2_end, closest_center->get_FVector(),
-				0, FVector::Distance(closest_center->get_FVector(), trade_path2_end) - 0.1f);
+				0, FVector::Distance(closest_center->get_FVector(), trade_path2_end) - 0.01f);
 		}
 		else return;
 
@@ -664,8 +675,8 @@ void TerrainGen::create_guiding_roads()
 		trade_path1_end_node->unshrinkable = true;
 		trade_path2_end_node->unshrinkable = true;
 
-		create_guiding_road_segment(closest_center, trade_path1_end_node, true, point_type::road);
-		create_guiding_road_segment(closest_center, trade_path2_end_node, true, point_type::road);
+		create_guiding_road_segment(closest_center, trade_path1_end_node, true, point_type::main_road);
+		create_guiding_road_segment(closest_center, trade_path2_end_node, true, point_type::main_road);
 
 		TArray<TSharedPtr<Node>> circle_nodes;
 		for (int angle = trade_path_angle + FMath::FRand() * 10 + 20; angle < trade_path_angle + 180 - 20; angle += FMath::FRand() * 10 + 20)
@@ -758,7 +769,7 @@ bool TerrainGen::create_guiding_road_segment(const TSharedPtr<Node>& start_point
 	{
 		return false;
 	}
-	if (FVector::Distance(start_point->get_FVector(), end_point->get_FVector()) < 0.1)
+	if (FVector::Distance(start_point->get_FVector(), end_point->get_FVector()) < 0.01)
 	{
 		return false;
 	}
@@ -766,8 +777,10 @@ bool TerrainGen::create_guiding_road_segment(const TSharedPtr<Node>& start_point
 	TSharedPtr<Node> local_start_point = start_point;
 	TSharedPtr<Node> local_end_point = end_point;
 	TSharedPtr<Node> next_start_point = start_point;
+	int tries = 0;
 	do
 	{
+		tries++;
 		local_start_point = next_start_point;
 		local_end_point = end_point;
 
@@ -831,7 +844,7 @@ bool TerrainGen::create_guiding_road_segment(const TSharedPtr<Node>& start_point
 			old_node = node;
 		}
 	}
-	while (FVector::Distance(local_end_point->get_FVector(), end_point->get_FVector()) > 0.1);
+	while (FVector::Distance(local_end_point->get_FVector(), end_point->get_FVector()) > 0.01 && tries <= 10);
 	return true;
 }
 
@@ -1111,15 +1124,6 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(TArray<TSharedPtr<Node>>&
 				// ||				to_exect_point
 			)
 			{
-				// auto presise_intersect = AllGeometry::is_intersect_array(start_point->get_point(),
-				// backup_endpoint->get_point(), array, false);
-				// if (presise_intersect.IsSet())
-				// {
-				// 	end_point =
-				// insert_conn(presise_intersect->Value.Key,
-				// presise_intersect->Value.Value,
-				// 							presise_intersect->Key);
-				// }
 				break;
 			}
 			intersection = AllGeometry::is_intersect_array_clear(start_point, end_point, array, false);
@@ -1156,7 +1160,7 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(TArray<TSharedPtr<Node>>&
 		}
 		start_point = end_point;
 	}
-	while (FVector::Distance(end_point->get_FVector(), backup_endpoint->get_FVector()) > 0.1);
+	while (FVector::Distance(end_point->get_FVector(), backup_endpoint->get_FVector()) > 0.01);
 
 	if (end_point->get_FVector() == backup_endpoint->get_FVector())
 	{
@@ -1363,31 +1367,32 @@ void TerrainGen::get_river_figure()
 			return !is_key_in || !is_value_in;
 		});
 }
-// void TerrainGen::smooth_blocks(TArray<Block>& blocks)
-// {
-// 	for (auto& b : blocks)
-// 	{
-// 		int fig_num = b.figure.Num();
-// 		for (int i = 1; i <= fig_num; i++)
-// 		{
-// 			if (AllGeometry::calculate_angle(b.figure[i - 1]->point, b.figure[i % fig_num]->point,
-// 											 b.figure[(i + 1) % fig_num]->point, true) > 180)
-// 			{
-// 				b.figure[i % fig_num]->point = (b.figure[i - 1]->point + b.figure[(i + 1) % fig_num]->point) / 2;
-// 			}
-// 		}
-// 		b.area = AllGeometry::get_poygon_area(b.figure);
-// 	}
-// }
-void TerrainGen::process_blocks(TArray<District>& blocks)
+void TerrainGen::process_districts(TArray<District>& districts)
 {
-	blocks.RemoveAll([this](District& Item1) { return !(Item1.shrink_size(Item1.self_figure, 3.0f, 6.0)); });
+	districts.RemoveAll([this](District& Item1) { return !(Item1.shrink_size(Item1.self_figure, 3.0f, 6.0)); });
 
-	blocks.Sort([this](const District& Item1, const District& Item2) { return Item1.area > Item2.area; });
+	districts.Sort([this](const District& Item1, const District& Item2) { return Item1.area > Item2.area; });
 	double royal_area = 0;
 	bool royal_found = false;
+
+	for (auto& c : custom_districts)
+	{
+		for (auto& d : districts)
+		{
+			if (d.is_point_in_self_figure(c.Key))
+			{
+				if (c.Value == district_type::royal)
+				{
+					royal_found = true;
+				}
+				d.set_type(c.Value);
+				break;
+			}
+		}
+	}
+
 	// bool dock_found = false;
-	for (auto& b : blocks)
+	for (auto& b : districts)
 	{
 		bool is_river = false;
 		for (auto r : river)
@@ -1395,11 +1400,11 @@ void TerrainGen::process_blocks(TArray<District>& blocks)
 			if (b.is_point_in_self_figure(r->get_FVector()))
 			{
 				is_river = true;
-				b.set_type(block_type::dock);
+				b.set_type(district_type::dock);
 				break;
 			}
 		}
-		if (b.get_type() == block_type::unknown && !royal_found && royal_area == 0)
+		if (b.get_type() == district_type::unknown && !royal_found && royal_area == 0)
 		{
 			bool point1 = false;
 			int is_in_main = 0;
@@ -1419,36 +1424,36 @@ void TerrainGen::process_blocks(TArray<District>& blocks)
 				}
 				if (point1 && is_in_main >= 3)
 				{
-					b.set_type(block_type::royal);
+					b.set_type(district_type::royal);
 					royal_area += b.area;
 					break;
 				}
 			}
 		}
-		if (b.get_type() == block_type::unknown && royal_area > 0 && !royal_found)
+		if (b.get_type() == district_type::unknown && royal_area > 0 && !royal_found)
 		{
 			for (auto p : b.figure)
 			{
-				for (auto block_near : p->blocks_nearby)
+				for (auto district_near : p->districts_nearby)
 				{
-					if (block_near == block_type::royal)
+					if (district_near == district_type::royal)
 					{
-						b.set_type(block_type::royal);
+						b.set_type(district_type::royal);
 						royal_area += b.area;
 						break;
 					}
 				}
-				if (b.get_type() == block_type::royal)
+				if (b.get_type() == district_type::royal)
 				{
 					break;
 				}
 			}
 		}
-		if (b.get_type() == block_type::royal && royal_area > 1000)
+		if (b.get_type() == district_type::royal && royal_area > 1000)
 		{
 			royal_found = true;
 		}
-		if (b.get_type() == block_type::unknown)
+		if (b.get_type() == district_type::unknown)
 		{
 			bool is_near_royal = false;
 			bool is_near_dock = false;
@@ -1456,57 +1461,48 @@ void TerrainGen::process_blocks(TArray<District>& blocks)
 			// bool is_near_residential = false;
 			for (auto p : b.figure)
 			{
-				if (p->blocks_nearby.Contains(block_type::royal))
+				if (p->districts_nearby.Contains(district_type::royal))
 				{
 					is_near_royal = true;
 				}
-				if (p->blocks_nearby.Contains(block_type::dock))
+				if (p->districts_nearby.Contains(district_type::dock))
 				{
 					is_near_dock = true;
 				}
-
-				// if (p->blocks_nearby.Contains(block_type::slums))
-				// {
-				// 	is_near_slums = true;
-				// }
-				// if (p->blocks_nearby.Contains(block_type::residential))
-				// {
-				// 	is_near_residential = true;
-				// }
 			}
 			if (is_near_royal && !is_near_dock && b.area > 6000)
 			{
-				b.set_type(block_type::luxury);
+				b.set_type(district_type::luxury);
 			}
 		}
 	}
-	int blocks_count = blocks.Num();
-	int named_blocks = 0;
-	int old_named_blocks;
+	int districts_count = districts.Num();
+	int named_districts = 0;
+	int old_named_districts;
 	do
 	{
-		old_named_blocks = named_blocks;
-		named_blocks = 0;
-		for (auto& b : blocks)
+		old_named_districts = named_districts;
+		named_districts = 0;
+		for (auto& b : districts)
 		{
-			if (b.get_type() != block_type::unknown)
+			if (b.get_type() != district_type::unknown)
 			{
-				named_blocks++;
+				named_districts++;
 			}
 			else
 			{
-				TMap<block_type, int32> ElementCount;
+				TMap<district_type, int32> ElementCount;
 				for (auto& fig : b.figure)
 				{
-					for (auto block : fig->blocks_nearby)
+					for (auto district : fig->districts_nearby)
 					{
-						ElementCount.FindOrAdd(block)++;
+						ElementCount.FindOrAdd(district)++;
 					}
 				}
-				int blocks_near = 0;
+				int districts_near = 0;
 				for (auto el : ElementCount)
 				{
-					blocks_near += el.Value;
+					districts_near += el.Value;
 				}
 				if (ElementCount.IsEmpty())
 				{
@@ -1521,27 +1517,27 @@ void TerrainGen::process_blocks(TArray<District>& blocks)
 				{
 					switch (el.Key)
 					{
-					case block_type::dock:
+					case district_type::dock:
 						{
 							dock_count = el.Value;
 							break;
 						}
-					case block_type::royal:
+					case district_type::royal:
 						{
 							royal_count = el.Value;
 							break;
 						}
-					case block_type::luxury:
+					case district_type::luxury:
 						{
 							luxury_count = el.Value;
 							break;
 						}
-					case block_type::residential:
+					case district_type::residential:
 						{
 							residential_count = el.Value;
 							break;
 						}
-					case block_type::slums:
+					case district_type::slums:
 						{
 							slums_count = el.Value;
 							break;
@@ -1550,85 +1546,85 @@ void TerrainGen::process_blocks(TArray<District>& blocks)
 						break;
 					}
 				}
-				if (blocks_near == 0)
+				if (districts_near == 0)
 				{
 					continue;
 				}
 				int koeff = (dock_count * (-4) + royal_count * 6 + luxury_count * 3 + slums_count * (-8) +
 					residential_count * 2) /
-				blocks_near;
+				districts_near;
 
 				if (koeff <= -7 && luxury_count == 0 && royal_count == 0)
 				{
-					b.set_type(block_type::slums);
+					b.set_type(district_type::slums);
 				}
 				else if (koeff >= 0 && koeff < 4)
 				{
-					b.set_type(block_type::residential);
+					b.set_type(district_type::residential);
 				}
 				else if (koeff >= 4 && slums_count != 0 && dock_count != 0)
 				{
-					b.set_type(block_type::luxury);
+					b.set_type(district_type::luxury);
 				}
 				else
 				{
 					int rand_val = FMath::FRand() * 100;
 					if (rand_val > 85 && slums_count != 0 && dock_count != 0)
 					{
-						b.set_type(block_type::luxury);
+						b.set_type(district_type::luxury);
 					}
 					else if (rand_val > 50)
 					{
-						b.set_type(block_type::residential);
+						b.set_type(district_type::residential);
 					}
 					else if (luxury_count == 0 && royal_count == 0)
 					{
-						b.set_type(block_type::slums);
+						b.set_type(district_type::slums);
 					}
 				}
 			}
 		}
 	}
-	while (named_blocks < blocks_count && old_named_blocks != named_blocks);
+	while (named_districts < districts_count && old_named_districts != named_districts);
 }
-void TerrainGen::process_houses(District& block)
+void TerrainGen::process_houses(District& district)
 {
-	FVector block_center(0, 0, 0);
-	for (auto p : block.figure)
+	FVector district_center(0, 0, 0);
+	for (auto p : district.figure)
 	{
-		block_center += p->point;
+		district_center += p->point;
 	}
-	block_center /= block.self_figure.Num();
-	if (block.get_type() == block_type::luxury)
+	district_center /= district.self_figure.Num();
+	if (district.get_type() == district_type::luxury)
 	{
-		if (!block.is_point_in_self_figure(block_center))
+		if (!district.is_point_in_self_figure(district_center))
 		{
 			return;
 		}
-		for (int i = 1; i < block.self_figure.Num(); i++)
+		for (int i = 1; i < district.self_figure.Num(); i++)
 		{
-			if (block.self_figure[i - 1].blocks_nearby.Contains(block_type::royal) &&
-				block.self_figure[i].blocks_nearby.Contains(block_type::royal))
+			if (district.self_figure[i - 1].districts_nearby.Contains(district_type::royal) &&
+				district.self_figure[i].districts_nearby.Contains(district_type::royal))
 			{
-				FVector point1 = AllGeometry::create_segment_at_angle(block.self_figure[i - 1].point,
-					block.self_figure[i].point, block_center, 0, 40);
+				FVector point1 = AllGeometry::create_segment_at_angle(district.self_figure[i - 1].point,
+					district.self_figure[i].point, district_center, 0, 40);
 				FVector point2 = AllGeometry::create_segment_at_angle(
-					block.self_figure[i - 1].point, block.self_figure[i].point, block_center, 180, 40);
+					district.self_figure[i - 1].point, district.self_figure[i].point, district_center, 180, 40);
 				TArray<FVector> figure{point1, point2};
-				if (block.create_house(figure, 40, 30))
+				if (district.create_house(figure, 40, 30))
 				{
 					break;
 				}
 			}
 		}
 	}
-	else if (block.get_type() == block_type::residential)
+	else if (district.get_type() == district_type::residential)
 	{
-		int self_figure_count = block.self_figure.Num();
+		int self_figure_count = district.self_figure.Num();
 		for (int i = 1; i <= self_figure_count; i++)
 		{
-			FVector point1 = block.self_figure[i - 1].point;
-			FVector point2 = block.self_figure[i % self_figure_count].point;
+			FVector point1 = district.self_figure[i - 1].point;
+			FVector point2 = district.self_figure[i % self_figure_count].point;
 			double dist = FVector::Distance(point1, point2);
 			double general_width = 0;
 			while (general_width < dist)
@@ -1642,22 +1638,61 @@ void TerrainGen::process_houses(District& block)
 						point1, point2, (point2 - point1) / dist * (general_width + (width / 2)) + point1, 90, 1);
 					FVector point_end = AllGeometry::create_segment_at_angle(point1, point2, point_beg, 90, length);
 					TArray<FVector> figure{point_beg, point_end};
-					block.create_house(figure, width, height);
+					district.create_house(figure, width, height);
 				}
 				general_width += (width + 1);
 			}
 		}
 	}
 }
-void TerrainGen::create_special_district(FVector& point, FVector& base_point, TArray<FVector>& figure)
+void TerrainGen::create_special_district(TArray<FVector>& figure, point_type type)
 {
-	TArray<TTuple<double, double>> points;
+	TArray<TSharedPtr<Node>> nodes;
 	for (auto f : figure)
 	{
-		double angle = AllGeometry::calculate_angle_clock(base_point, point, f);
-		double dist = FVector::Distance(point, f);
-		points.Add(TTuple<double, double>(angle, dist));
+		auto new_node = MakeShared<Node>(f);
+		new_node->set_type(type);
+		roads.AddUnique(new_node);
+		nodes.AddUnique(new_node);
 	}
-	
-	
+
+	FVector center_point(0, 0, 0);
+	for (auto f : figure)
+	{
+		center_point += f;
+	}
+	center_point /= figure.Num();
+	for (int i = 1; i <= nodes.Num(); i++)
+	{
+		create_segment(roads, nodes[i - 1], nodes[i % nodes.Num()], true, type, 5000);
+	}
+
+	TArray<FVector> inner_figure;
+	for (auto f : figure)
+	{
+		auto new_inner_point = AllGeometry::create_segment_at_angle(center_point, f, f, 180, 0.01);
+		inner_figure.Add(new_inner_point);
+	}
+	roads.RemoveAll(
+		[&](const TSharedPtr<Node>& node)
+		{
+			if (AllGeometry::is_point_in_figure(node->get_FVector(), inner_figure))
+			{
+				node->delete_me();
+				return true;
+			}
+			return false;
+		});
+}
+void TerrainGen::create_circle(FVector point, double radius, district_type type)
+{
+	custom_districts.Add(TTuple<FVector, district_type>(point, type));
+	FVector left_point = point;
+	left_point.X = 0;
+	TArray<FVector> figure;
+	for (int i = 1; i <= 12; i++)
+	{
+		figure.Add(AllGeometry::create_segment_at_angle(left_point, point, point, 360 / 12 * i, radius));
+	}
+	create_special_district(figure, point_type::main_road);
 }

@@ -15,7 +15,7 @@ enum point_type
 	wall
 };
 
-enum block_type
+enum district_type
 {
 	royal,
 	dock,
@@ -49,11 +49,11 @@ struct Point
 	Point(FVector node_) : Point(node_.X, node_.Y, node_.Z)
 	{
 	};
-	~Point() { blocks_nearby.Empty(); }
+	~Point() { districts_nearby.Empty(); }
 	FVector point;
 	point_type type;
 	bool used = false;
-	TArray<block_type> blocks_nearby;
+	TArray<district_type> districts_nearby;
 
 	Point& operator=(const Point& Other)
 	{
@@ -62,7 +62,7 @@ struct Point
 			point = Other.point;
 			type = Other.type;
 			used = Other.used;
-			blocks_nearby = Other.blocks_nearby;
+			districts_nearby = Other.districts_nearby;
 		}
 		return *this;
 	}
@@ -153,7 +153,7 @@ struct District
 {
 	District()
 	{
-		type = block_type::unknown;
+		type = district_type::unknown;
 		area = 0;
 		figure = TArray<TSharedPtr<Point>>();
 	};
@@ -169,8 +169,8 @@ struct District
 	double area;
 	int main_roads;
 	bool is_river_in;
-	void set_type(block_type type_);
-	block_type get_type() { return type; };
+	void set_type(district_type type_);
+	district_type get_type() { return type; };
 	bool is_point_in_self_figure(FVector point_);
 	bool is_point_in_figure(FVector point_);
 	void get_self_figure();
@@ -180,7 +180,7 @@ struct District
 	bool create_house(TArray<FVector> given_line, double width, double height);
 
 private:
-	block_type type;
+	district_type type;
 };
 
 

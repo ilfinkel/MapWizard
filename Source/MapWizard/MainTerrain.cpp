@@ -27,13 +27,14 @@ void AMainTerrain::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
 
 	MapParams.update_me();
+
 	if (FoundActors.Num() > 0)
 	{
 		AActor* OrthographicCamera = FoundActors[0];
 
 		FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
 		OrthographicCamera->SetActorLocation(NewLocation);
-		FRotator DownwardRotation = FRotator(-90.0f, 0.0f, 0.0f);
+		FRotator DownwardRotation = FRotator(-90.01, 0.01, 0.01);
 		OrthographicCamera->SetActorRotation(DownwardRotation);
 
 		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
@@ -61,7 +62,7 @@ void AMainTerrain::BeginPlay()
 	// FVector CameraLocation = FVector(0, 0, av_distance);
 	// ViewTarget->SetActorLocation(CameraLocation);
 	//
-	// FRotator CameraRotation = FRotator(-90.0f, 0.0f, 0.0f);
+	// FRotator CameraRotation = FRotator(-90.01, 0.01, 0.01);
 	// ViewTarget->SetActorRotation(CameraRotation);
 	//
 	//
@@ -340,7 +341,7 @@ void AMainTerrain::draw_all_3d()
 			continue;
 		}
 
-		if (r.get_type() == block_type::luxury)
+		if (r.get_type() == district_type::luxury)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
@@ -349,50 +350,50 @@ void AMainTerrain::draw_all_3d()
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::dock)
+		else if (r.get_type() == district_type::dock)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, DocsMaterial);
 			MeshComponent2->Material = DocsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::royal)
+		else if (r.get_type() == district_type::royal)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
 			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.03);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::slums)
+		else if (r.get_type() == district_type::slums)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
 			MeshComponent2->Material = SlumsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.04);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::residential)
+		else if (r.get_type() == district_type::residential)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidenceMaterial);
 			MeshComponent2->Material = ResidenceMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.05);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
 		for (auto& p : r.houses)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
-			MeshComponent2->Material = WaterMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
+			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_3d(MeshComponent2, p.house_figure, 0.06, p.height);
+			create_mesh_3d(MeshComponent2, p.house_figure, 0.01, p.height);
 		}
 	}
 	{
@@ -403,7 +404,7 @@ void AMainTerrain::draw_all_3d()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, river_figure.figure, 0.07);
+			create_mesh_2d(MeshComponent2, river_figure.figure, 0.01);
 		}
 	}
 }
@@ -420,15 +421,15 @@ void AMainTerrain::draw_all_2d()
 	}
 	for (auto b : roads)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("мои связи %d"), b->conn.Num());
+		// UE_LOG(LogTemp, Warning, TEXT("мои связи %d"), b->conn.Num());
 		// auto aaa = b->get_FVector();
 		// aaa.Z = 1.2f;
 		// DrawDebugSphere(GetWorld(), aaa, 25, 6, FColor::White, true, -1, 0, 5);
 		for (auto bconn : b->conn)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%d - %d"), b->debug_ind_, bconn->node->debug_ind_)
-			i++;
-			if (b->get_type() == wall && bconn->node->get_type() == wall)
+			// UE_LOG(LogTemp, Warning, TEXT("%d - %d"), b->debug_ind_, bconn->node->debug_ind_)
+			// i++;
+			if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
 			{
 				auto start_point = b->get_FVector();
 				auto end_point = bconn->node->get_FVector();
@@ -436,7 +437,7 @@ void AMainTerrain::draw_all_2d()
 				end_point.Z = 1.2f;
 				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Black, true, -1, 0, 10);
 			}
-			if (b->get_type() == main_road && bconn->node->get_type() == main_road)
+			if (b->get_type() == main_road && bconn->node->get_type() == main_road && DebugParams.draw_main)
 			{
 				auto start_point = b->get_FVector();
 				auto end_point = bconn->node->get_FVector();
@@ -444,14 +445,16 @@ void AMainTerrain::draw_all_2d()
 				end_point.Z = 1.2f;
 				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Red, true, -1, 0, 10);
 			}
-			auto start_point = b->get_FVector();
-			auto end_point = bconn->node->get_FVector();
-			start_point.Z = 1.0f;
-			end_point.Z = 1.0f;
-			DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
+			if (DebugParams.draw_usual_roads)
+			{
+				auto start_point = b->get_FVector();
+				auto end_point = bconn->node->get_FVector();
+				start_point.Z = 1.0f;
+				end_point.Z = 1.0f;
+				DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
+			}
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("горю в аду вместе с %d связями"), i);
 	AProceduralBlockMeshActor* Base =
 	GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 
@@ -485,7 +488,7 @@ void AMainTerrain::draw_all_2d()
 			continue;
 		}
 
-		if (r.get_type() == block_type::luxury)
+		if (r.get_type() == district_type::luxury)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
@@ -494,51 +497,51 @@ void AMainTerrain::draw_all_2d()
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::dock)
+		else if (r.get_type() == district_type::dock)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, DocsMaterial);
 			MeshComponent2->Material = DocsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::royal)
+		else if (r.get_type() == district_type::royal)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
 			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.03);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::slums)
+		else if (r.get_type() == district_type::slums)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
 			MeshComponent2->Material = SlumsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.04);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else if (r.get_type() == block_type::residential)
+		else if (r.get_type() == district_type::residential)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidenceMaterial);
 			MeshComponent2->Material = ResidenceMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.05);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
 
 		for (auto& p : r.houses)
 		{
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
-			MeshComponent2->Material = SlumsMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
+			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, p.house_figure, 0.06);
+			create_mesh_2d(MeshComponent2, p.house_figure, 0.02);
 		}
 
 		// else if (r.get_type() == block_type::empty)
@@ -559,7 +562,7 @@ void AMainTerrain::draw_all_2d()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, river_figure.figure, 0.07);
+			create_mesh_2d(MeshComponent2, river_figure.figure, 0.02);
 		}
 	}
 }
@@ -583,11 +586,11 @@ void AMainTerrain::get_cursor_hit_location()
 			FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
 			FVector CameraForwardVector = PlayerController->PlayerCameraManager->GetCameraRotation().Vector();
 			FVector Start = CameraLocation; // Начальная точка линии (например, от камеры)
-			FVector End = Start + (CameraForwardVector * 10000.0f); // Конечная точка линии
+			FVector End = Start + (CameraForwardVector * 10000.01); // Конечная точка линии
 
 			// FVector HitLocation = HitResult.Location;
 			// FVector HitWatch = HitLocation;
-			// DrawDebugString(GetWorld(), HitWatch, HitLocation.ToString(), nullptr, FColor::Red, 50.0f,
+			// DrawDebugString(GetWorld(), HitWatch, HitLocation.ToString(), nullptr, FColor::Red, 50.01,
 			// 				true);
 			FHitResult HitResult;
 			FCollisionQueryParams Params;
