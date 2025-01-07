@@ -230,10 +230,10 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVecto
 	if (Vertices.Num() == 4)
 	{
 		UVs = {
-			FVector2D(0, 0),
-			FVector2D(0, 1),
 			FVector2D(1, 0),
-			FVector2D(1, 1)
+			FVector2D(1, 1),
+			FVector2D(0, 1),
+			FVector2D(0, 0)
 		};
 
 		Normals = {
