@@ -47,7 +47,7 @@ public:
 	{
 	};
 
-	void create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<District>& figures_array_, District& river_figure_,
+	void create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<District>& figures_array_, TArray<Street>& streets_array_, District& river_figure_,
 	                    TArray<TSharedPtr<Node>>& map_borders_array_, TArray<FVector>& debug_points_array_);
 	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
 	static TSharedPtr<Node> insert_conn(const TSharedPtr<Node>& node1_to_insert,
@@ -67,12 +67,13 @@ public:
 	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point, bool is_through_river, point_type road_type);
 	void shrink_roads();
 	void point_shift(FVector& point);
-	void get_closed_figures(TArray<TSharedPtr<Node>> lines, TArray<District>& fig_array, int figure_threshold);
+	void get_closed_figures(TArray<TSharedPtr<Node>> nodes, TArray<District>& fig_array, int figure_threshold);
 	void get_river_figure();
 	void process_districts(TArray<District>& districts);
 	static void process_houses(District& block);
 	void create_special_district(TArray<FVector>& figure, point_type type);
 	void create_circle(FVector point, double radius, district_type type);
+	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>& fig_array);
 	void empty_all()
 	{
 		for (auto& node : river)
@@ -113,6 +114,7 @@ public:
 		roads.Reset();
 	}
 	TArray<District> figures_array;
+	TArray<Street> streets_array;
 	TArray<TSharedPtr<Node>> river{};
 	TArray<TSharedPtr<Node>> guiding_river{};
 	TArray<TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> bridges{};

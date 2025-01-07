@@ -266,7 +266,7 @@ TOptional<TSharedPtr<Conn>> Node::get_prev_point(TSharedPtr<Point> point_)
 	auto prev_point = get_next_point(point_);
 	if (prev_point.IsSet())
 	{
-		return prev_point.GetValue()->node->get_next_point(point_);
+		return prev_point.GetValue()->node->get_next_point(point);
 	}
 	return TOptional<TSharedPtr<Conn>>();
 }
@@ -613,7 +613,6 @@ void AllGeometry::TriangulatePolygon(const TArray<FVector>& Vertices, TArray<int
 		vertice_num -= 1;
 		if (Vertices.Num() - 1 < 3)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Недостаточно вершин для триангуляции."));
 			return;
 		}
 		// Инициализируем все вершины
@@ -633,7 +632,6 @@ void AllGeometry::TriangulatePolygon(const TArray<FVector>& Vertices, TArray<int
 	{
 		if (Vertices.Num() < 3)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Недостаточно вершин для триангуляции."));
 			return;
 		}
 		// Инициализируем все вершины

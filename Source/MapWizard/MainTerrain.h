@@ -128,6 +128,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vertices", meta = (AllowPrivateAccess = "true"))
 	TArray<FVector> VerticesRemembered;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool is_2d = true;
+
 	UProceduralMeshComponent* BaseComponent;
 
 protected:
@@ -147,11 +151,11 @@ private:
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight);
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight);
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight);
-	void draw_all_3d();
-	void draw_all_2d();
+	void draw_all();
 	void get_cursor_hit_location();
 	TArray<TSharedPtr<Node>> map_borders_array{};
 	TArray<District> figures_array{};
+	TArray<Street> streets_array{};
 	TArray<FVector> debug_points_array{};
 	TArray<TSharedPtr<Node>> roads{};
 	District river_figure;

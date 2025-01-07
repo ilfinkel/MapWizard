@@ -36,6 +36,7 @@ struct WeightedPoint
 	double weight;
 };
 
+
 struct Point
 {
 	Point(double X, double Y, double Z) : point(FVector(X, Y, Z))
@@ -68,6 +69,19 @@ struct Point
 	}
 };
 
+struct Street
+{
+	Street()
+	{
+	};
+	Street(TArray<TSharedPtr<Point>> points_) : points(points_)
+	{
+	};
+	TArray<TSharedPtr<Point>> points;
+	point_type type;
+	FString name;
+};
+
 struct Conn
 {
 	Conn(TSharedPtr<Node> node_, TSharedPtr<TArray<TSharedPtr<Point>>> figure_) : node(node_)
@@ -79,15 +93,18 @@ struct Conn
 	Conn(TSharedPtr<Node> node_) : node(node_)
 	{
 		figure = MakeShared<TArray<TSharedPtr<Point>>>();
+		street = MakeShared<TArray<TSharedPtr<Point>>>();
 		not_in_figure = false;
 	}
 	~Conn()
 	{
 		figure->Empty();
+		street->Empty();
 		node.Reset();
 	}
 	TSharedPtr<Node> node;
-	TSharedPtr<TArray<TSharedPtr<Point>>> figure;
+	TSharedPtr<TArray<TSharedPtr<Point>>> figure{};
+	TSharedPtr<TArray<TSharedPtr<Point>>> street{};
 	bool not_in_figure;
 	bool operator==(Conn& other) { return this->node == other.node; }
 };
