@@ -249,6 +249,16 @@ bool District::create_house(TArray<FVector> given_line, double width, double hei
 	return true;
 }
 
+Point::~Point()
+{
+	districts_nearby.Empty();
+}
+Conn::~Conn()
+{
+	figure->Empty();
+	street->Empty();
+	node.Reset();
+}
 TOptional<TSharedPtr<Conn>> Node::get_next_point(TSharedPtr<Point> point_)
 {
 	for (auto c : conn)
@@ -278,7 +288,7 @@ void Node::delete_me()
 	{
 		for (int i = 0; i < c->node->conn.Num(); i++)
 		{
-			if (point->point == c->node->conn[i]->node->get_FVector())
+			if (FVector::Distance(point->point, c->node->conn[i]->node->get_FVector()) < 0.01)
 			{
 				c->node->conn.RemoveAt(i);
 				break;
@@ -293,6 +303,10 @@ void Node::print_connections()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("---Мое соединение: %d"), c->node->debug_ind_);
 	}
+}
+House::~House()
+{
+	house_figure.Empty();
 }
 
 

@@ -8,7 +8,7 @@ struct Node;
 
 enum point_type
 {
-	main,
+	unidentified,
 	main_road,
 	road,
 	river,
@@ -31,7 +31,7 @@ struct WeightedPoint
 	WeightedPoint(const FVector& point_, const double weight_) : point(point_)
 	                                                           , weight(weight_)
 	{
-	};
+	}
 	FVector point;
 	double weight;
 };
@@ -40,17 +40,19 @@ struct WeightedPoint
 struct Point
 {
 	Point(double X, double Y, double Z) : point(FVector(X, Y, Z))
+	                                    , type()
 	{
-	};
+	}
 
 	Point() : point(FVector(0, 0, 0))
+	        , type()
 	{
-	};
+	}
 
 	Point(FVector node_) : Point(node_.X, node_.Y, node_.Z)
 	{
-	};
-	~Point() { districts_nearby.Empty(); }
+	}
+	~Point();
 	FVector point;
 	point_type type;
 	bool used = false;
@@ -71,12 +73,14 @@ struct Point
 
 struct Street
 {
-	Street()
+	Street(): type()
 	{
-	};
+	}
+	
 	Street(TArray<TSharedPtr<Point>> points_) : points(points_)
+	                                          , type()
 	{
-	};
+	}
 	TArray<TSharedPtr<Point>> points;
 	point_type type;
 	FString name;
@@ -88,6 +92,7 @@ struct Conn
 	                                                                            , figure(figure_)
 	{
 		not_in_figure = false;
+		in_street = false;
 	}
 
 	Conn(TSharedPtr<Node> node_) : node(node_)
@@ -95,17 +100,14 @@ struct Conn
 		figure = MakeShared<TArray<TSharedPtr<Point>>>();
 		street = MakeShared<TArray<TSharedPtr<Point>>>();
 		not_in_figure = false;
+		in_street = false;
 	}
-	~Conn()
-	{
-		figure->Empty();
-		street->Empty();
-		node.Reset();
-	}
+	~Conn();
 	TSharedPtr<Node> node;
 	TSharedPtr<TArray<TSharedPtr<Point>>> figure{};
 	TSharedPtr<TArray<TSharedPtr<Point>>> street{};
 	bool not_in_figure;
+	bool in_street;
 	bool operator==(Conn& other) { return this->node == other.node; }
 };
 
@@ -113,16 +115,20 @@ struct Node
 {
 	Node(double X, double Y, double Z, int debug_ind = 0) : point(MakeShared<Point>(FVector(X, Y, Z)))
 	                                                      , debug_ind_(debug_ind)
+	                                                      , unshrinkable(false)
+	                                                      , in_figure(false)
 	{
-	};
-
+	}
 	Node() : point(MakeShared<Point>(FVector(0, 0, 0)))
+	       , unshrinkable(false)
+	       , in_figure(false)
 	{
-	};
-
+	}
 	Node(FVector node_) : point(MakeShared<Point>(node_.X, node_.Y, node_.Z))
+	                    , unshrinkable(false)
+	                    , in_figure(false)
 	{
-	};
+	}
 	~Node()
 	{
 		conn.Empty();
@@ -151,8 +157,9 @@ protected:
 	TSharedPtr<Point> point;
 
 public:
-	int debug_ind_;
+	int debug_ind_ = 0;
 	bool unshrinkable;
+	bool in_figure;
 };
 
 struct House
@@ -160,25 +167,26 @@ struct House
 	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
 	                                               , height(height_)
 	{
-	};
-	~House() { house_figure.Empty(); }
+	}
+	~House();
 	TArray<FVector> house_figure;
 	double height;
 };
 
 struct District
 {
-	District()
+	District(): main_roads(0)
+	          , is_river_in(false)
 	{
 		type = district_type::unknown;
 		area = 0;
 		figure = TArray<TSharedPtr<Point>>();
-	};
+	}
 	~District()
 	{
 		figure.Empty();
 		self_figure.Empty();
-	};
+	}
 	District(TArray<TSharedPtr<Point>> figure_);
 	TArray<TSharedPtr<Point>> figure;
 	TArray<Point> self_figure;
@@ -187,13 +195,12 @@ struct District
 	int main_roads;
 	bool is_river_in;
 	void set_type(district_type type_);
-	district_type get_type() { return type; };
+	district_type get_type() { return type; }
 	bool is_point_in_self_figure(FVector point_);
 	bool is_point_in_figure(FVector point_);
 	void get_self_figure();
 	bool shrink_size(TArray<Point>& Vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
-
 	bool create_house(TArray<FVector> given_line, double width, double height);
 
 private:

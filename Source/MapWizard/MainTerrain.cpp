@@ -287,39 +287,63 @@ void AMainTerrain::draw_all()
 		b->debug_ind_ = ind;
 		ind++;
 	}
-	for (auto& street : streets_array)
+	UE_LOG(LogTemp, Warning, TEXT("улиц - %d"), streets_array.Num())
+	UE_LOG(LogTemp, Warning, TEXT("узлов - %d"), roads.Num())
+	for (int i = 0; i < streets_array.Num(); i++)
 	{
-		if ((street.type == main_road && DebugParams.draw_main))
+		if (streets_array[i].type == main_road && DebugParams.draw_main)
 		{
-			for (int i = 1; i < street.points.Num(); i++)
+			for (int j = 1; j < streets_array[i].points.Num(); j++)
 			{
-				DrawDebugLine(GetWorld(), street.points[i]->point, street.points[i - 1]->point,
-					FColor::Red, true, -1, 0, 10);
+				auto point1 = streets_array[i].points[j - 1]->point;
+				auto point2 = streets_array[i].points[j]->point;
+				point1.Z = 9;
+				point2.Z = 9;
+				DrawDebugLine(GetWorld(), point1, point2,
+					FColor::Red, true, -1, 0, 4);
 			}
 		}
-		if (street.type == road && DebugParams.draw_usual_roads)
+		if (streets_array[i].type == road && DebugParams.draw_usual_roads)
 		{
-			for (int i = 1; i < street.points.Num(); i++)
+			for (int j = 1; j < streets_array[i].points.Num(); j++)
 			{
-				DrawDebugLine(GetWorld(), street.points[i]->point, street.points[i - 1]->point,
-					FColor::White, true, -1, 0, 4);
+				auto point1 = streets_array[i].points[j - 1]->point;
+				auto point2 = streets_array[i].points[j]->point;
+				point1.Z = 9;
+				point2.Z = 9;
+				DrawDebugLine(GetWorld(), point1, point2,
+					FColor::Yellow, true, -1, 0, 4);
+			}
+		}
+		if (streets_array[i].type == wall && DebugParams.draw_walls)
+		{
+			for (int j = 1; j < streets_array[i].points.Num(); j++)
+			{
+				auto point1 = streets_array[i].points[j - 1]->point;
+				auto point2 = streets_array[i].points[j]->point;
+				point1.Z = 10;
+				point2.Z = 10;
+				DrawDebugLine(GetWorld(), point1, point2,
+					FColor::Black, true, -1, 0, 8);
 			}
 		}
 	}
+	// UE_LOG(LogTemp, Warning, TEXT("mains - %d"), mains)
+	// UE_LOG(LogTemp, Warning, TEXT("usuals - %d"), usuals)
 	for (auto b : roads)
 	{
 		for (auto bconn : b->conn)
 		{
 			// UE_LOG(LogTemp, Warning, TEXT("%d - %d"), b->debug_ind_, bconn->node->debug_ind_)
 			// i++;
-			if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
-			{
-				auto start_point = b->get_FVector();
-				auto end_point = bconn->node->get_FVector();
-				start_point.Z = 1.2f;
-				end_point.Z = 1.2f;
-				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Black, true, -1, 0, 10);
-			}
+			// if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
+			// {
+			// 	auto start_point = b->get_FVector();
+			// 	auto end_point = bconn->node->get_FVector();
+			// 	start_point.Z = 12;
+			// 	end_point.Z = 12;
+			// 	DrawDebugLine(GetWorld(), start_point, end_point, FColor::Black, true, -1, 0, 10);
+			// }
 			// if (b->get_type() == main_road && bconn->node->get_type() == main_road && DebugParams.draw_main)
 			// {
 			// 	auto start_point = b->get_FVector();
@@ -330,11 +354,11 @@ void AMainTerrain::draw_all()
 			// }
 			// if (DebugParams.draw_usual_roads)
 			// {
-			// 	auto start_point = b->get_FVector();
-			// 	auto end_point = bconn->node->get_FVector();
-			// 	start_point.Z = 1.0f;
-			// 	end_point.Z = 1.0f;
-			// 	DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
+			// auto start_point = b->get_FVector();
+			// auto end_point = bconn->node->get_FVector();
+			// start_point.Z = 1.0f;
+			// end_point.Z = 1.0f;
+			// DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
 			// }
 		}
 	}
