@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates/SharedPointer.h"
 
 struct Node;
 
@@ -22,6 +23,7 @@ enum district_type
 	luxury,
 	residential,
 	slums,
+	tower,
 	empty,
 	unknown
 };
@@ -50,6 +52,7 @@ struct Point
 	}
 
 	Point(FVector node_) : Point(node_.X, node_.Y, node_.Z)
+	                                             
 	{
 	}
 	~Point();
@@ -81,6 +84,7 @@ struct Street
 	                                          , type()
 	{
 	}
+	~Street() { points.Empty(); }
 	TArray<TSharedPtr<Point>> points;
 	point_type type;
 	FString name;
@@ -172,6 +176,8 @@ struct House
 	TArray<FVector> house_figure;
 	double height;
 };
+
+
 
 struct District
 {

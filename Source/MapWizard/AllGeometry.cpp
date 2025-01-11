@@ -288,7 +288,7 @@ void Node::delete_me()
 	{
 		for (int i = 0; i < c->node->conn.Num(); i++)
 		{
-			if (FVector::Distance(point->point, c->node->conn[i]->node->get_FVector()) < 0.01)
+			if (point == c->node->conn[i]->node->get_point())
 			{
 				c->node->conn.RemoveAt(i);
 				break;

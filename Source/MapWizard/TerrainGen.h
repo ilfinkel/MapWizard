@@ -72,8 +72,8 @@ public:
 	void get_river_figure();
 	void process_districts(TArray<District>& districts);
 	static void process_houses(District& block);
-	void create_special_district(TArray<FVector>& figure, point_type type);
-	void create_circle(FVector point, double radius, district_type type);
+	void create_special_district(TArray<FVector>& figure, point_type type, FVector point);
+	void create_circle(FVector point, double radius, district_type type, point_type road_type, int vertex_count);
 	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>& fig_array, point_type type, bool is_persistent);
 	void empty_all()
 	{
