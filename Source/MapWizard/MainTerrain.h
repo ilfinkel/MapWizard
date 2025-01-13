@@ -66,9 +66,11 @@ struct FMapParams
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double x_size = 4000;
+	double x_size;
+		//= 4000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double y_size = 4000;
+	double y_size;
+		//= 4000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double road_left_chance = 42;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
