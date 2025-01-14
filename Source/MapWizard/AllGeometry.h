@@ -28,6 +28,7 @@ enum district_type
 	unknown
 };
 
+
 struct WeightedPoint
 {
 	WeightedPoint(const FVector& point_, const double weight_) : point(point_)
@@ -76,15 +77,27 @@ struct Point
 
 struct Street
 {
-	Street(): type()
+	Street(TArray<FVector> vertexes)
+	{
+		for (int i = 0; i < vertexes.Num(); i++)
+		{
+			street_vertexes.Add(MakeShared<Point>(vertexes[i]));
+		}
+	}
+	TArray<TSharedPtr<Point>> street_vertexes;
+};
+
+struct Way
+{
+	Way(): type()
 	{
 	}
-	
-	Street(TArray<TSharedPtr<Point>> points_) : points(points_)
-	                                          , type()
+
+	Way(TArray<TSharedPtr<Point>> points_) : points(points_)
+	                                       , type()
 	{
 	}
-	~Street() { points.Empty(); }
+	~Way() { points.Empty(); }
 	TArray<TSharedPtr<Point>> points;
 	point_type type;
 	FString name;
@@ -188,12 +201,13 @@ struct District
 		area = 0;
 		figure = TArray<TSharedPtr<Point>>();
 	}
+
+	District(TArray<TSharedPtr<Point>> figure_);
 	~District()
 	{
 		figure.Empty();
 		self_figure.Empty();
 	}
-	District(TArray<TSharedPtr<Point>> figure_);
 	TArray<TSharedPtr<Point>> figure;
 	TArray<Point> self_figure;
 	TArray<House> houses;
@@ -251,4 +265,5 @@ public:
 	static void TriangulatePolygon(const TArray<FVector>& Polygon, TArray<int32>& Triangles);
 	static bool is_point_in_figure(FVector point_, TArray<FVector> figure);
 	static float point_to_seg_distance(const FVector& SegmentStart, const FVector& SegmentEnd, const FVector& Point);
+	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line, double width, double height);
 };

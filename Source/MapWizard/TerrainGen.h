@@ -74,7 +74,7 @@ public:
 	static void process_houses(District& block);
 	void create_special_district(TArray<FVector>& figure, point_type type, FVector point);
 	void create_circle(FVector point, double radius, district_type type, point_type road_type, int vertex_count);
-	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>& fig_array, point_type type, bool is_persistent);
+	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Way>& fig_array, point_type type, bool is_persistent);
 	void empty_all()
 	{
 		for (auto& node : river)
@@ -115,13 +115,14 @@ public:
 		roads.Reset();
 	}
 	TArray<District> figures_array;
-	TArray<Street> streets_array;
+	TArray<Way> ways_array;
 	TArray<TSharedPtr<Node>> river{};
 	TArray<TSharedPtr<Node>> guiding_river{};
 	TArray<TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> bridges{};
 	TArray<TSharedPtr<Node>> road_centers{};
 	TArray<FVector> map_points_array{};
 	TArray<TSharedPtr<Node>> map_borders_array{};
+	TArray<Street> streets_array{};
 	TArray<TSharedPtr<Node>> guididng_roads_array{};
 	TArray<WeightedPoint> weighted_points{};
 	TArray<TSharedPtr<Node>> roads{};

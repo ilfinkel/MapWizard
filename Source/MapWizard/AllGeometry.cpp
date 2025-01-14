@@ -625,42 +625,24 @@ void AllGeometry::TriangulatePolygon(const TArray<FVector>& Vertices, TArray<int
 	if ((Vertices[0] - Vertices[Vertices.Num() - 1]).Length() < 0.0001)
 	{
 		vertice_num -= 1;
-		if (Vertices.Num() - 1 < 3)
-		{
-			return;
-		}
-		// Инициализируем все вершины
-		for (int32 i = 0; i < vertice_num; i++)
-		{
-			auto Prev = Vertices[(i + vertice_num - 1) % vertice_num];
-			auto Curr = Vertices[i];
-			auto Next = Vertices[(i + 1) % vertice_num];
-			float Angle = AllGeometry::calculate_angle_counterclock(Prev, Curr, Next);
-			if (Angle < 179.9 || Angle > 180.1)
-			{
-				RemainingVertices.Add(i);
-			}
-		}
 	}
-	else
+	if (vertice_num < 3)
 	{
-		if (Vertices.Num() < 3)
+		return;
+	}
+	// Инициализируем все вершины
+	for (int32 i = 0; i < vertice_num; i++)
+	{
+		auto Prev = Vertices[(i + vertice_num - 1) % vertice_num];
+		auto Curr = Vertices[i];
+		auto Next = Vertices[(i + 1) % vertice_num];
+		float Angle = calculate_angle_counterclock(Prev, Curr, Next);
+		if (Angle < 179.9 || Angle > 180.1)
 		{
-			return;
-		}
-		// Инициализируем все вершины
-		for (int32 i = 0; i < vertice_num; i++)
-		{
-			auto Prev = Vertices[(i + vertice_num - 1) % vertice_num];
-			auto Curr = Vertices[i];
-			auto Next = Vertices[(i + 1) % vertice_num];
-			float Angle = AllGeometry::calculate_angle_counterclock(Prev, Curr, Next);
-			if (Angle < 179.9 || Angle > 180.1)
-			{
-				RemainingVertices.Add(i);
-			}
+			RemainingVertices.Add(i);
 		}
 	}
+		
 	// Основной цикл триангуляции
 	while (RemainingVertices.Num() > 2)
 	{
@@ -749,4 +731,32 @@ float AllGeometry::point_to_seg_distance(const FVector& SegmentStart, const FVec
 
 	float t = FMath::Clamp(FVector::DotProduct(PointVector, SegmentVector) / SegmentLengthSquared, 0.0f, 1.0f);
 	return FVector::Dist(SegmentStart + t * SegmentVector, Point);
+}
+TArray<FVector> AllGeometry::line_to_polygon(const TArray<FVector> given_line, double width, double height)
+{
+	if (given_line.Num() < 2)
+	{
+		return TArray<FVector>();
+	}
+	TArray<FVector> this_figure;
+	FVector point1 = create_segment_at_angle(given_line[1], given_line[0], given_line[0], 90, width / 2);
+	this_figure.Add(point1);
+	// House house;
+	for (int i = 1; i < given_line.Num(); i++)
+	{
+		FVector point =
+		create_segment_at_angle(given_line[i - 1], given_line[i], given_line[i], -90, width / 2);
+		this_figure.Add(point);
+	}
+	FVector point2 =
+	create_segment_at_angle(this_figure[given_line.Num() - 1], given_line[given_line.Num() - 1],
+		given_line[given_line.Num() - 1], 0, width / 2);
+	this_figure.Add(point2);
+	for (int i = given_line.Num() - 1; i > 0; i--)
+	{
+		FVector point =
+		create_segment_at_angle(given_line[i - 1], given_line[i], given_line[i], -90, width / 2);
+		this_figure.Add(point);
+	}
+	return this_figure;
 }

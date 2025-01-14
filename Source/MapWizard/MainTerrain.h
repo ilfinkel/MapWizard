@@ -66,19 +66,20 @@ struct FMapParams
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double x_size;
-		//= 4000;
+	double x_size = 4000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double y_size;
-		//= 4000;
+	double y_size = 4000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double road_left_chance = 42;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double road_forward_chance = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double road_right_chance = 80;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double is_initialized = false;
 	FVector center;
 	double av_distance;
+	
 	void update_me()
 	{
 		center = FVector(x_size / 2, y_size / 2, 0);
@@ -122,7 +123,8 @@ public:
 	UMaterialInterface* SlumsMaterial;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
 	UMaterialInterface* BuildingMaterial;
-
+	UPROPERTY()
+	bool bIsInitialized = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FMapParams MapParams;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -146,7 +148,7 @@ protected:
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	void initialize_all();
 private:
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
 	                    float ExtrusionHeight);
@@ -166,3 +168,4 @@ private:
 	TArray<TSharedPtr<Node>> roads{};
 	District river_figure;
 };
+
