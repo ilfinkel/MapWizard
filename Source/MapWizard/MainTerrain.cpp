@@ -32,12 +32,12 @@ void AMainTerrain::BeginPlay()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("is_initialized is false. Actor will not initialize."));
 			// Отключите ненужные компоненты, если требуется
-			SetActorTickEnabled(false);
-			SetActorHiddenInGame(true);
+			// SetActorTickEnabled(false);
+			// SetActorHiddenInGame(true);
 		}
 
-	SetActorTickEnabled(false);
-	SetActorHiddenInGame(true);
+	
+	// SetActorHiddenInGame(true);
 	// FVector CameraLocation = FVector(0, 0, av_distance);
 	// ViewTarget->SetActorLocation(CameraLocation);
 	//
