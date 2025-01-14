@@ -58,10 +58,10 @@ void AMainTerrain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (MapParams.is_initialized && !bIsInitialized)
+	if (MapParams.is_initialized && !bIsEverythingLoaded)
 	{
 		initialize_all();
-		bIsInitialized = true;
+		bIsEverythingLoaded = true;
 	}
 }
 inline void AMainTerrain::initialize_all()
