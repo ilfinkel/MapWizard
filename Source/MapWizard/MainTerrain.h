@@ -124,7 +124,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
 	UMaterialInterface* BuildingMaterial;
 	UPROPERTY()
-	bool bIsInitialized = false;
+	bool bIsEverythingLoaded = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FMapParams MapParams;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
