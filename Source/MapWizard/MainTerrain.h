@@ -58,7 +58,7 @@ struct FMapParams
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double river_road_distance = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "City Plan")
-	ECityPlan city_plan = ECityPlan::combined;
+	ECityPlan city_plan = ECityPlan::radial_circle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drawing Stage")
 	EDrawStage draw_stage = EDrawStage::process_houses;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Type")
@@ -136,10 +136,14 @@ public:
 
 	UProceduralMeshComponent* BaseComponent;
 
+	
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

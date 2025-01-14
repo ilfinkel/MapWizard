@@ -23,6 +23,7 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
 }
 void AMainTerrain::BeginPlay()
 {
+	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
 
@@ -46,7 +47,7 @@ void AMainTerrain::BeginPlay()
 			PlayerController->SetViewTargetWithBlend(OrthographicCamera);
 		}
 
-		PrimaryActorTick.bCanEverTick = true;
+		//PrimaryActorTick.bCanEverTick = true;
 		Super::BeginPlay();
 
 		TerrainGen gen(MapParams);
