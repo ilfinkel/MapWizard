@@ -76,7 +76,7 @@ struct FMapParams
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double road_right_chance = 80;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double is_initialized = false;
+	bool is_initialized = false;
 	FVector center;
 	double av_distance;
 	
