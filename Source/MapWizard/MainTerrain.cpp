@@ -23,9 +23,53 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
 }
 void AMainTerrain::BeginPlay()
 {
+	if (MapParams.is_initialized)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("is_initialized is true. Initializing actor..."));
+			initialize_all();
+		}
+	else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("is_initialized is false. Actor will not initialize."));
+			// Отключите ненужные компоненты, если требуется
+			SetActorTickEnabled(false);
+			SetActorHiddenInGame(true);
+		}
+
+	SetActorTickEnabled(false);
+	SetActorHiddenInGame(true);
+	// FVector CameraLocation = FVector(0, 0, av_distance);
+	// ViewTarget->SetActorLocation(CameraLocation);
+	//
+	// FRotator CameraRotation = FRotator(-90.01, 0.01, 0.01);
+	// ViewTarget->SetActorRotation(CameraRotation);
+	//
+	//
+	// // AActor* ViewTarget = PlayerController->GetViewTarget();
+	//
+	// if (PlayerController && ViewTarget)
+	// {
+	// 	PlayerController->SetViewTarget(ViewTarget);
+	// }
+}
+
+// Called every frame
+void AMainTerrain::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (MapParams.is_initialized && !bIsInitialized)
+	{
+		initialize_all();
+		bIsInitialized = true;
+	}
+}
+inline void AMainTerrain::initialize_all()
+{
+	SetActorTickEnabled(true);
+	SetActorHiddenInGame(false);
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
-
 	MapParams.update_me();
 
 	if (FoundActors.Num() > 0)
@@ -46,7 +90,7 @@ void AMainTerrain::BeginPlay()
 			PlayerController->SetViewTargetWithBlend(OrthographicCamera);
 		}
 
-		PrimaryActorTick.bCanEverTick = true;
+		// PrimaryActorTick.bCanEverTick = true;
 		Super::BeginPlay();
 
 		TerrainGen gen(MapParams);
@@ -59,29 +103,6 @@ void AMainTerrain::BeginPlay()
 			UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
 		}
 	}
-	// FVector CameraLocation = FVector(0, 0, av_distance);
-	// ViewTarget->SetActorLocation(CameraLocation);
-	//
-	// FRotator CameraRotation = FRotator(-90.01, 0.01, 0.01);
-	// ViewTarget->SetActorRotation(CameraRotation);
-	//
-	//
-	// // AActor* ViewTarget = PlayerController->GetViewTarget();
-	//
-	// if (PlayerController && ViewTarget)
-	// {
-	// 	PlayerController->SetViewTarget(ViewTarget);
-	// }
-}
-
-// Called every frame
-void AMainTerrain::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	get_cursor_hit_location();
-
-	//// create_usual_roads();
-	// draw_all();
 }
 
 void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
@@ -183,6 +204,7 @@ void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 
 void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight)
 {
+	
 	int32 NumVertices = BaseVertices.Num();
 	if (NumVertices < 3)
 	{
@@ -209,20 +231,6 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVecto
 		Triangles.Add(BaseTriangles[i]);
 		Triangles.Add(BaseTriangles[i + 2]);
 		Triangles.Add(BaseTriangles[i + 1]);
-		// FVector point1 = Vertices[BaseTriangles[i]];
-		// point1.Z = 0.8;
-		// FVector point2 = Vertices[BaseTriangles[i + 1]];
-		// point2.Z = 0.8;
-		// FVector point3 = Vertices[BaseTriangles[i + 2]];
-		// point3.Z = 0.8;
-		// UE_LOG(LogTemp, Warning, TEXT("      "));
-		// UE_LOG(LogTemp, Warning, TEXT("---Точка X %f, Y %f"), point1.X, point1.Y);
-		// UE_LOG(LogTemp, Warning, TEXT("---Точка X %f, Y %f"), point2.X, point2.Y);
-		// UE_LOG(LogTemp, Warning, TEXT("---Точка X %f, Y %f"), point3.X, point3.Y);
-		//
-		// DrawDebugLine(GetWorld(), point1, point3, FColor::Blue, true, -1, 0, 1);
-		// DrawDebugLine(GetWorld(), point2, point3, FColor::Blue, true, -1, 0, 1);
-		// DrawDebugLine(GetWorld(), point1, point2, FColor::Blue, true, -1, 0, 1);
 	}
 
 	TArray<FVector> Normals;
@@ -253,8 +261,7 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVecto
 	VerticesRemembered = Vertices;
 
 	// Создаем меш
-	Mesh->ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents,
-		true);
+	Mesh->ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
 	return;
 }
 void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices,
@@ -289,77 +296,36 @@ void AMainTerrain::draw_all()
 	}
 	UE_LOG(LogTemp, Warning, TEXT("улиц - %d"), streets_array.Num())
 	UE_LOG(LogTemp, Warning, TEXT("узлов - %d"), roads.Num())
-	for (int i = 0; i < streets_array.Num(); i++)
-	{
-		if (streets_array[i].type == main_road && DebugParams.draw_main)
-		{
-			for (int j = 1; j < streets_array[i].points.Num(); j++)
-			{
-				auto point1 = streets_array[i].points[j - 1]->point;
-				auto point2 = streets_array[i].points[j]->point;
-				point1.Z = 9;
-				point2.Z = 9;
-				DrawDebugLine(GetWorld(), point1, point2,
-					FColor::Red, true, -1, 0, 4);
-			}
-		}
-		if (streets_array[i].type == road && DebugParams.draw_usual_roads)
-		{
-			for (int j = 1; j < streets_array[i].points.Num(); j++)
-			{
-				auto point1 = streets_array[i].points[j - 1]->point;
-				auto point2 = streets_array[i].points[j]->point;
-				point1.Z = 9;
-				point2.Z = 9;
-				DrawDebugLine(GetWorld(), point1, point2,
-					FColor::Yellow, true, -1, 0, 4);
-			}
-		}
-		if (streets_array[i].type == wall && DebugParams.draw_walls)
-		{
-			for (int j = 1; j < streets_array[i].points.Num(); j++)
-			{
-				auto point1 = streets_array[i].points[j - 1]->point;
-				auto point2 = streets_array[i].points[j]->point;
-				point1.Z = 10;
-				point2.Z = 10;
-				DrawDebugLine(GetWorld(), point1, point2,
-					FColor::Black, true, -1, 0, 8);
-			}
-		}
-	}
-	// UE_LOG(LogTemp, Warning, TEXT("mains - %d"), mains)
-	// UE_LOG(LogTemp, Warning, TEXT("usuals - %d"), usuals)
 	for (auto b : roads)
 	{
 		for (auto bconn : b->conn)
 		{
-			// UE_LOG(LogTemp, Warning, TEXT("%d - %d"), b->debug_ind_, bconn->node->debug_ind_)
-			// i++;
-			// if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
-			// {
-			// 	auto start_point = b->get_FVector();
-			// 	auto end_point = bconn->node->get_FVector();
-			// 	start_point.Z = 12;
-			// 	end_point.Z = 12;
-			// 	DrawDebugLine(GetWorld(), start_point, end_point, FColor::Black, true, -1, 0, 10);
-			// }
-			// if (b->get_type() == main_road && bconn->node->get_type() == main_road && DebugParams.draw_main)
-			// {
-			// 	auto start_point = b->get_FVector();
-			// 	auto end_point = bconn->node->get_FVector();
-			// 	start_point.Z = 1.2f;
-			// 	end_point.Z = 1.2f;
-			// 	DrawDebugLine(GetWorld(), start_point, end_point, FColor::Red, true, -1, 0, 10);
-			// }
-			// if (DebugParams.draw_usual_roads)
-			// {
-			// auto start_point = b->get_FVector();
-			// auto end_point = bconn->node->get_FVector();
-			// start_point.Z = 1.0f;
-			// end_point.Z = 1.0f;
-			// DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
-			// }
+			UE_LOG(LogTemp, Warning, TEXT("%d - %d"), b->debug_ind_, bconn->node->debug_ind_)
+
+			if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
+			{
+				auto start_point = b->get_FVector();
+				auto end_point = bconn->node->get_FVector();
+				start_point.Z = 12;
+				end_point.Z = 12;
+				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Black, true, -1, 0, 10);
+			}
+			if (b->get_type() == main_road && bconn->node->get_type() == main_road && DebugParams.draw_main)
+			{
+				auto start_point = b->get_FVector();
+				auto end_point = bconn->node->get_FVector();
+				start_point.Z = 1.2f;
+				end_point.Z = 1.2f;
+				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Red, true, -1, 0, 10);
+			}
+			if (DebugParams.draw_usual_roads)
+			{
+				auto start_point = b->get_FVector();
+				auto end_point = bconn->node->get_FVector();
+				start_point.Z = 1.0f;
+				end_point.Z = 1.0f;
+				DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
+			}
 		}
 	}
 	AProceduralBlockMeshActor* Base =
@@ -368,14 +334,6 @@ void AMainTerrain::draw_all()
 	// Создаем физическое тело для коллизии
 	create_mesh_2d(Base, map_borders_array, 0);
 
-	// for (auto& dp : debug_points_array)
-	// {
-	// 	FVector down_point = dp;
-	// 	FVector up_point = dp;
-	// 	down_point.Z = -20;
-	// 	up_point.Z = 20;
-	// 	DrawDebugLine(GetWorld(), down_point, up_point, FColor::Red, true, -1, 0, 1);
-	// }
 
 	for (auto& r : figures_array)
 	{
@@ -440,6 +398,22 @@ void AMainTerrain::draw_all()
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
+		else
+		{
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
+			MeshComponent2->Material = BuildingMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			if (is_2d)
+			{
+				create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
+			}
+			else
+			{
+				create_mesh_3d(MeshComponent2, figure_to_print, 0.02, 10);
+			}
+		}
 
 		for (auto& p : r.houses)
 		{
@@ -470,6 +444,16 @@ void AMainTerrain::draw_all()
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, river_figure.figure, 0.02);
 		}
+	}
+
+	for (auto street : streets_array)
+	{
+		AProceduralBlockMeshActor* MeshComponent2 =
+		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+		MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidenceMaterial);
+		MeshComponent2->Material = ResidenceMaterial;
+		MeshComponent2->DefaultMaterial = BaseMaterial;
+		create_mesh_2d(MeshComponent2, street.street_vertexes, 0.05);
 	}
 }
 void AMainTerrain::get_cursor_hit_location()
@@ -512,13 +496,6 @@ void AMainTerrain::get_cursor_hit_location()
 				FVector HitLocation = HitResult.Location;
 				FVector HitWatch = HitLocation;
 				HitWatch.Z += 200;
-				// UE_LOG(LogTemp, Warning, TEXT("Hit Location: %s"), *HitLocation.ToString());
-				// if (GEngine)
-				// {
-				// 	FString Message = FString::Printf(TEXT("Hit Location: %s"), *HitLocation.ToString());
-				// 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, Message);
-				// 	// DrawDebugString(GetWorld(), HitWatch, HitLocation.ToString(), nullptr, FColor::Red, 1.0f, true);
-				// }
 			}
 		}
 	}

@@ -288,10 +288,10 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 	double EndTime8 = FPlatformTime::Seconds();
 	double StartTime9 = FPlatformTime::Seconds();
 
-	process_streets(roads, streets_array, wall, true);
+	process_streets(roads, ways_array, wall, true);
 	double tower_radius = 20;
 	TArray<FVector> towers;
-	for (auto& s : streets_array)
+	for (auto& s : ways_array)
 	{
 		bool is_ok = true;
 		for (auto t : towers)
@@ -320,7 +320,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 			towers.Add(s.points.Last()->point);
 		}
 	}
-	streets_array.Empty();
+	ways_array.Empty();
 	// roads.Empty();
 	for (auto r : roads)
 	{
@@ -333,11 +333,10 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 	{
 		create_circle(t, tower_radius, tower, wall, 8);
 	}
-	process_streets(roads, streets_array, wall, true);
-	process_streets(roads, streets_array, main_road, false);
-	process_streets(roads, streets_array, {}, false);
+	process_streets(roads, ways_array, wall, true);
+	process_streets(roads, ways_array, main_road, false);
+	process_streets(roads, ways_array, {}, false);
 
-	
 
 	get_closed_figures(roads, figures_array, 200);
 	
@@ -350,6 +349,20 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 	}
 	double EndTime10 = FPlatformTime::Seconds();
 
+
+	TArray<District> district_roads;
+	for (auto s : ways_array)
+	{
+		TArray<FVector> street_fvectors;
+		for (auto& t : s.points)
+		{
+			street_fvectors.Add(t->point);
+		}
+		auto fig = AllGeometry::line_to_polygon(street_fvectors, 10, 10);
+		Street road(fig);
+		streets_array.Add(road);
+	}
+	
 	for (int i = 0; i < roads.Num(); i++)
 	{
 		if (roads[i]->conn.Num() != roads[i]->get_point()->districts_nearby.Num())
@@ -1722,7 +1735,7 @@ void TerrainGen::create_circle(FVector point, double radius, district_type type,
 	}
 	create_special_district(figure, road_type, point);
 }
-void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>& fig_array, point_type type, bool is_persistent)
+void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Way>& fig_array, point_type type, bool is_persistent)
 {
 	point_type type_used;
 	type_used = type != unidentified ? type : road;
@@ -1845,7 +1858,7 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>&
 			{
 				conn->in_street = true;
 			}
-			Street street(*street_points);
+			Way street(*street_points);
 			street.type = type_used;
 			fig_array.Add(street);
 		}
