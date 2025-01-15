@@ -105,6 +105,7 @@ void AMainTerrain::BeginPlay()
 // Called every frame
 void AMainTerrain::Tick(float DeltaTime)
 {
+	
 }
 inline void AMainTerrain::initialize_all()
 {
@@ -248,6 +249,11 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVecto
 {
 	
 	int32 NumVertices = BaseVertices.Num();
+	if (NumVertices < 5)
+	{
+		UE_LOG(LogTemp, Log, TEXT("aaaa"))
+	}
+
 	if (NumVertices < 3)
 	{
 		return; // Нужно хотя бы 3 вершины для создания полигона
@@ -322,7 +328,8 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 	TArray<FVector> vertices;
 	for (auto BaseVertex : BaseVertices)
 	{
-		vertices.Add(BaseVertex->point);
+		FVector aa = BaseVertex->point;
+		vertices.Add(aa);
 	}
 	create_mesh_2d(Mesh, vertices, StarterHeight);
 }
@@ -508,10 +515,34 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 		MeshComponent2->SetActorLabel(ActorName);
-		MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
-		MeshComponent2->Material = BuildingMaterial;
-		MeshComponent2->DefaultMaterial = BaseMaterial;
-		create_mesh_2d(MeshComponent2, street.street_vertexes, 0.05);
+		if (street.type == main_road)
+		{
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
+			MeshComponent2->Material = RoyalMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
+		}
+		else if (street.type == road)
+		{
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
+			MeshComponent2->Material = LuxuryMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
+		}
+		else if (street.type == wall)
+		{
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
+			MeshComponent2->Material = SlumsMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.023);
+		}
+		else
+		{
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
+			MeshComponent2->Material = BuildingMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.024);
+		}
 	}
 }
 void AMainTerrain::get_cursor_hit_location()

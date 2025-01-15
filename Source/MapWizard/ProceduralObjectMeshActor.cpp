@@ -8,9 +8,9 @@
 AProceduralBlockMeshActor::AProceduralBlockMeshActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	MeshComponentName = TEXT("ProceduralMesh");
 
-
-	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
+	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(*MeshComponentName);
 	RootComponent = ProceduralMesh;
 	// ProceduralMesh->SetupAttachment(RootComponent);
 	// ProceduralMesh->RegisterComponent();

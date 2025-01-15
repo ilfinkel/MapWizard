@@ -77,7 +77,7 @@ struct Point
 
 struct Street
 {
-	Street(TArray<FVector> vertexes)
+	Street(TArray<FVector> vertexes): type(unidentified)
 	{
 		for (int i = 0; i < vertexes.Num(); i++)
 		{
@@ -85,6 +85,8 @@ struct Street
 		}
 	}
 	TArray<TSharedPtr<Point>> street_vertexes;
+	point_type type;
+	
 };
 
 struct Way

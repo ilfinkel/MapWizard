@@ -637,7 +637,7 @@ void AllGeometry::TriangulatePolygon(const TArray<FVector>& Vertices, TArray<int
 		auto Curr = Vertices[i];
 		auto Next = Vertices[(i + 1) % vertice_num];
 		float Angle = calculate_angle_counterclock(Prev, Curr, Next);
-		if (Angle < 179.9 || Angle > 180.1)
+		if (Angle < 179.99 || Angle > 180.01)
 		{
 			RemainingVertices.Add(i);
 		}
@@ -749,13 +749,13 @@ TArray<FVector> AllGeometry::line_to_polygon(const TArray<FVector> given_line, d
 		this_figure.Add(point);
 	}
 	FVector point2 =
-	create_segment_at_angle(this_figure[given_line.Num() - 1], given_line[given_line.Num() - 1],
-		given_line[given_line.Num() - 1], 0, width / 2);
+	create_segment_at_angle(this_figure[given_line.Num() - 2], given_line[given_line.Num() - 1],
+		given_line[given_line.Num() - 1], 90, width / 2);
 	this_figure.Add(point2);
 	for (int i = given_line.Num() - 1; i > 0; i--)
 	{
 		FVector point =
-		create_segment_at_angle(given_line[i - 1], given_line[i], given_line[i], -90, width / 2);
+		create_segment_at_angle(given_line[i], given_line[i - 1], given_line[i - 1], -90, width / 2);
 		this_figure.Add(point);
 	}
 	return this_figure;

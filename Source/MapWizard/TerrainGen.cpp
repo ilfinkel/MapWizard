@@ -360,6 +360,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 		}
 		auto fig = AllGeometry::line_to_polygon(street_fvectors, 10, 10);
 		Street road(fig);
+		road.type = s.type;
 		streets_array.Add(road);
 	}
 	
@@ -1789,7 +1790,7 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Way>& fi
 					}
 					is_next_found = false;
 					auto angle = FMath::Abs(180 - AllGeometry::calculate_angle(first_point->get_FVector(), second_point->get_FVector(), third_point->get_FVector(), false));
-					if (angle < 15)
+					if (angle < 25)
 					{
 						auto second_next = second_point->get_next_point(third_point->get_point());
 						auto second_prev = second_point->get_prev_point(third_point->get_point());
