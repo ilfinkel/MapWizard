@@ -98,7 +98,8 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug
 }
 void AMainTerrain::BeginPlay()
 {
-			initialize_all();
+	Super::BeginPlay();
+	initialize_all();
 }
 
 // Called every frame
@@ -376,6 +377,7 @@ void AMainTerrain::draw_all()
 	create_mesh_2d(Base, map_borders_array, 0);
 
 
+	static int32 ActorCounter = 0;
 	for (auto& r : figures_array)
 	{
 		// FColor color;
@@ -393,11 +395,13 @@ void AMainTerrain::draw_all()
 		{
 			continue;
 		}
-
+		FString ActorName;
 		if (r.get_type() == luxury)
 		{
+			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
 			MeshComponent2->Material = LuxuryMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -405,8 +409,10 @@ void AMainTerrain::draw_all()
 		}
 		else if (r.get_type() == dock)
 		{
+			ActorName = FString::Printf(TEXT("DistrictDocks_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, DocsMaterial);
 			MeshComponent2->Material = DocsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -414,8 +420,10 @@ void AMainTerrain::draw_all()
 		}
 		else if (r.get_type() == royal)
 		{
+			ActorName = FString::Printf(TEXT("DistrictRoyal_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
 			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -423,8 +431,10 @@ void AMainTerrain::draw_all()
 		}
 		else if (r.get_type() == slums)
 		{
+			ActorName = FString::Printf(TEXT("DistriceSlums_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
 			MeshComponent2->Material = SlumsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -432,8 +442,10 @@ void AMainTerrain::draw_all()
 		}
 		else if (r.get_type() == residential)
 		{
+			ActorName = FString::Printf(TEXT("DistrictResidence_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidenceMaterial);
 			MeshComponent2->Material = ResidenceMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -441,8 +453,10 @@ void AMainTerrain::draw_all()
 		}
 		else
 		{
+			ActorName = FString::Printf(TEXT("Building_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -450,16 +464,15 @@ void AMainTerrain::draw_all()
 			{
 				create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
 			}
-			else
-			{
-				create_mesh_3d(MeshComponent2, figure_to_print, 0.02, 10);
-			}
 		}
 
+		int house_count = 0;
 		for (auto& p : r.houses)
 		{
+			FString HouseName = FString::Printf(TEXT("%s_House_%d"), *ActorName, ++house_count);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(HouseName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -478,8 +491,10 @@ void AMainTerrain::draw_all()
 		{
 			Algo::Reverse(river_figure.figure);
 
+			FString ActorName = FString::Printf(TEXT("River_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -489,10 +504,12 @@ void AMainTerrain::draw_all()
 
 	for (auto street : streets_array)
 	{
+		FString ActorName = FString::Printf(TEXT("Street_%d"), ++ActorCounter);
 		AProceduralBlockMeshActor* MeshComponent2 =
 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidenceMaterial);
-		MeshComponent2->Material = ResidenceMaterial;
+		MeshComponent2->SetActorLabel(ActorName);
+		MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
+		MeshComponent2->Material = BuildingMaterial;
 		MeshComponent2->DefaultMaterial = BaseMaterial;
 		create_mesh_2d(MeshComponent2, street.street_vertexes, 0.05);
 	}

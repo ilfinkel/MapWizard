@@ -35,4 +35,9 @@ public:
 	void OnMouseOver(UPrimitiveComponent* Component);
 	UFUNCTION()
 	void OnMouseOut(UPrimitiveComponent* Component);
+	FString MeshComponentName;
+	void SetMeshComponentName(const FString& NewName)
+	{
+		MeshComponentName = NewName;
+	}
 };
