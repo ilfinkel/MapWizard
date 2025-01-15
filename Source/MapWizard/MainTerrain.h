@@ -132,6 +132,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vertices", meta = (AllowPrivateAccess = "true"))
 	TArray<FVector> VerticesRemembered;
 
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool is_2d = true;
