@@ -438,7 +438,7 @@ void AMainTerrain::draw_all()
 		}
 		else if (r.get_type() == slums)
 		{
-			ActorName = FString::Printf(TEXT("DistriceSlums_%d"), ++ActorCounter);
+			ActorName = FString::Printf(TEXT("DistrictSlums_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
@@ -511,12 +511,13 @@ void AMainTerrain::draw_all()
 
 	for (auto street : streets_array)
 	{
-		FString ActorName = FString::Printf(TEXT("Street_%d"), ++ActorCounter);
-		AProceduralBlockMeshActor* MeshComponent2 =
-		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetActorLabel(ActorName);
+		
 		if (street.type == main_road)
 		{
+			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
 			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -524,6 +525,10 @@ void AMainTerrain::draw_all()
 		}
 		else if (street.type == road)
 		{
+			FString ActorName = FString::Printf(TEXT("Street_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
 			MeshComponent2->Material = LuxuryMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -531,6 +536,10 @@ void AMainTerrain::draw_all()
 		}
 		else if (street.type == wall)
 		{
+			FString ActorName = FString::Printf(TEXT("StreetWall_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
 			MeshComponent2->Material = SlumsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -538,6 +547,10 @@ void AMainTerrain::draw_all()
 		}
 		else
 		{
+			FString ActorName = FString::Printf(TEXT("StreetUndefined_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
@@ -574,7 +587,7 @@ void AMainTerrain::get_cursor_hit_location()
 			FHitResult HitResult;
 			FCollisionQueryParams Params;
 			Params.AddIgnoredActor(this); // Игнорировать самого себя
-
+ 
 			bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End,
 				ECC_Visibility // Канал трассировки
 			);
