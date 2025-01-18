@@ -574,7 +574,7 @@ void AMainTerrain::get_cursor_hit_location()
 			FHitResult HitResult;
 			FCollisionQueryParams Params;
 			Params.AddIgnoredActor(this); // Игнорировать самого себя
-
+ 
 			bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End,
 				ECC_Visibility // Канал трассировки
 			);
