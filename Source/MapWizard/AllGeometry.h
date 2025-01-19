@@ -9,11 +9,11 @@ struct Node;
 
 enum point_type
 {
-	unidentified,
-	main_road,
-	road,
-	river,
-	wall
+	unidentified = 0,
+	road = 1,
+	main_road = 2,
+	wall = 3,
+	river = 4,
 };
 
 enum district_type
@@ -77,6 +77,10 @@ struct Point
 
 struct Street
 {
+	Street(TArray<TSharedPtr<Point>> points_): street_vertexes(points_)
+	                                         , type(unidentified)
+	{
+	};
 	Street(TArray<FVector> vertexes): type(unidentified)
 	{
 		for (int i = 0; i < vertexes.Num(); i++)
@@ -169,7 +173,7 @@ struct Node
 	TOptional<TSharedPtr<Conn>> get_prev_point(TSharedPtr<Point> point_);
 	void add_connection(const TSharedPtr<Node>& node_);
 	void delete_me();
-	bool operator==(const Node&) const { return this->point->point == point->point; }
+	bool operator==(const Node&) const { return FVector::Distance(this->point->point, point->point) < 0.001; }
 	void print_connections();
 
 protected:
