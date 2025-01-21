@@ -14,7 +14,7 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
                              , WaterMaterial(nullptr)
                              , DocsMaterial(nullptr)
                              , RoyalMaterial(nullptr)
-                             , ResidenceMaterial(nullptr)
+                             , ResidentialMaterial(nullptr)
                              , LuxuryMaterial(nullptr)
                              , SlumsMaterial(nullptr)
                              , MapParams()
@@ -109,12 +109,24 @@ void AMainTerrain::Tick(float DeltaTime)
 }
 inline void AMainTerrain::initialize_all()
 {
+
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
 	MapParams.update_me();
-
+	BaseMaterial = load_material("Pack1", "MaterialBase");
+	WaterMaterial = load_material("Pack1", "MaterialWater");
+	DocsMaterial = load_material("Pack1", "MaterialDocks");
+	RoyalMaterial = load_material("Pack1", "MaterialRoyal");
+	ResidentialMaterial = load_material("Pack1", "MaterialResidential");
+	LuxuryMaterial = load_material("Pack1", "MaterialLuxury");
+	SlumsMaterial = load_material("Pack1", "MaterialSlums");
+	BuildingMaterial = load_material("Pack1", "MaterialBuilding");
+	RoadMaterial = load_material("Pack1", "MaterialRoad");
+	MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
+	WallMaterial = load_material("Pack1", "MaterialWall");
+	
 	if (FoundActors.Num() > 0)
 	{
 		AActor* OrthographicCamera = FoundActors[0];
@@ -147,7 +159,21 @@ inline void AMainTerrain::initialize_all()
 		}
 	}
 }
+UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, const FString& MaterialName)
+{
+	FString MaterialPath = FString::Printf(TEXT("Material'/Game/Packs/%s/%s.%s'"), *TexturePack, *MaterialName, *MaterialName);
 
+	// Загружаем материал как UMaterialInterface
+	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(StaticLoadObject(UMaterialInterface::StaticClass(), nullptr, *MaterialPath));
+
+	// Проверяем, удалось ли загрузить материал
+	if (!MaterialInterface)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"), *MaterialPath);
+	}
+
+	return MaterialInterface;
+}
 void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
                                   float ExtrusionHeight)
 {
@@ -247,12 +273,7 @@ void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 
 void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight)
 {
-	
 	int32 NumVertices = BaseVertices.Num();
-	if (NumVertices < 5)
-	{
-		UE_LOG(LogTemp, Log, TEXT("aaaa"))
-	}
 
 	if (NumVertices < 3)
 	{
@@ -453,8 +474,8 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidenceMaterial);
-			MeshComponent2->Material = ResidenceMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidentialMaterial);
+			MeshComponent2->Material = ResidentialMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
@@ -511,19 +532,7 @@ void AMainTerrain::draw_all()
 
 	for (auto street : streets_array)
 	{
-		
-		if (street.type == main_road)
-		{
-			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
-			AProceduralBlockMeshActor* MeshComponent2 =
-			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
-			MeshComponent2->Material = RoyalMaterial;
-			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
-		}
-		else if (street.type == road)
+		if (street.type == road)
 		{
 			FString ActorName = FString::Printf(TEXT("Street_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -531,6 +540,17 @@ void AMainTerrain::draw_all()
 			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
 			MeshComponent2->Material = LuxuryMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
+		}
+		else if (street.type == main_road)
+		{
+			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
+			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
 		}

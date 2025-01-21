@@ -21,6 +21,8 @@ public:
 	double road_left_chance;
 	double road_forward_chance;
 	double road_right_chance;
+	double main_road_width = 6;
+	double road_width = 3;
 	ECityPlan city_plan;
 	EDrawStage draw_stage;
 	EWaterType water_type;
@@ -45,6 +47,8 @@ public:
 	                                   , city_plan(map_params.city_plan)
 	                                   , draw_stage(map_params.draw_stage)
 	                                   , water_type(map_params.water_type)
+	                                   , main_road_width(map_params.main_road_width)
+	                                   , road_width(map_params.road_width)
 	{
 	};
 

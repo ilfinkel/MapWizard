@@ -225,7 +225,7 @@ struct District
 	bool is_point_in_self_figure(FVector point_);
 	bool is_point_in_figure(FVector point_);
 	void get_self_figure();
-	bool shrink_size(TArray<Point>& Vertices, float road, float main_road);
+	bool shrink_district(TArray<Point>& Vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
 

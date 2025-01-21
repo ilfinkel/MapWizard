@@ -44,6 +44,7 @@ District::District(TArray<TSharedPtr<Point>> figure_)
 	// {
 	// 	set_type(block_type::empty);
 	// }
+	
 	get_self_figure();
 }
 
@@ -75,26 +76,25 @@ bool District::is_point_in_figure(FVector point_)
 }
 void District::get_self_figure()
 {
-	if (!self_figure.IsEmpty())
-	{
-		self_figure.Empty();
-	}
+	self_figure.Empty();
 	for (auto fig : figure)
 	{
 		Point p = *fig;
 		self_figure.Add(p);
+		
 	}
 }
 
-bool District::shrink_size(TArray<Point>& Vertices, float road, float main_road)
+bool District::shrink_district(TArray<Point>& Vertices, float road, float main_road)
 {
 	int32 NumVertices = Vertices.Num();
+	TArray<Point> new_points;
 	auto backup_vertices = Vertices;
 	if (Vertices[0].point == Vertices[NumVertices - 1].point)
 	{
 		NumVertices--;
 	}
-	if (NumVertices < 3 || road <= 0.0f)
+	if (NumVertices < 3 || road / 2 <= 0.0f)
 	{
 		return false;
 	}
@@ -106,15 +106,15 @@ bool District::shrink_size(TArray<Point>& Vertices, float road, float main_road)
 		auto Next = (i + 1) % NumVertices;
 		auto angle1 =
 		AllGeometry::calculate_angle_clock(Vertices[Prev].point, Vertices[Curr].point, Vertices[Next].point);
-		float road_height1 = road;
-		float road_height2 = road;
+		float road_height1 = road / 2;
+		float road_height2 = road / 2;
 		if (Vertices[Prev].type == point_type::main_road && Vertices[Curr].type == point_type::main_road)
 		{
-			road_height1 = main_road;
+			road_height1 = main_road / 2;
 		}
 		if (Vertices[Next].type == point_type::main_road && Vertices[Curr].type == point_type::main_road)
 		{
-			road_height2 = main_road;
+			road_height2 = main_road / 2;
 		}
 		FVector parralel1_beg = AllGeometry::create_segment_at_angle(Vertices[Prev].point, Vertices[Curr].point,
 			Vertices[Prev].point, 90, road_height1);
@@ -144,7 +144,7 @@ bool District::shrink_size(TArray<Point>& Vertices, float road, float main_road)
 				for (int j = 1; j <= figure.Num(); j++)
 				{
 					if (AllGeometry::point_to_seg_distance(Vertices[j - 1].point, Vertices[j % figure.Num()].point,
-						intersection.GetValue()) < road)
+						intersection.GetValue()) < road / 2)
 					{
 						is_valid = false;
 						break;
@@ -152,17 +152,15 @@ bool District::shrink_size(TArray<Point>& Vertices, float road, float main_road)
 				}
 				if (is_valid == true)
 				{
-					new_vertices.Add(intersection.GetValue());
+					Point new_point = Vertices[Curr];
+					new_point.point = intersection.GetValue();
+					new_points.Add(new_point);
 				}
 			}
 		}
 	}
-	Vertices.Empty();
-	for (auto& v : new_vertices)
-	{
-		Vertices.Add(v);
-	}
-
+	Vertices = new_points;
+	
 	area = AllGeometry::get_poygon_area(Vertices);
 	return true;
 }
