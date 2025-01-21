@@ -347,7 +347,9 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 		{
 			street_fvectors.Add(t->point);
 		}
-		auto fig = AllGeometry::line_to_polygon(street_fvectors, 10, 10);
+		double width;
+		width = s.type == road ? road_width : main_road_width;
+		auto fig = AllGeometry::line_to_polygon(street_fvectors, width, 10);
 		Street road(fig);
 		road.type = s.type;
 		streets_array.Add(road);
@@ -1419,7 +1421,7 @@ void TerrainGen::get_river_figure()
 }
 void TerrainGen::process_districts(TArray<District>& districts)
 {
-	districts.RemoveAll([this](District& Item1) { return !(Item1.shrink_size(Item1.self_figure, 3.0f, 6.0)); });
+
 
 	districts.Sort([this](const District& Item1, const District& Item2) { return Item1.area > Item2.area; });
 	double royal_area = 0;
@@ -1636,6 +1638,12 @@ void TerrainGen::process_districts(TArray<District>& districts)
 		}
 	}
 	while (named_districts < districts_count && old_named_districts != named_districts);
+
+	districts.RemoveAll([this](District& district)
+	{
+		district.get_self_figure();
+		return !(district.shrink_district(district.self_figure, road_width, main_road_width));
+	});
 }
 void TerrainGen::process_houses(District& district)
 {
@@ -1651,15 +1659,16 @@ void TerrainGen::process_houses(District& district)
 		{
 			return;
 		}
-		for (int i = 1; i < district.self_figure.Num(); i++)
+		auto figure_num = district.self_figure.Num();
+		for (int i = 1; i <= figure_num; i++)
 		{
 			if (district.self_figure[i - 1].districts_nearby.Contains(district_type::royal) &&
-				district.self_figure[i].districts_nearby.Contains(district_type::royal))
+				district.self_figure[i % figure_num].districts_nearby.Contains(royal))
 			{
 				FVector point1 = AllGeometry::create_segment_at_angle(district.self_figure[i - 1].point,
-					district.self_figure[i].point, district_center, 0, 40);
+					district.self_figure[i % figure_num].point, district_center, 0, 30);
 				FVector point2 = AllGeometry::create_segment_at_angle(
-					district.self_figure[i - 1].point, district.self_figure[i].point, district_center, 180, 40);
+					district.self_figure[i - 1].point, district.self_figure[i % figure_num].point, district_center, 180, 30);
 				TArray<FVector> figure{point1, point2};
 				if (district.create_house(figure, 40, 30))
 				{
