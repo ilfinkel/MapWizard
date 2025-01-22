@@ -1648,9 +1648,17 @@ void TerrainGen::process_districts(TArray<District>& districts)
 void TerrainGen::process_houses(District& district)
 {
 	FVector district_center(0, 0, 0);
-	for (auto p : district.figure)
+	double left_point = TNumericLimits<double>::Max();
+	double down_point = TNumericLimits<double>::Max();
+	double right_point = 0;
+	double up_point = 0;
+	for (auto p : district.self_figure)
 	{
-		district_center += p->point;
+		district_center += p.point;
+		left_point = p.point.X < left_point ? p.point.X : left_point;
+		right_point = p.point.X > right_point ? p.point.X : right_point;
+		down_point = p.point.Y < down_point ? p.point.Y : down_point;
+		up_point = p.point.Y > up_point ? p.point.Y : up_point;
 	}
 	district_center /= district.self_figure.Num();
 	if (district.get_type() == district_type::luxury)
@@ -1701,6 +1709,26 @@ void TerrainGen::process_houses(District& district)
 				}
 				general_width += (width + 1);
 			}
+		}
+	}
+	else if (district.get_type() == slums)
+	{
+		for (int i = 1; i <= 100; i++)
+		{
+			double angle = FMath::FRand() * 180;
+			double point_x = FMath::FRand() * (right_point - left_point) + left_point;
+			double point_y = FMath::FRand() * (up_point - down_point) + down_point;
+			FVector center_point(point_x, point_y, 0);
+			FVector left_center_point(0, point_y, 0);
+			double general_width = 0;
+			double width = FMath::FRand() * 3 + 2;
+			double length = FMath::FRand() * 5 + 3;
+			double height = (FMath::FRand() * 2 + 1) * 4;
+			FVector point_beg = AllGeometry::create_segment_at_angle(
+				left_center_point, center_point, center_point, angle, length / 2);
+			FVector point_end = AllGeometry::create_segment_at_angle(left_center_point, center_point, center_point, angle + 180, length / 2);
+			TArray<FVector> figure{point_beg, point_end};
+			district.create_house(figure, width, height);
 		}
 	}
 }
