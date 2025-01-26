@@ -108,11 +108,13 @@ bool District::shrink_district(TArray<Point>& Vertices, float road, float main_r
 		AllGeometry::calculate_angle_clock(Vertices[Prev].point, Vertices[Curr].point, Vertices[Next].point);
 		float road_height1 = road / 2;
 		float road_height2 = road / 2;
-		if (Vertices[Prev].type == point_type::main_road && Vertices[Curr].type == point_type::main_road)
+		if ((Vertices[Prev].type == point_type::main_road || Vertices[Prev].type == wall)
+			&& (Vertices[Curr].type == point_type::main_road || Vertices[Curr].type == wall))
 		{
 			road_height1 = main_road / 2;
 		}
-		if (Vertices[Next].type == point_type::main_road && Vertices[Curr].type == point_type::main_road)
+		if ((Vertices[Next].type == point_type::main_road || Vertices[Next].type == wall)
+			&& (Vertices[Curr].type == point_type::main_road || Vertices[Curr].type == wall))
 		{
 			road_height2 = main_road / 2;
 		}

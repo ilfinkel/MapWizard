@@ -6,7 +6,7 @@
 #include "Templates/SharedPointer.h"
 
 struct Node;
-
+class AllGeometry;
 enum point_type
 {
 	unidentified = 0,
@@ -42,13 +42,12 @@ struct WeightedPoint
 
 struct Point
 {
-	Point(double X, double Y, double Z) : point(FVector(X, Y, Z))
-	                                    , type()
-	{
-	}
-
 	Point() : point(FVector(0, 0, 0))
 	        , type()
+	{
+	}
+	Point(double X, double Y, double Z) : point(FVector(X, Y, Z))
+	                                    , type()
 	{
 	}
 
@@ -73,41 +72,36 @@ struct Point
 		}
 		return *this;
 	}
+
 };
 
 struct Street
 {
-	Street(TArray<TSharedPtr<Point>> points_): street_vertexes(points_)
-	                                         , type(unidentified)
+	Street(TArray<TSharedPtr<Node>> points_): type(unidentified)
 	{
-	};
-	Street(TArray<FVector> vertexes): type(unidentified)
-	{
-		for (int i = 0; i < vertexes.Num(); i++)
-		{
-			street_vertexes.Add(MakeShared<Point>(vertexes[i]));
-		}
 	}
-	TArray<TSharedPtr<Point>> street_vertexes;
+	TArray<FVector> street_vertexes;
+	TArray<TSharedPtr<Node>> street_vertices;
 	point_type type;
+	FString name;
 	
 };
 
-struct Way
-{
-	Way(): type()
-	{
-	}
-
-	Way(TArray<TSharedPtr<Point>> points_) : points(points_)
-	                                       , type()
-	{
-	}
-	~Way() { points.Empty(); }
-	TArray<TSharedPtr<Point>> points;
-	point_type type;
-	FString name;
-};
+// struct Way
+// {
+// 	Way(): type()
+// 	{
+// 	}
+//
+// 	Way(TArray<TSharedPtr<Point>> points_) : points(points_)
+// 	                                       , type()
+// 	{
+// 	}
+// 	~Way() { points.Empty(); }
+// 	TArray<TSharedPtr<Point>> points;
+// 	point_type type;
+// 	FString name;
+// };
 
 struct Conn
 {
@@ -115,6 +109,7 @@ struct Conn
 	                                                                            , figure(figure_)
 	{
 		not_in_figure = false;
+		
 		in_street = false;
 	}
 
@@ -124,9 +119,11 @@ struct Conn
 		street = MakeShared<TArray<TSharedPtr<Point>>>();
 		not_in_figure = false;
 		in_street = false;
+		street_type = unidentified;
 	}
 	~Conn();
 	TSharedPtr<Node> node;
+	point_type street_type;
 	TSharedPtr<TArray<TSharedPtr<Point>>> figure{};
 	TSharedPtr<TArray<TSharedPtr<Point>>> street{};
 	bool not_in_figure;
@@ -134,7 +131,7 @@ struct Conn
 	bool operator==(Conn& other) { return this->node == other.node; }
 };
 
-struct Node
+struct Node : TSharedFromThis<Node>
 {
 	Node(double X, double Y, double Z, int debug_ind = 0) : point(MakeShared<Point>(FVector(X, Y, Z)))
 	                                                      , debug_ind_(debug_ind)

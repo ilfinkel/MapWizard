@@ -22,6 +22,12 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
 {
 	// PrimaryActorTick.bCanEverTick = false;
 }
+
+void AMainTerrain::RedrawAll(bool is_2d_)
+{
+	is_2d = is_2d_;
+	draw_all();
+}
 void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
 {
 	roads.Empty();
