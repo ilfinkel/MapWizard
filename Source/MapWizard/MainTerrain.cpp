@@ -363,6 +363,29 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 
 void AMainTerrain::draw_all()
 {
+	TSubclassOf<AProceduralBlockMeshActor> ActorClass;
+
+	if (!GetWorld() && ActorClass)
+	{
+		return;
+	}
+
+	TArray<AActor*> ActorsToDestroy;
+
+	for (TActorIterator<AActor> It(GetWorld(), ActorClass); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (Actor)
+		{
+			ActorsToDestroy.Add(Actor);
+		}
+	}
+
+	for (AActor* Actor : ActorsToDestroy)
+	{
+		Actor->Destroy();
+	}
+	
 	FlushPersistentDebugLines(GetWorld());
 	int ind = 0;
 	for (auto b : roads)
@@ -370,14 +393,10 @@ void AMainTerrain::draw_all()
 		b->debug_ind_ = ind;
 		ind++;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("улиц - %d"), streets_array.Num())
-	UE_LOG(LogTemp, Warning, TEXT("узлов - %d"), roads.Num())
 	for (auto b : roads)
 	{
 		for (auto bconn : b->conn)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%d - %d"), b->debug_ind_, bconn->node->debug_ind_)
-
 			if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
 			{
 				auto start_point = b->get_FVector();
