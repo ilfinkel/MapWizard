@@ -17,6 +17,10 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
                              , ResidentialMaterial(nullptr)
                              , LuxuryMaterial(nullptr)
                              , SlumsMaterial(nullptr)
+                             , BuildingMaterial(nullptr)
+                             , RoadMaterial(nullptr)
+                             , MainRoadMaterial(nullptr)
+                             , WallMaterial(nullptr)
                              , MapParams()
                              , BaseComponent(nullptr)
 {
@@ -175,7 +179,7 @@ UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, cons
 	// Проверяем, удалось ли загрузить материал
 	if (!MaterialInterface)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"), *MaterialPath);
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"), *MaterialPath)
 	}
 
 	return MaterialInterface;
@@ -563,8 +567,8 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
-			MeshComponent2->Material = LuxuryMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoadMaterial);
+			MeshComponent2->Material = RoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
@@ -574,8 +578,8 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
-			MeshComponent2->Material = RoyalMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
+			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
 		}
@@ -585,10 +589,17 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
-			MeshComponent2->Material = SlumsMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WallMaterial);
+			MeshComponent2->Material = WallMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
+			if (is_2d)
+			{
 			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.023);
+			}
+			else
+			{
+				create_mesh_3d(MeshComponent2, street.street_vertexes, 0.023, 10);
+			}
 		}
 		else
 		{

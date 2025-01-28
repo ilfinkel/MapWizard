@@ -732,6 +732,17 @@ float AllGeometry::point_to_seg_distance(const FVector& SegmentStart, const FVec
 	float t = FMath::Clamp(FVector::DotProduct(PointVector, SegmentVector) / SegmentLengthSquared, 0.0f, 1.0f);
 	return FVector::Dist(SegmentStart + t * SegmentVector, Point);
 }
+bool AllGeometry::is_point_near_figure(const TArray<FVector> given_line, const FVector& Point, double distance)
+{
+	for (int i = 1; i <= given_line.Num(); i++)
+	{
+		if (point_to_seg_distance(given_line[i % given_line.Num()], given_line[i - 1], Point) < distance)
+		{
+			return true;
+		}
+	}
+	return false;
+}
 TArray<FVector> AllGeometry::line_to_polygon(const TArray<FVector> given_line, double width, double height)
 {
 	if (given_line.Num() < 2)

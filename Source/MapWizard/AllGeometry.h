@@ -77,7 +77,8 @@ struct Point
 
 struct Street
 {
-	Street(TArray<TSharedPtr<Node>> points_): type(unidentified)
+	Street(TArray<TSharedPtr<Node>> points_): street_vertices(points_)
+	                                        , type(unidentified)
 	{
 	}
 	TArray<FVector> street_vertexes;
@@ -123,7 +124,7 @@ struct Conn
 	}
 	~Conn();
 	TSharedPtr<Node> node;
-	point_type street_type;
+	point_type street_type = unidentified;
 	TSharedPtr<TArray<TSharedPtr<Point>>> figure{};
 	TSharedPtr<TArray<TSharedPtr<Point>>> street{};
 	bool not_in_figure;
@@ -268,5 +269,6 @@ public:
 	static void TriangulatePolygon(const TArray<FVector>& Polygon, TArray<int32>& Triangles);
 	static bool is_point_in_figure(FVector point_, TArray<FVector> figure);
 	static float point_to_seg_distance(const FVector& SegmentStart, const FVector& SegmentEnd, const FVector& Point);
+	static bool is_point_near_figure(const TArray<FVector> given_line, const FVector& Point, double distance);
 	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line, double width, double height);
 };
