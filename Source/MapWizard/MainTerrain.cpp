@@ -1,7 +1,7 @@
 ﻿#include "MainTerrain.h"
 // #include "Camera/CameraComponent.h"
 #include "EngineUtils.h"
-#include "OrthographicCameraActor.h"
+#include "OrthographicCameraPawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralObjectMeshActor.h"
@@ -71,7 +71,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug
 	}
 
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
 	MapParams.update_me();
 
 	if (FoundActors.Num() > 0)
@@ -80,20 +80,8 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug
 
 		FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
 		OrthographicCamera->SetActorLocation(NewLocation);
-		FRotator DownwardRotation = FRotator(-90.01, 0.01, 0.01);
+		FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
 		OrthographicCamera->SetActorRotation(DownwardRotation);
-
-		// APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		// if (PlayerController)
-		// {
-		// 	PlayerController->bShowMouseCursor = true; // Показываем курсор
-		// 	PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
-		// 	PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
-		// 	PlayerController->SetViewTargetWithBlend(OrthographicCamera);
-		// }
-
-		// PrimaryActorTick.bCanEverTick = true;
-		// Super::BeginPlay();
 
 		TerrainGen gen(MapParams);
 		gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
@@ -122,8 +110,6 @@ inline void AMainTerrain::initialize_all()
 
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
 	MapParams.update_me();
 	BaseMaterial = load_material("Pack1", "MaterialBase");
 	WaterMaterial = load_material("Pack1", "MaterialWater");
@@ -136,38 +122,55 @@ inline void AMainTerrain::initialize_all()
 	RoadMaterial = load_material("Pack1", "MaterialRoad");
 	MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
 	WallMaterial = load_material("Pack1", "MaterialWall");
-	
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
+	AOrthographicCameraPawn* OrthographicCamera;
 	if (FoundActors.Num() > 0)
 	{
-		AActor* OrthographicCamera = FoundActors[0];
-
-		FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
-		OrthographicCamera->SetActorLocation(NewLocation);
-		FRotator DownwardRotation = FRotator(-90.01, 0.01, 0.01);
-		OrthographicCamera->SetActorRotation(DownwardRotation);
-
-		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		if (PlayerController)
+		OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
+		if (OrthographicCamera)
 		{
-			PlayerController->bShowMouseCursor = true; // Показываем курсор
-			PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
-			PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
-			PlayerController->SetViewTargetWithBlend(OrthographicCamera);
-		}
-
-		// PrimaryActorTick.bCanEverTick = true;
-		// Super::BeginPlay();
-
-		TerrainGen gen(MapParams);
-		gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
-		gen.empty_all();
-		draw_all();
-		AActor* ViewTarget = PlayerController->GetViewTarget();
-		if (ViewTarget)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
+			// Теперь OrthographicCamera доступна как объект вашего класса
+			UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"), *OrthographicCamera->GetName());
 		}
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
+		return;
+	}
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerController && OrthographicCamera)
+	{
+		PlayerController->Possess(OrthographicCamera);
+	}
+	// AActor* OrthographicCamera = FoundActors[0];
+
+	FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
+	OrthographicCamera->SetActorLocation(NewLocation);
+	FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
+	OrthographicCamera->SetActorRotation(DownwardRotation);
+	if (PlayerController)
+	{
+		PlayerController->bShowMouseCursor = true; // Показываем курсор
+		PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
+		PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
+		PlayerController->SetViewTargetWithBlend(OrthographicCamera);
+	}
+
+	// PrimaryActorTick.bCanEverTick = true;
+	// Super::BeginPlay();
+
+	TerrainGen gen(MapParams);
+	gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
+	gen.empty_all();
+	draw_all();
+	AActor* ViewTarget = PlayerController->GetViewTarget();
+	if (ViewTarget)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
+	}
+	
 }
 UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, const FString& MaterialName)
 {
