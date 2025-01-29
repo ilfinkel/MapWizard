@@ -50,7 +50,7 @@ public:
 	                                   , main_road_width(map_params.main_road_width)
 	                                   , road_width(map_params.road_width)
 	{
-	};
+	}
 
 	void create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<District>& figures_array_, TArray<Street>& streets_array_, District& river_figure_,
 	                    TArray<TSharedPtr<Node>>& map_borders_array_, TArray<FVector>& debug_points_array_);
@@ -79,6 +79,7 @@ public:
 	void create_special_district(TArray<FVector>& figure, point_type type, FVector point);
 	void create_circle(FVector point, double radius, district_type type, point_type road_type, int vertex_count);
 	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>& fig_array, point_type type, bool is_persistent);
+	TSharedPtr<Node> get_next_road_node(TSharedPtr<Node> first_point, TSharedPtr<Node> second_point, point_type type, bool is_persistent);
 	void empty_all()
 	{
 		for (auto& node : river)

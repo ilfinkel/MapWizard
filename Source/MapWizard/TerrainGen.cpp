@@ -278,12 +278,6 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 		shrink_roads();
 	}
 
-	if (central_node.IsValid())
-	{
-		auto central_point = central_node->get_FVector();
-		// central_node = nullptr;
-		create_circle(central_point, 200, royal, main_road, 25);
-	}
 
 	double EndTime8 = FPlatformTime::Seconds();
 	double StartTime9 = FPlatformTime::Seconds();
@@ -291,6 +285,24 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 	process_streets(roads, streets_array, wall, true);
 	double tower_radius = 20;
 	TArray<FVector> towers;
+	for (auto& s : streets_array)
+	{
+		bool is_ok = true;
+
+		is_ok = true;
+		for (auto t : towers)
+		{
+			if (FVector::Distance(t, s.street_vertices.Last()->get_FVector()) < tower_radius * 2)
+			{
+				is_ok = false;
+				break;
+			}
+		}
+		if (is_ok && !s.street_vertices.IsEmpty())
+		{
+			towers.Add(s.street_vertices.Last()->get_FVector());
+		}
+	}
 	for (auto& s : streets_array)
 	{
 		bool is_ok = true;
@@ -306,7 +318,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 		}
 		if (is_ok && !s.street_vertices.IsEmpty())
 		{
-			towers.Add(s.street_vertices.Last()->get_FVector());
+			towers.Add(s.street_vertices[0]->get_FVector());
 		}
 	}
 	streets_array.Empty();
@@ -317,6 +329,13 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<Distric
 		{
 			rconn->in_street = false;
 		}
+	}
+
+	if (central_node.IsValid())
+	{
+		auto central_point = central_node->get_FVector();
+		// central_node = nullptr;
+		create_circle(central_point, 200, royal, main_road, 25);
 	}
 	for (auto t : towers)
 	{
@@ -1752,6 +1771,12 @@ void TerrainGen::create_special_district(TArray<FVector>& figure, point_type typ
 		nodes.AddUnique(new_node);
 		points.AddUnique(new_node->get_point());
 	}
+	// if (nodes[0] != nodes.Last())
+	// {
+	// 	TSharedPtr<Node> first_node = nodes[0];
+	// 	nodes.Add(first_node);
+	// 	points.AddUnique(first_node->get_point());
+	// }
 
 	FVector center_point(0, 0, 0);
 	for (auto f : figure)
@@ -1762,16 +1787,26 @@ void TerrainGen::create_special_district(TArray<FVector>& figure, point_type typ
 	for (int i = 1; i <= nodes.Num(); i++)
 	{
 		create_segment(roads, nodes[i - 1], nodes[i % nodes.Num()], true, type, 5000);
-		auto next = nodes[i - 1]->get_next_point(nodes[i % nodes.Num()]->get_point());
-		auto prev = nodes[i - 1]->get_prev_point(nodes[i % nodes.Num()]->get_point());
-		if (next.IsSet() && prev.IsSet())
-		{
-			next.GetValue()->in_street = true;
-			next.GetValue()->street_type = type;
-			prev.GetValue()->in_street = true;
-			prev.GetValue()->street_type = type;
-		}
+		// 	auto next = nodes[i - 1]->get_next_point(nodes[i % nodes.Num()]->get_point());
+		// 	auto prev = nodes[i - 1]->get_prev_point(nodes[i % nodes.Num()]->get_point());
+		// 	if (next.IsSet() && prev.IsSet())
+		// 	{
+		// 		next.GetValue()->in_street = true;
+		// 		next.GetValue()->street_type = type;
+		// 		prev.GetValue()->in_street = true;
+		// 		prev.GetValue()->street_type = type;
+		// 	}
 	}
+	create_segment(roads, nodes.Last(), nodes[0], true, type, 5000);
+	// auto next = nodes.Last()->get_next_point(nodes[0]->get_point());
+	// auto prev = nodes.Last()->get_prev_point(nodes[0]->get_point());
+	// if (next.IsSet() && prev.IsSet())
+	// {
+	// 	next.GetValue()->in_street = true;
+	// 	next.GetValue()->street_type = type;
+	// 	prev.GetValue()->in_street = true;
+	// 	prev.GetValue()->street_type = type;
+	// }
 
 	TArray<FVector> inner_figure;
 	for (auto f : figure)
@@ -1790,9 +1825,9 @@ void TerrainGen::create_special_district(TArray<FVector>& figure, point_type typ
 			}
 			return false;
 		});
-	Street street(nodes);
-	street.type = type;
-	streets_array.Add(street);
+	// Street street(nodes);
+	// street.type = type;
+	// streets_array.Add(street);
 	// auto streets_double = streets_array;
 }
 void TerrainGen::create_circle(FVector point, double radius, district_type type, point_type road_type, int vertex_count)
@@ -1849,107 +1884,55 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>&
 			}
 			TSharedPtr<Node> third_point;
 			bool is_next_found;
+			first_point = node;
+			second_point = nconn->node;
+			int counter = 0;
 			do
 			{
+				counter++;
 				is_next_found = false;
-				TArray<TPair<double, TSharedPtr<Node>>> angles;
-				for (auto second_node_conn : second_point->conn)
+				third_point = get_next_road_node(first_point, second_point, type_used, is_persistent);
+				if (third_point)
 				{
-					third_point = second_node_conn->node;
-					if (is_persistent && third_point->get_type() != type_used)
-					{
-						continue;
-					}
-					is_next_found = false;
-					auto angle = FMath::Abs(180 - AllGeometry::calculate_angle(first_point->get_FVector(), second_point->get_FVector(), third_point->get_FVector(), false));
-					if (angle < 15)
-					{
-						angles.Add(TPair<double, TSharedPtr<Node>>(angle, third_point));
-					}
-				}
-				angles.Sort([](const TPair<double, TSharedPtr<Node>>& A, const TPair<double, TSharedPtr<Node>>& B)
-				{
-					return A.Key < B.Key; // Сортировка по ключу
-				});
-
-				for (auto current_val : angles)
-				{
-					auto supposed_third_point = current_val.Value;
-					auto second_next = second_point->get_next_point(supposed_third_point->get_point());
-					auto second_prev = second_point->get_prev_point(supposed_third_point->get_point());
+					auto second_next = second_point->get_next_point(third_point->get_point());
+					auto second_prev = second_point->get_prev_point(third_point->get_point());
+					
 					if (second_next.IsSet() && second_prev.IsSet())
 					{
-						if (second_next.GetValue()->in_street || second_prev.GetValue()->in_street)
-						{
-							is_next_found = false;
-							continue;
-						}
-						second_next.GetValue()->in_street = true;
-						second_prev.GetValue()->in_street = true;
-						second_next.GetValue()->street_type = type_used;
-						second_prev.GetValue()->street_type = type_used;
-						street_points->Add(supposed_third_point);
+						conn_array.Add(second_next.GetValue());
+						conn_array.Add(second_prev.GetValue());
+						street_points->Add(third_point);
+						first_point = second_point;
+						second_point = third_point;
+						is_next_found = true;
 					}
-					first_point = second_point;
-					second_point = supposed_third_point;
-					is_next_found = true;
-					break;
 				}
-				is_next_found = false;
 			}
-			while (is_next_found);
+			while (is_next_found && counter < 13);
 			first_point = nconn->node;
 			second_point = node;
-			third_point = node;
+			counter = 0;
 			do
 			{
+				counter++;
 				is_next_found = false;
-				TArray<TPair<double, TSharedPtr<Node>>> angles;
-				for (auto second_node_conn : second_point->conn)
+				third_point = get_next_road_node(first_point, second_point, type_used, is_persistent);
+				if (third_point)
 				{
-					third_point = second_node_conn->node;
-					if (is_persistent && third_point->get_type() != type_used)
-					{
-						continue;
-					}
-					is_next_found = false;
-					auto angle = FMath::Abs(180 - AllGeometry::calculate_angle(first_point->get_FVector(), second_point->get_FVector(), third_point->get_FVector(), false));
-					if (angle < 15)
-					{
-						angles.Add(TPair<double, TSharedPtr<Node>>(angle, third_point));
-					}
-				}
-				angles.Sort([](const TPair<double, TSharedPtr<Node>>& A, const TPair<double, TSharedPtr<Node>>& B)
-				{
-					return A.Key < B.Key; // Сортировка по ключу
-				});
-
-				for (auto current_val : angles)
-				{
-					auto supposed_third_point = current_val.Value;
-					auto second_next = second_point->get_next_point(supposed_third_point->get_point());
-					auto second_prev = second_point->get_prev_point(supposed_third_point->get_point());
+					auto second_next = second_point->get_next_point(third_point->get_point());
+					auto second_prev = second_point->get_prev_point(third_point->get_point());
 					if (second_next.IsSet() && second_prev.IsSet())
 					{
-						if (second_next.GetValue()->in_street || second_prev.GetValue()->in_street)
-						{
-							is_next_found = false;
-							continue;
-						}
-						second_next.GetValue()->in_street = true;
-						second_prev.GetValue()->in_street = true;
-						second_next.GetValue()->street_type = type_used;
-						second_prev.GetValue()->street_type = type_used;
-						street_points->Insert(supposed_third_point, 0);
+						conn_array.Add(second_next.GetValue());
+						conn_array.Add(second_prev.GetValue());
+						street_points->Insert(third_point, 0);
+						first_point = second_point;
+						second_point = third_point;
+						is_next_found = true;
 					}
-					first_point = second_point;
-					second_point = supposed_third_point;
-					is_next_found = true;
-					break;
 				}
-				is_next_found = false;
 			}
-			while (is_next_found);
+			while (is_next_found && counter < 13);
 			for (auto conn : conn_array)
 			{
 				conn->in_street = true;
@@ -1960,4 +1943,41 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes, TArray<Street>&
 			fig_array.Add(street);
 		}
 	}
+}
+TSharedPtr<Node> TerrainGen::get_next_road_node(TSharedPtr<Node> first_point, TSharedPtr<Node> second_point, point_type type, bool is_persistent)
+{
+	auto third_point = second_point;
+	TSortedMap<double, TSharedPtr<Node>> angles;
+	for (auto second_node_conn : second_point->conn)
+	{
+		third_point = second_node_conn->node;
+
+		if ((is_persistent && third_point->get_type() != type) || third_point == first_point)
+		{
+			continue;
+		}
+		auto angle = FMath::Abs(180 - AllGeometry::calculate_angle(first_point->get_FVector(), second_point->get_FVector(), third_point->get_FVector(), false));
+		if (angle < 25 || second_point->conn.Num() == 2)
+		{
+			angles.Add(angle, third_point);
+		}
+	}
+
+	for (auto current_val : angles)
+	{
+		auto supposed_third_point = current_val.Value;
+		auto second_next = second_point->get_next_point(supposed_third_point->get_point());
+		auto second_prev = second_point->get_prev_point(supposed_third_point->get_point());
+		if (second_next.IsSet() && second_prev.IsSet())
+		{
+			if (second_next.GetValue()->in_street || second_prev.GetValue()->in_street)
+			{
+				continue;
+			}
+			return supposed_third_point;
+			// street_points->Insert(supposed_third_point, 0);
+		}
+		break;
+	}
+	return TSharedPtr<Node>();
 }

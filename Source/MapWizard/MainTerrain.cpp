@@ -170,7 +170,6 @@ inline void AMainTerrain::initialize_all()
 	{
 		UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
 	}
-	
 }
 UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, const FString& MaterialName)
 {
