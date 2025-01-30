@@ -106,27 +106,26 @@ struct Street
 
 struct Conn
 {
-	Conn(TSharedPtr<Node> node_, TSharedPtr<TArray<TSharedPtr<Point>>> figure_) : node(node_)
-	                                                                            , figure(figure_)
+	Conn(TSharedPtr<Node> node_, TSharedPtr<TArray<TSharedPtr<Node>>> figure_) : node(node_)
+	                                                                           , figure(figure_)
 	{
 		not_in_figure = false;
-		
 		in_street = false;
 	}
 
 	Conn(TSharedPtr<Node> node_) : node(node_)
 	{
-		figure = MakeShared<TArray<TSharedPtr<Point>>>();
-		street = MakeShared<TArray<TSharedPtr<Point>>>();
+		figure = MakeShared<TArray<TSharedPtr<Node>>>();
+		// street = MakeShared<TArray<TSharedPtr<Point>>>();
 		not_in_figure = false;
 		in_street = false;
-		street_type = unidentified;
+		street_type = road;
 	}
 	~Conn();
 	TSharedPtr<Node> node;
-	point_type street_type = unidentified;
-	TSharedPtr<TArray<TSharedPtr<Point>>> figure{};
-	TSharedPtr<TArray<TSharedPtr<Point>>> street{};
+	point_type street_type = road;
+	TSharedPtr<TArray<TSharedPtr<Node>>> figure{};
+	// TSharedPtr<TArray<TSharedPtr<Point>>> street{};
 	bool not_in_figure;
 	bool in_street;
 	bool operator==(Conn& other) { return this->node == other.node; }
@@ -203,16 +202,16 @@ struct District
 	{
 		type = district_type::unknown;
 		area = 0;
-		figure = TArray<TSharedPtr<Point>>();
+		figure = TArray<TSharedPtr<Node>>();
 	}
 
-	District(TArray<TSharedPtr<Point>> figure_);
+	District(TArray<TSharedPtr<Node>> figure_);
 	~District()
 	{
 		figure.Empty();
 		self_figure.Empty();
 	}
-	TArray<TSharedPtr<Point>> figure;
+	TArray<TSharedPtr<Node>> figure;
 	TArray<Point> self_figure;
 	TArray<House> houses;
 	double area;
@@ -223,7 +222,7 @@ struct District
 	bool is_point_in_self_figure(FVector point_);
 	bool is_point_in_figure(FVector point_);
 	void get_self_figure();
-	bool shrink_district(TArray<Point>& Vertices, float road, float main_road);
+	TArray<Point> shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
 
@@ -259,6 +258,7 @@ public:
 	static float calculate_angle_clock(const FVector& A, const FVector& B, const FVector& C, bool is_clockwork = false);
 	static float calculate_angle_counterclock(const FVector& A, const FVector& B, const FVector& C,
 	                                          bool is_clockwork = false);
+	static float get_poygon_area(const TArray<TSharedPtr<Node>>& Vertices);
 	static float get_poygon_area(const TArray<TSharedPtr<Point>>& Vertices);
 	static float get_poygon_area(const TArray<Point>& Vertices);
 	static bool IsConvex(const FVector& Prev, const FVector& Curr, const FVector& Next);

@@ -4,8 +4,9 @@
 #include "AllGeometry.h"
 
 
-District::District(TArray<TSharedPtr<Point>> figure_)
+District::District(TArray<TSharedPtr<Node>> figure_)
 {
+	
 	// figure = figure_;
 	bool is_found;
 	if (figure_.Num() > 3)
@@ -53,7 +54,7 @@ void District::set_type(district_type type_)
 	type = type_;
 	for (int i = 0; i < figure.Num() - 2; i++)
 	{
-		figure[i]->districts_nearby.Add(type_);
+		figure[i]->get_point()->districts_nearby.Add(type_);
 	}
 }
 bool District::is_point_in_self_figure(FVector point_)
@@ -70,7 +71,10 @@ bool District::is_point_in_figure(FVector point_)
 	TArray<FVector> figure_to_check;
 	for (auto& a : figure)
 	{
-		figure_to_check.Add(a->point);
+		if (a.IsValid())
+		{
+			figure_to_check.Add(a->get_FVector());
+		}
 	}
 	return AllGeometry::is_point_in_figure(point_, figure_to_check);
 }
@@ -79,24 +83,27 @@ void District::get_self_figure()
 	self_figure.Empty();
 	for (auto fig : figure)
 	{
-		Point p = *fig;
+		if (fig.IsValid())
+		{
+			Point p = fig->get_FVector();
 		self_figure.Add(p);
+		}
 		
 	}
 }
 
-bool District::shrink_district(TArray<Point>& Vertices, float road, float main_road)
+TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road)
 {
-	int32 NumVertices = Vertices.Num();
+	int32 NumVertices = figure_vertices.Num();
 	TArray<Point> new_points;
-	auto backup_vertices = Vertices;
-	if (Vertices[0].point == Vertices[NumVertices - 1].point)
+	auto backup_vertices = figure_vertices;
+	if (figure_vertices[0]->get_point() == figure_vertices[NumVertices - 1]->get_point())
 	{
 		NumVertices--;
 	}
 	if (NumVertices < 3 || road / 2 <= 0.0f)
 	{
-		return false;
+		return TArray<Point>();
 	}
 	TArray<FVector> new_vertices;
 	for (int i = 0; i <= NumVertices; ++i)
@@ -104,28 +111,26 @@ bool District::shrink_district(TArray<Point>& Vertices, float road, float main_r
 		auto Prev = (i + NumVertices - 1) % NumVertices;
 		auto Curr = i;
 		auto Next = (i + 1) % NumVertices;
-		auto angle1 =
-		AllGeometry::calculate_angle_clock(Vertices[Prev].point, Vertices[Curr].point, Vertices[Next].point);
-		float road_height1 = road / 2;
-		float road_height2 = road / 2;
-		if ((Vertices[Prev].type == point_type::main_road || Vertices[Prev].type == wall)
-			&& (Vertices[Curr].type == point_type::main_road || Vertices[Curr].type == wall))
+		float road_height1 = main_road / 2;
+		float road_height2 = main_road / 2;
+		auto prev_curr = figure_vertices[Prev]->get_next_point(figure_vertices[Curr]->get_point());
+		auto curr_next = figure_vertices[Curr]->get_next_point(figure_vertices[Next]->get_point());
+		if (prev_curr.IsSet() && (prev_curr.GetValue()->street_type == point_type::road))
 		{
-			road_height1 = main_road / 2;
+			road_height1 = road / 2;
 		}
-		if ((Vertices[Next].type == point_type::main_road || Vertices[Next].type == wall)
-			&& (Vertices[Curr].type == point_type::main_road || Vertices[Curr].type == wall))
+		if (curr_next.IsSet() && (curr_next.GetValue()->street_type == point_type::road))
 		{
-			road_height2 = main_road / 2;
+			road_height2 = road / 2;
 		}
-		FVector parralel1_beg = AllGeometry::create_segment_at_angle(Vertices[Prev].point, Vertices[Curr].point,
-			Vertices[Prev].point, 90, road_height1);
-		FVector parralel2_beg = AllGeometry::create_segment_at_angle(Vertices[Curr].point, Vertices[Next].point,
-			Vertices[Next].point, 90, road_height2);
+		FVector parralel1_beg = AllGeometry::create_segment_at_angle(figure_vertices[Prev]->get_FVector(), figure_vertices[Curr]->get_FVector(),
+			figure_vertices[Prev]->get_FVector(), 90, road_height1);
+		FVector parralel2_beg = AllGeometry::create_segment_at_angle(figure_vertices[Curr]->get_FVector(), figure_vertices[Next]->get_FVector(),
+			figure_vertices[Next]->get_FVector(), 90, road_height2);
 		FVector parralel1_end =
-		AllGeometry::create_segment_at_angle(Vertices[Prev].point, Vertices[Curr].point, parralel1_beg, 0, 5000);
+		AllGeometry::create_segment_at_angle(figure_vertices[Prev]->get_FVector(), figure_vertices[Curr]->get_FVector(), parralel1_beg, 0, 5000);
 		FVector parralel2_end =
-		AllGeometry::create_segment_at_angle(Vertices[Next].point, Vertices[Curr].point, parralel2_beg, 0, 5000);
+		AllGeometry::create_segment_at_angle(figure_vertices[Next]->get_FVector(), figure_vertices[Curr]->get_FVector(), parralel2_beg, 0, 5000);
 		parralel1_beg.Z = 0;
 		parralel2_beg.Z = 0;
 		parralel1_end.Z = 0;
@@ -139,13 +144,15 @@ bool District::shrink_district(TArray<Point>& Vertices, float road, float main_r
 			{
 				continue;
 			}
+			auto angle1 =
+			AllGeometry::calculate_angle_clock(figure_vertices[Prev]->get_FVector(), figure_vertices[Curr]->get_FVector(), figure_vertices[Next]->get_FVector());
 			auto angle2 = AllGeometry::calculate_angle_clock(parralel1_beg, intersection.GetValue(), parralel2_beg);
 			if (angle2 - angle1 < 0.1)
 			{
 				bool is_valid = true;
 				for (int j = 1; j <= figure.Num(); j++)
 				{
-					if (AllGeometry::point_to_seg_distance(Vertices[j - 1].point, Vertices[j % figure.Num()].point,
+					if (AllGeometry::point_to_seg_distance(figure_vertices[j - 1]->get_FVector(), figure_vertices[j % figure.Num()]->get_FVector(),
 						intersection.GetValue()) < road / 2)
 					{
 						is_valid = false;
@@ -154,17 +161,17 @@ bool District::shrink_district(TArray<Point>& Vertices, float road, float main_r
 				}
 				if (is_valid == true)
 				{
-					Point new_point = Vertices[Curr];
+					Point new_point = *figure_vertices[Curr]->get_point();
 					new_point.point = intersection.GetValue();
 					new_points.Add(new_point);
 				}
 			}
 		}
 	}
-	Vertices = new_points;
-	
-	area = AllGeometry::get_poygon_area(Vertices);
-	return true;
+	// figure_vertices = new_points;
+
+	area = AllGeometry::get_poygon_area(new_points);
+	return new_points;
 }
 TOptional<FVector> District::is_line_intersect(FVector point1, FVector point2)
 {
@@ -256,7 +263,7 @@ Point::~Point()
 Conn::~Conn()
 {
 	figure->Empty();
-	street->Empty();
+	// street->Empty();
 	node.Reset();
 }
 TOptional<TSharedPtr<Conn>> Node::get_next_point(TSharedPtr<Point> point_)
@@ -298,10 +305,10 @@ void Node::delete_me()
 }
 void Node::print_connections()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Я: %d"), debug_ind_);
+	UE_LOG(LogTemp, Warning, TEXT("Я: %d"), debug_ind_)
 	for (auto& c : conn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("---Мое соединение: %d"), c->node->debug_ind_);
+		UE_LOG(LogTemp, Warning, TEXT("---Мое соединение: %d"), c->node->debug_ind_)
 	}
 }
 House::~House()
@@ -522,6 +529,28 @@ float AllGeometry::calculate_angle_clock(const FVector& A, const FVector& B, con
 float AllGeometry::calculate_angle_counterclock(const FVector& A, const FVector& B, const FVector& C, bool is_clockwork)
 {
 	return 360 - calculate_angle(A, B, C, true);
+}
+float AllGeometry::get_poygon_area(const TArray<TSharedPtr<Node>>& Vertices)
+{
+	int32 NumVertices = Vertices.Num();
+	if (NumVertices < 3)
+	{
+		return 0.0f;
+	}
+
+	float Area = 0.0f;
+
+	for (int32 i = 1; i < NumVertices; ++i)
+	{
+		const FVector& CurrentVertex = Vertices[i - 1]->get_FVector();
+		const FVector& NextVertex = Vertices[i]->get_FVector();
+
+		Area += FMath::Abs(CurrentVertex.X * NextVertex.Y - CurrentVertex.Y * NextVertex.X);
+	}
+
+	Area = Area / 2;
+
+	return Area;
 }
 
 float AllGeometry::get_poygon_area(const TArray<TSharedPtr<Point>>& Vertices)
