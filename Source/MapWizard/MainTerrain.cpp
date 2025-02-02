@@ -1,7 +1,7 @@
 ﻿#include "MainTerrain.h"
 // #include "Camera/CameraComponent.h"
 #include "EngineUtils.h"
-#include "OrthographicCameraActor.h"
+#include "OrthographicCameraPawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralObjectMeshActor.h"
@@ -17,10 +17,20 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
                              , ResidentialMaterial(nullptr)
                              , LuxuryMaterial(nullptr)
                              , SlumsMaterial(nullptr)
+                             , BuildingMaterial(nullptr)
+                             , RoadMaterial(nullptr)
+                             , MainRoadMaterial(nullptr)
+                             , WallMaterial(nullptr)
                              , MapParams()
                              , BaseComponent(nullptr)
 {
 	// PrimaryActorTick.bCanEverTick = false;
+}
+
+void AMainTerrain::RedrawAll(bool is_2d_)
+{
+	is_2d = is_2d_;
+	draw_all();
 }
 void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
 {
@@ -61,7 +71,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug
 	}
 
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
 	MapParams.update_me();
 
 	if (FoundActors.Num() > 0)
@@ -70,20 +80,8 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug
 
 		FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
 		OrthographicCamera->SetActorLocation(NewLocation);
-		FRotator DownwardRotation = FRotator(-90.01, 0.01, 0.01);
+		FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
 		OrthographicCamera->SetActorRotation(DownwardRotation);
-
-		// APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		// if (PlayerController)
-		// {
-		// 	PlayerController->bShowMouseCursor = true; // Показываем курсор
-		// 	PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
-		// 	PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
-		// 	PlayerController->SetViewTargetWithBlend(OrthographicCamera);
-		// }
-
-		// PrimaryActorTick.bCanEverTick = true;
-		// Super::BeginPlay();
 
 		TerrainGen gen(MapParams);
 		gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
@@ -112,8 +110,6 @@ inline void AMainTerrain::initialize_all()
 
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraActor::StaticClass(), FoundActors);
 	MapParams.update_me();
 	BaseMaterial = load_material("Pack1", "MaterialBase");
 	WaterMaterial = load_material("Pack1", "MaterialWater");
@@ -126,37 +122,53 @@ inline void AMainTerrain::initialize_all()
 	RoadMaterial = load_material("Pack1", "MaterialRoad");
 	MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
 	WallMaterial = load_material("Pack1", "MaterialWall");
-	
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
+	AOrthographicCameraPawn* OrthographicCamera;
 	if (FoundActors.Num() > 0)
 	{
-		AActor* OrthographicCamera = FoundActors[0];
-
-		FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
-		OrthographicCamera->SetActorLocation(NewLocation);
-		FRotator DownwardRotation = FRotator(-90.01, 0.01, 0.01);
-		OrthographicCamera->SetActorRotation(DownwardRotation);
-
-		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		if (PlayerController)
+		OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
+		if (OrthographicCamera)
 		{
-			PlayerController->bShowMouseCursor = true; // Показываем курсор
-			PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
-			PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
-			PlayerController->SetViewTargetWithBlend(OrthographicCamera);
+			// Теперь OrthographicCamera доступна как объект вашего класса
+			UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"), *OrthographicCamera->GetName());
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
+		return;
+	}
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerController && OrthographicCamera)
+	{
+		PlayerController->Possess(OrthographicCamera);
+	}
+	// AActor* OrthographicCamera = FoundActors[0];
 
-		// PrimaryActorTick.bCanEverTick = true;
-		// Super::BeginPlay();
+	FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
+	OrthographicCamera->SetActorLocation(NewLocation);
+	FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
+	OrthographicCamera->SetActorRotation(DownwardRotation);
+	if (PlayerController)
+	{
+		PlayerController->bShowMouseCursor = true; // Показываем курсор
+		PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
+		PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
+		PlayerController->SetViewTargetWithBlend(OrthographicCamera);
+	}
 
-		TerrainGen gen(MapParams);
-		gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
-		gen.empty_all();
-		draw_all();
-		AActor* ViewTarget = PlayerController->GetViewTarget();
-		if (ViewTarget)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
-		}
+	// PrimaryActorTick.bCanEverTick = true;
+	// Super::BeginPlay();
+
+	TerrainGen gen(MapParams);
+	gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
+	gen.empty_all();
+	draw_all();
+	AActor* ViewTarget = PlayerController->GetViewTarget();
+	if (ViewTarget)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
 	}
 }
 UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, const FString& MaterialName)
@@ -169,7 +181,7 @@ UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, cons
 	// Проверяем, удалось ли загрузить материал
 	if (!MaterialInterface)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"), *MaterialPath);
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"), *MaterialPath)
 	}
 
 	return MaterialInterface;
@@ -357,6 +369,29 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 
 void AMainTerrain::draw_all()
 {
+	TSubclassOf<AProceduralBlockMeshActor> ActorClass;
+
+	if (!GetWorld() && ActorClass)
+	{
+		return;
+	}
+
+	TArray<AActor*> ActorsToDestroy;
+
+	for (TActorIterator<AActor> It(GetWorld(), ActorClass); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (Actor)
+		{
+			ActorsToDestroy.Add(Actor);
+		}
+	}
+
+	for (AActor* Actor : ActorsToDestroy)
+	{
+		Actor->Destroy();
+	}
+	
 	FlushPersistentDebugLines(GetWorld());
 	int ind = 0;
 	for (auto b : roads)
@@ -364,14 +399,10 @@ void AMainTerrain::draw_all()
 		b->debug_ind_ = ind;
 		ind++;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("улиц - %d"), streets_array.Num())
-	UE_LOG(LogTemp, Warning, TEXT("узлов - %d"), roads.Num())
 	for (auto b : roads)
 	{
 		for (auto bconn : b->conn)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%d - %d"), b->debug_ind_, bconn->node->debug_ind_)
-
 			if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
 			{
 				auto start_point = b->get_FVector();
@@ -538,8 +569,8 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
-			MeshComponent2->Material = LuxuryMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoadMaterial);
+			MeshComponent2->Material = RoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
@@ -549,8 +580,8 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
-			MeshComponent2->Material = RoyalMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
+			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
 		}
@@ -560,10 +591,17 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
-			MeshComponent2->Material = SlumsMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WallMaterial);
+			MeshComponent2->Material = WallMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
+			if (is_2d)
+			{
 			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.023);
+			}
+			else
+			{
+				create_mesh_3d(MeshComponent2, street.street_vertexes, 0.023, 10);
+			}
 		}
 		else
 		{

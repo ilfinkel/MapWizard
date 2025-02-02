@@ -147,6 +147,8 @@ public:
 	TArray<FVector> VerticesRemembered;
 
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void RedrawAll(bool is_2d);
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
