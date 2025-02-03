@@ -105,11 +105,20 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 	{
 		return TArray<Point>();
 	}
+	TArray<Point> exit_vertices;
+	for (auto vertice : figure_vertices)
+	{
+		exit_vertices.Add(*vertice->get_point());
+	}
+	if (type == water)
+	{
+		return exit_vertices;
+	}
 	TArray<FVector> new_vertices;
 	for (int i = 0; i <= NumVertices; ++i)
 	{
 		auto Prev = (i + NumVertices - 1) % NumVertices;
-		auto Curr = i;
+		auto Curr = i % NumVertices;
 		auto Next = (i + 1) % NumVertices;
 		float road_height1 = main_road / 2;
 		float road_height2 = main_road / 2;

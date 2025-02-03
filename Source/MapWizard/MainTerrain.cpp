@@ -455,6 +455,17 @@ void AMainTerrain::draw_all()
 			continue;
 		}
 		FString ActorName;
+		if (r.get_type() == water)
+		{
+			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
+			MeshComponent2->Material = WaterMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+		}
 		if (r.get_type() == luxury)
 		{
 			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
@@ -545,21 +556,21 @@ void AMainTerrain::draw_all()
 			}
 		}
 	}
-	{
-		if (!river_figure.figure.IsEmpty())
-		{
-			Algo::Reverse(river_figure.figure);
-
-			FString ActorName = FString::Printf(TEXT("River_%d"), ++ActorCounter);
-			AProceduralBlockMeshActor* MeshComponent2 =
-			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
-			MeshComponent2->Material = WaterMaterial;
-			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, river_figure.figure, 0.02);
-		}
-	}
+	// {
+	// 	if (!river_figure.figure.IsEmpty())
+	// 	{
+	// 		Algo::Reverse(river_figure.figure);
+	//
+	// 		FString ActorName = FString::Printf(TEXT("River_%d"), ++ActorCounter);
+	// 		AProceduralBlockMeshActor* MeshComponent2 =
+	// 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+	// 		MeshComponent2->SetActorLabel(ActorName);
+	// 		MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
+	// 		MeshComponent2->Material = WaterMaterial;
+	// 		MeshComponent2->DefaultMaterial = BaseMaterial;
+	// 		create_mesh_2d(MeshComponent2, river_figure.figure, 0.02);
+	// 	}
+	// }
 
 	for (auto street : streets_array)
 	{
