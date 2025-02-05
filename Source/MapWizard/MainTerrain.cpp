@@ -457,16 +457,16 @@ void AMainTerrain::draw_all()
 		FString ActorName;
 		if (r.get_type() == water)
 		{
-			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
+			ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
 		}
-		if (r.get_type() == luxury)
+		else if (r.get_type() == luxury)
 		{
 			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -521,14 +521,25 @@ void AMainTerrain::draw_all()
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
 		}
-		else
+		else if (r.get_type() == tower)
 		{
-			ActorName = FString::Printf(TEXT("Building_%d"), ++ActorCounter);
+			ActorName = FString::Printf(TEXT("DistrictResidence_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
-			MeshComponent2->Material = BuildingMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
+			MeshComponent2->Material = MainRoadMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+		}
+		else
+		{
+			ActorName = FString::Printf(TEXT("DistrictUnknown_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BaseMaterial);
+			MeshComponent2->Material = BaseMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			if (is_2d)
 			{
@@ -583,7 +594,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoadMaterial);
 			MeshComponent2->Material = RoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
+			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.19);
 		}
 		else if (street.type == main_road)
 		{
@@ -594,7 +605,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
 			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
+			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
 		else if (street.type == wall)
 		{
@@ -607,11 +618,11 @@ void AMainTerrain::draw_all()
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			if (is_2d)
 			{
-			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.023);
+				create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
 			}
 			else
 			{
-				create_mesh_3d(MeshComponent2, street.street_vertexes, 0.023, 10);
+				create_mesh_3d(MeshComponent2, street.street_vertexes, 0.022, 10);
 			}
 		}
 		else

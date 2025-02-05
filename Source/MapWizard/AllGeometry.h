@@ -175,6 +175,7 @@ struct Node : TSharedFromThis<Node>
 	void delete_me();
 	bool operator==(const Node&) const { return FVector::Distance(this->point->point, point->point) < 0.001; }
 	void print_connections();
+	void set_unshrinkable() { unshrinkable = true; }
 
 protected:
 	TSharedPtr<Point> point;
