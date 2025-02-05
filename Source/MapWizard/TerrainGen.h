@@ -29,7 +29,7 @@ public:
 
 	bool did_river_multiplied = false;
 
-	District river_figure;
+	TArray<District> river_figures;
 	TerrainGen(FMapParams& map_params) : center(map_params.center)
 	                                   , av_distance(map_params.av_distance)
 	                                   , av_river_length(map_params.av_river_length)
@@ -63,12 +63,12 @@ public:
 	void create_guiding_river_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
 	                                  const TSharedPtr<Node>& start_point_left,
 	                                  const TSharedPtr<Node>& start_point_right);
-	void process_bridges();
+	bool is_point_in_river(FVector point);
 	void create_guiding_roads();
 	void create_usual_roads();
 	TOptional<TSharedPtr<Node>> create_segment(TArray<TSharedPtr<Node>>& array, TSharedPtr<Node> start_point,
 	                                           TSharedPtr<Node> end_point, bool to_exect_point, point_type type,
-	                                           double max_length) const;
+	                                           double max_length);
 	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point, bool is_through_river, point_type road_type);
 	void shrink_roads();
 	void point_shift(FVector& point);
@@ -134,4 +134,5 @@ public:
 	TArray<FVector> soft_borders_array{};
 	TSharedPtr<Node> central_node;
 	TArray<TTuple<FVector, district_type>> custom_districts;
+	
 };

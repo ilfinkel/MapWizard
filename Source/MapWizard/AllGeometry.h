@@ -18,6 +18,7 @@ enum point_type
 
 enum district_type
 {
+	water,
 	royal,
 	dock,
 	luxury,
@@ -164,6 +165,8 @@ struct Node : TSharedFromThis<Node>
 	bool is_used() { return point->used; }
 	void set_used() { point->used = true; }
 	void set_used(bool used_) { point->used = used_; }
+	void set_unmovable() { unmovable = true; }
+	bool is_unmovable() { return unmovable; }
 	point_type get_type() { return point->type; }
 	void set_type(point_type type_) { point->type = type_; }
 	TOptional<TSharedPtr<Conn>> get_next_point(TSharedPtr<Point> point_);
@@ -172,6 +175,7 @@ struct Node : TSharedFromThis<Node>
 	void delete_me();
 	bool operator==(const Node&) const { return FVector::Distance(this->point->point, point->point) < 0.001; }
 	void print_connections();
+	void set_unshrinkable() { unshrinkable = true; }
 
 protected:
 	TSharedPtr<Point> point;
@@ -180,6 +184,7 @@ public:
 	int debug_ind_ = 0;
 	bool unshrinkable;
 	bool in_figure;
+	bool unmovable = false;
 };
 
 struct House
