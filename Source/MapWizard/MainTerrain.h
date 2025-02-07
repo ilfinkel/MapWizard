@@ -150,6 +150,9 @@ public:
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void ClearAll(FMapParams& map_params, FDebugParams& debug_params);
+	void clear_all();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool is_2d = true;

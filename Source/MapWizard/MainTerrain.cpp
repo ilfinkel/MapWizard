@@ -94,6 +94,45 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug
 		}
 	}
 }
+void AMainTerrain::ClearAll(FMapParams& map_params, FDebugParams& debug_params)
+{
+	clear_all();
+}
+void AMainTerrain::clear_all()
+{
+	// TSubclassOf<AProceduralBlockMeshActor> ActorClass;
+
+	// if (!GetWorld() && ActorClass)
+	// {
+	// 	return;
+	// }
+
+	TArray<AActor*> ActorsToDestroy;
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProceduralBlockMeshActor::StaticClass(), FoundActors);
+	for (AActor* Actor : FoundActors)
+	{
+		AProceduralBlockMeshActor* MyActor = Cast<AProceduralBlockMeshActor>(Actor);
+		if (MyActor)
+		{
+			ActorsToDestroy.Add(MyActor);
+		}
+	}
+	for (AActor* Actor : FoundActors)
+	{
+		AProceduralBlockMeshActor* MyActor = Cast<AProceduralBlockMeshActor>(Actor);
+		if (MyActor)
+		{
+			ActorsToDestroy.Add(MyActor);
+		}
+	}
+	for (AActor* Actor : ActorsToDestroy)
+	{
+		Actor->Destroy();
+	}
+
+	FlushPersistentDebugLines(GetWorld());
+}
 void AMainTerrain::BeginPlay()
 {
 	Super::BeginPlay();
@@ -369,30 +408,7 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 
 void AMainTerrain::draw_all()
 {
-	TSubclassOf<AProceduralBlockMeshActor> ActorClass;
-
-	if (!GetWorld() && ActorClass)
-	{
-		return;
-	}
-
-	TArray<AActor*> ActorsToDestroy;
-
-	for (TActorIterator<AActor> It(GetWorld(), ActorClass); It; ++It)
-	{
-		AActor* Actor = *It;
-		if (Actor)
-		{
-			ActorsToDestroy.Add(Actor);
-		}
-	}
-
-	for (AActor* Actor : ActorsToDestroy)
-	{
-		Actor->Destroy();
-	}
-	
-	FlushPersistentDebugLines(GetWorld());
+	clear_all();
 	int ind = 0;
 	for (auto b : roads)
 	{
