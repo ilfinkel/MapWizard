@@ -206,7 +206,20 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
 void AMainTerrain::RedrawAll(bool is_2d_)
 {
 	is_2d = is_2d_;
-	draw_all();
+	for (auto s : drawing_streets)
+	{
+		if (s.is_changing)
+		{
+			s.is_2d = is_2d_;
+			s.redraw_me();
+		}
+	}
+	for (auto s : drawing_houses)
+	{
+		s.is_2d = is_2d_;
+		s.redraw_me();
+	}
+	// draw_all();
 }
 void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
 {
@@ -688,6 +701,18 @@ void AMainTerrain::draw_all()
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.24, false, is_2d));
 			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.024);
 		}
+	}
+	for (auto a : drawing_streets)
+	{
+		a.draw_me();
+	}
+	for (auto a : drawing_houses)
+	{
+		a.draw_me();
+	}
+	for (auto a : drawing_districts)
+	{
+		a.draw_me();
 	}
 }
 void AMainTerrain::get_cursor_hit_location()

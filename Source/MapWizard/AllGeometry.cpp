@@ -193,11 +193,11 @@ TOptional<FVector> District::is_line_intersect(FVector point1, FVector point2)
 	}
 	for (int i = 0; i < houses.Num(); i++)
 	{
-		int house_figure_num = houses[i].house_figure.Num();
+		int house_figure_num = houses[i]->house_figure.Num();
 		for (int j = 1; j <= house_figure_num; j++)
 		{
 			TOptional<FVector> intersect = AllGeometry::is_intersect(
-				point1, point2, houses[i].house_figure[j - 1], houses[i].house_figure[j % house_figure_num], false);
+				point1, point2, houses[i]->house_figure[j - 1], houses[i]->house_figure[j % house_figure_num], false);
 			if (intersect.IsSet())
 			{
 				return intersect.GetValue();
@@ -258,7 +258,7 @@ bool District::create_house(TArray<FVector> given_line, double width, double hei
 		}
 	}
 	House house(this_figure, height);
-	houses.Add(house);
+	houses.Add(MakeShared<House>(house));
 	return true;
 }
 bool District::attach_district(TSharedPtr<District> other_district)

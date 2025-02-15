@@ -131,6 +131,13 @@ struct FDebugParams
 
 struct DrawingObject
 {
+	void get_mesh()
+	{
+		name = mesh->GetActorLabel();
+		material_interface = mesh->ProceduralMesh->GetMaterial(NULL);
+		material = mesh->Material;
+		def_material = mesh->DefaultMaterial;
+	}
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
 	                    float ExtrusionHeight);
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight,
@@ -140,6 +147,12 @@ struct DrawingObject
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight);
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight);
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight);
+	AProceduralBlockMeshActor* mesh;
+	FString name;
+	UMaterialInterface* material_interface;
+	UMaterialInterface* material;
+	UMaterialInterface* def_material;
+	
 };
 
 struct DrawingDistrict : DrawingObject
@@ -147,9 +160,10 @@ struct DrawingDistrict : DrawingObject
 	DrawingDistrict(TSharedPtr<District> district_,
 	                AProceduralBlockMeshActor* mesh_,
 	                double start_height_): district(district_)
-	                                     , mesh(mesh_)
 	                                     , start_height(start_height_)
 	{
+		mesh = mesh_;
+		get_mesh();
 	}
 	void redraw_me()
 	{
@@ -162,6 +176,10 @@ struct DrawingDistrict : DrawingObject
 	}
 	void draw_me()
 	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
 		TArray<FVector> vertices;
 		for (auto BaseVertex : district->self_figure)
 		{
@@ -169,10 +187,10 @@ struct DrawingDistrict : DrawingObject
 			vertices.Add(aa);
 		}
 		create_mesh_2d(mesh, vertices, start_height);
+		mesh->SetDistrict(district);
 	}
 
 	TSharedPtr<District> district;
-	AProceduralBlockMeshActor* mesh;
 	double start_height;
 };
 
@@ -183,7 +201,6 @@ struct DrawingStreet : DrawingObject
 	              double start_height_,
 	              bool is_changing_,
 	              bool is_2d_): street(street_)
-	                          , mesh(mesh_)
 	                          , is_2d(is_2d_)
 	                          , start_height(start_height_)
 	{
@@ -191,6 +208,8 @@ struct DrawingStreet : DrawingObject
 		{
 			is_changing = true;
 		}
+		mesh = mesh_;
+		get_mesh();
 	}
 	void redraw_me()
 	{
@@ -203,6 +222,10 @@ struct DrawingStreet : DrawingObject
 	}
 	void draw_me()
 	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
 		if (is_2d || !is_changing)
 		{
 			create_mesh_2d(mesh, street->street_vertexes, start_height);
@@ -214,7 +237,6 @@ struct DrawingStreet : DrawingObject
 	}
 
 	TSharedPtr<Street> street;
-	AProceduralBlockMeshActor* mesh;
 	bool is_changing = false;
 	bool is_2d;
 	double start_height;
@@ -226,10 +248,11 @@ struct DrawingHouse : DrawingObject
 	             AProceduralBlockMeshActor* mesh_,
 	             double start_height_,
 	             bool is_2d_): house(house_)
-	                         , mesh(mesh_)
 	                         , is_2d(is_2d_)
 	                         , start_height(start_height_)
 	{
+		mesh = mesh_;
+		get_mesh();
 	}
 	void redraw_me()
 	{
@@ -242,6 +265,10 @@ struct DrawingHouse : DrawingObject
 	}
 	void draw_me()
 	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
 		if (is_2d)
 		{
 			create_mesh_2d(mesh, house->house_figure, start_height);
@@ -252,7 +279,6 @@ struct DrawingHouse : DrawingObject
 		}
 	}
 	TSharedPtr<House> house;
-	AProceduralBlockMeshActor* mesh;
 	bool is_2d;
 	double start_height;
 };
