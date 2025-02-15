@@ -71,10 +71,7 @@ bool District::is_point_in_figure(FVector point_)
 	TArray<FVector> figure_to_check;
 	for (auto& a : figure)
 	{
-		if (a.IsValid())
-		{
-			figure_to_check.Add(a->get_FVector());
-		}
+		figure_to_check.Add(a->get_FVector());
 	}
 	return AllGeometry::is_point_in_figure(point_, figure_to_check);
 }
@@ -110,7 +107,7 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 	{
 		exit_vertices.Add(*vertice->get_point());
 	}
-	if (type == water)
+	if (type == river)
 	{
 		return exit_vertices;
 	}
@@ -262,6 +259,133 @@ bool District::create_house(TArray<FVector> given_line, double width, double hei
 	}
 	House house(this_figure, height);
 	houses.Add(house);
+	return true;
+}
+bool District::attach_district(TSharedPtr<District> other_district)
+{
+	TArray<TSharedPtr<Node>> this_figure_new;
+	TArray<TSharedPtr<Node>> this_figure;
+	TArray<TSharedPtr<Node>> other_figure;
+	for (auto p : figure)
+	{
+		this_figure.AddUnique(p);
+	}
+	for (auto p : other_district->figure)
+	{
+		other_figure.AddUnique(p);
+	}
+	TSharedPtr<Node> my_node = nullptr;
+	int current_i = -1;
+	int current_j = 0;
+	bool is_attachment_found = false;
+	bool phase_first_or_second = true;
+	bool is_end_found = false;
+	int figure_num = this_figure.Num();
+	int o_figure_num = other_figure.Num();
+	for (int i = 0; i < figure_num; i++)
+	{
+		for (int j = 0; j < o_figure_num; j++)
+		{
+			is_attachment_found = false;
+			if (this_figure[i] == other_figure[j % o_figure_num])
+			{
+				is_attachment_found = true;
+				current_i = i;
+				break;
+			}
+		}
+		if (!is_attachment_found && i != current_i)
+		{
+			current_i = i;
+			break;
+		}
+	}
+	is_attachment_found = false;
+	int max_figure = current_i + figure_num * 2;
+	int max_o_figure = current_j + o_figure_num * 2;
+	TSharedPtr<Node> first_node = this_figure[current_i];
+	this_figure_new.Add(first_node);
+
+	do
+	{
+		if (phase_first_or_second)
+		{
+			is_attachment_found = false;
+			for (int i = current_i + 1; i < max_figure; i++)
+			{
+				for (int j = current_j; j < max_o_figure; j++)
+				{
+					if (this_figure[i % figure_num] == first_node)
+					{
+						this_figure_new.Add(this_figure[i % figure_num]);
+						is_end_found = true;
+						break;
+					}
+					if (this_figure[i % figure_num] == other_figure[j % o_figure_num])
+					{
+						this_figure_new.Add(this_figure[i % figure_num]);
+						is_attachment_found = true;
+						current_j = j;
+						break;
+					}
+				}
+				if (is_attachment_found || is_end_found)
+				{
+					phase_first_or_second = false;
+					break;
+				}
+				this_figure_new.Add(this_figure[i % figure_num]);
+			}
+		}
+		else
+		{
+			is_attachment_found = false;
+			for (int j = current_j + 1; j < max_o_figure; j++)
+			{
+				for (int i = current_i; i < max_figure; i++)
+				{
+					if (other_figure[j % o_figure_num] == first_node)
+					{
+						this_figure_new.Add(other_figure[i % figure_num]);
+						is_end_found = true;
+						break;
+					}
+					if (this_figure[i % figure_num] == other_figure[j % o_figure_num])
+					{
+						this_figure_new.Add(other_figure[j % o_figure_num]);
+						is_attachment_found = true;
+						current_i = i;
+						break;
+					}
+				}
+				if (is_attachment_found || is_end_found)
+				{
+					phase_first_or_second = true;
+					break;
+				}
+				this_figure_new.Add(other_figure[j % o_figure_num]);
+			}
+		}
+	}
+	while (!is_end_found);
+	if (this_figure_new.Num() == figure_num)
+	{
+		return false;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Attaching:"))
+	for (int i = 0; i < this_figure.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("1: %f, %f"), this_figure[i]->get_FVector().X, this_figure[i]->get_FVector().Y)
+	}
+	for (int i = 0; i < other_figure.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("2: %f, %f"), other_figure[i]->get_FVector().X, other_figure[i]->get_FVector().Y)
+	}
+	for (int i = 0; i < this_figure_new.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("F: %f, %f"), this_figure_new[i]->get_FVector().X, this_figure_new[i]->get_FVector().Y)
+	}
+	figure = this_figure_new;
 	return true;
 }
 
@@ -736,19 +860,20 @@ bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 	int fig_num = figure.Num();
 
 	TOptional<FVector> old_intersec;
-	for (int i = 1; i < fig_num; i++)
+	for (int i = 1; i <= fig_num; i++)
 	{
-		auto intersec = AllGeometry::is_intersect(point, point2, figure[i - 1], figure[i % fig_num], false);
+		auto intersec = is_intersect(point, point2, figure[i - 1],
+			figure[i % fig_num], false);
 		if (intersec.IsSet())
 		{
 			times_to_hit++;
 		}
-		if (old_intersec.IsSet() && intersec.IsSet() &&
-			(old_intersec.GetValue() - intersec.GetValue()).Length() < 0.01f)
-		{
-			times_to_hit--;
-		}
-		old_intersec = intersec;
+		// if (old_intersec.IsSet() && intersec.IsSet() &&
+		// 	(old_intersec.GetValue() - intersec.GetValue()).Length() < 0.01f)
+		// {
+		// 	times_to_hit--;
+		// }
+		// old_intersec = intersec;
 	}
 	if (times_to_hit % 2 == 1)
 	{

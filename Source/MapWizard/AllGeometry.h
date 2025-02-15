@@ -218,7 +218,7 @@ struct District
 	}
 	TArray<TSharedPtr<Node>> figure;
 	TArray<Point> self_figure;
-	TArray<House> houses;
+	TArray<TSharedPtr<House>> houses;
 	double area;
 	int main_roads;
 	bool is_river_in;
@@ -230,9 +230,14 @@ struct District
 	TArray<Point> shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
+	bool attach_district(TSharedPtr<District> other_district);
+	void select() { selected = true; };
+	void unselect() { selected = false; };
+	bool is_selected() { return selected; };
 
 private:
 	district_type type;
+	bool selected = false;
 };
 
 
