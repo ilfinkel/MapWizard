@@ -209,7 +209,6 @@ struct District
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
 	}
-
 	District(TArray<TSharedPtr<Node>> figure_);
 	~District()
 	{
@@ -231,6 +230,7 @@ struct District
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
 	bool attach_district(TSharedPtr<District> other_district);
+	bool is_adjacent(TSharedPtr<District> other_district);
 	void select() { selected = true; };
 	void unselect() { selected = false; };
 	bool is_selected() { return selected; };

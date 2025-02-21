@@ -31,8 +31,8 @@ public:
 	double road_left_chance;
 	double road_forward_chance;
 	double road_right_chance;
-	double main_road_width = 6;
-	double road_width = 3;
+	double main_road_width;
+	double road_width;
 	ECityPlan city_plan;
 	EDrawStage draw_stage;
 	EWaterType water_type;

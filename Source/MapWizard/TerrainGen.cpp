@@ -416,8 +416,6 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<TShared
 	}
 	double EndTime10 = FPlatformTime::Seconds();
 
-
-	TArray<District> district_roads;
 	for (auto s : streets_array)
 	{
 		TArray<FVector> street_fvectors;
@@ -427,19 +425,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<TShared
 		}
 		double width;
 		width = s->type == road ? road_width : main_road_width;
-		Street road(s->street_vertices);
-		road.street_vertexes = AllGeometry::line_to_polygon(street_fvectors, width, 10);
-		road.type = s->type;
-		streets_array.Add(MakeShared<Street>(road));
-	}
-	
-	for (int i = 0; i < roads.Num(); i++)
-	{
-		if (roads[i]->conn.Num() != roads[i]->get_point()->districts_nearby.Num())
-		{
-			FVector def_point = roads[i]->get_FVector();
-			debug_points_array_.Add(def_point);
-		}
+		s->street_vertexes = AllGeometry::line_to_polygon(street_fvectors, width, 10);
 	}
 
 	double StartTime11 = FPlatformTime::Seconds();
@@ -1515,72 +1501,7 @@ void TerrainGen::get_river_figure()
 			}
 			return !is_in;
 		});
-	// river_figure = river_fig_array[0];
-	// river.RemoveAll(
-	// 	[&](const TSharedPtr<Node>& A)
-	// 	{
-	// 		for (auto exist_f : river_figure.figure)
-	// 		{
-	// 			if (A == exist_f)
-	// 			{
-	// 				return false;
-	// 			}
-	// 		}
-	// 		A->delete_me();
-	// 		return true;
-	// 	});
-	//
-	// river.RemoveAll(
-	// 	[&](const TSharedPtr<Node>& r)
-	// 	{
-	// 		for (int i = 1; i < river_figure.figure.Num() - 1; i++)
-	// 		{
-	// 			if (r->conn.Num() > 2)
-	// 			{
-	// 				TSharedPtr<Node> prev;
-	// 				TSharedPtr<Node> next;
-	// 				for (auto c : r->conn)
-	// 				{
-	// 					if (c->node == river_figure.figure[i - 1])
-	// 					{
-	// 						prev = c->node;
-	// 					}
-	// 					if (c->node == river_figure.figure[i + 1])
-	// 					{
-	// 						next = c->node;
-	// 					}
-	// 				}
-	// 				if (prev && next)
-	// 				{
-	// 					add_conn(prev, next);
-	// 					r->delete_me();
-	// 					return true;
-	// 				}
-	// 			}
-	// 		}
-	// 		return false;
-	// 	});
-	//
-	// bridges.RemoveAll(
-	// 	[&](const TTuple<TSharedPtr<Node>, TSharedPtr<Node>>& A)
-	// 	{
-	// 		bool is_key_in = false;
-	// 		bool is_value_in = false;
-	// 		for (auto river_point : river)
-	// 		{
-	// 			if (A.Key->get_FVector() == river_point->get_FVector())
-	// 			{
-	// 				is_key_in = true;
-	// 				continue;
-	// 			}
-	// 			if (A.Value->get_FVector() == river_point->get_FVector())
-	// 			{
-	// 				is_value_in = true;
-	// 				continue;
-	// 			}
-	// 		}
-	// 		return !is_key_in || !is_value_in;
-	// 	});
+
 }
 void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 {
@@ -1684,18 +1605,20 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 		{
 			bool is_near_royal = false;
 			bool is_near_dock = false;
-			// bool is_near_slums = false;
-			// bool is_near_residential = false;
 			for (auto p : b->figure)
 			{
 				if (p->get_point()->districts_nearby.Contains(royal))
 				{
 					is_near_royal = true;
 				}
-				if (p->get_point()->districts_nearby.Contains(dock))
+				if (p->get_point()->districts_nearby.Contains(water))
 				{
 					is_near_dock = true;
 				}
+			}
+			if (!is_near_royal && is_near_dock)
+			{
+				b->set_type(dock);
 			}
 			if (is_near_royal && !is_near_dock && b->area > 6000)
 			{
@@ -1775,6 +1698,8 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 						break;
 					case unknown:
 						break;
+					case water:
+						break;
 					default:
 						break;
 					}
@@ -1784,8 +1709,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 					continue;
 				}
 				int koeff = (dock_count * (-4) + royal_count * 6 + luxury_count * 3 + slums_count * (-8) +
-					residential_count * 2) /
-				districts_near;
+					residential_count * 2) / districts_near;
 
 				if (koeff <= -7 && luxury_count == 0 && royal_count == 0)
 				{
@@ -1823,7 +1747,6 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 
 	districts.RemoveAll([this](TSharedPtr<District>& district)
 	{
-		// district.get_self_figure();
 		district->self_figure = district->shrink_figure_with_roads(district->figure, road_width, main_road_width);
 		return district->self_figure.IsEmpty();
 	});
@@ -1907,7 +1830,6 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 			double point_y = FMath::FRand() * (up_point - down_point) + down_point;
 			FVector center_point(point_x, point_y, 0);
 			FVector left_center_point(0, point_y, 0);
-			double general_width = 0;
 			double width = FMath::FRand() * 3 + 2;
 			double length = FMath::FRand() * 5 + 3;
 			double height = (FMath::FRand() * 2 + 1) * 4;

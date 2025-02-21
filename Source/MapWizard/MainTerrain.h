@@ -165,11 +165,6 @@ struct DrawingDistrict : DrawingObject
 		mesh = mesh_;
 		get_mesh();
 	}
-	void redraw_me()
-	{
-		delete_mesh();
-		draw_me();
-	}
 	void delete_mesh()
 	{
 		mesh->Destroy();
@@ -211,11 +206,6 @@ struct DrawingStreet : DrawingObject
 		mesh = mesh_;
 		get_mesh();
 	}
-	void redraw_me()
-	{
-		delete_mesh();
-		draw_me();
-	}
 	void delete_mesh()
 	{
 		mesh->Destroy();
@@ -253,11 +243,6 @@ struct DrawingHouse : DrawingObject
 	{
 		mesh = mesh_;
 		get_mesh();
-	}
-	void redraw_me()
-	{
-		delete_mesh();
-		draw_me();
 	}
 	void delete_mesh()
 	{
@@ -351,6 +336,5 @@ private:
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
-	
 };
 

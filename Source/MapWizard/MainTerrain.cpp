@@ -10,6 +10,7 @@
 void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
                                    float ExtrusionHeight)
 {
+	Mesh->ProceduralMesh->ClearAllMeshSections();
 	int32 NumVertices = BaseVertices.Num();
 	if (NumVertices < 3)
 	{
@@ -106,6 +107,7 @@ void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TShar
 
 void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight)
 {
+	Mesh->ProceduralMesh->ClearAllMeshSections();
 	int32 NumVertices = BaseVertices.Num();
 
 	if (NumVertices < 3)
@@ -211,13 +213,15 @@ void AMainTerrain::RedrawAll(bool is_2d_)
 		if (s.is_changing)
 		{
 			s.is_2d = is_2d_;
-			s.redraw_me();
+			// s.delete_mesh();
+			s.draw_me();
 		}
 	}
 	for (auto s : drawing_houses)
 	{
 		s.is_2d = is_2d_;
-		s.redraw_me();
+		// s.delete_mesh();
+		s.draw_me();
 	}
 	// draw_all();
 }
@@ -291,36 +295,47 @@ void AMainTerrain::AttachDistricts()
 {
 	TArray<TSharedPtr<District>> districts_to_attach;
 	TArray<TSharedPtr<District>> districts_to_remove;
-	for (int i = 0; i < figures_array.Num(); i++)
+	for (int i = 0; i < drawing_districts.Num(); i++)
 	{
-		if (figures_array[i]->is_selected())
+		if (drawing_districts[i].district->is_selected())
 		{
-			districts_to_attach.Add(figures_array[i]);
+			districts_to_attach.Add(drawing_districts[i].district);
 		}
 	}
+	districts_to_attach.Sort([&](TSharedPtr<District> d1, TSharedPtr<District> d2) { return d1->is_adjacent(d2); });
 	for (int i = 1; i < districts_to_attach.Num(); i++)
 	{
-		if (districts_to_attach[0]->attach_district(districts_to_attach[i]))
+		if (districts_to_attach[0]->attach_district(districts_to_attach[i]) && districts_to_attach[0]->is_adjacent(districts_to_attach[i]))
 		{
 			districts_to_remove.Add(districts_to_attach[i]);
-			districts_to_attach[0]->self_figure = districts_to_attach[0]->shrink_figure_with_roads(districts_to_attach[0]->figure, MapParams.road_width, MapParams.main_road_width);
+			districts_to_attach[0]->self_figure = districts_to_attach[0]->shrink_figure_with_roads(districts_to_attach[0]->figure,
+				MapParams.road_width, MapParams.main_road_width);
 		}
 	}
-	districts_to_attach.Remove(nullptr);
-	figures_array.RemoveAll([&](TSharedPtr<District> dist)
+	drawing_districts.RemoveAll([&](DrawingDistrict dist)
 	{
-		return districts_to_remove.Contains(dist);
+		if (districts_to_remove.Contains(dist.district))
+		{
+			dist.delete_mesh();
+			return true;
+		}
+		return false;
+		
 	});
-	RedrawAll(is_2d);
+	for (auto dd : drawing_districts)
+	{
+		if (dd.district->is_selected())
+		{
+			dd.district->unselect();
+		}
+		if (districts_to_attach[0] == dd.district)
+		{
+			dd.draw_me();
+		}
+	}
 }
 void AMainTerrain::clear_all()
 {
-	// TSubclassOf<AProceduralBlockMeshActor> ActorClass;
-
-	// if (!GetWorld() && ActorClass)
-	// {
-	// 	return;
-	// }
 
 	TArray<AActor*> ActorsToDestroy;
 	TArray<AActor*> FoundActors;
@@ -443,36 +458,6 @@ void AMainTerrain::draw_all()
 		b->debug_ind_ = ind;
 		ind++;
 	}
-	// for (auto b : roads)
-	// {
-	// 	for (auto bconn : b->conn)
-	// 	{
-	// 		if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
-	// 		{
-	// 			auto start_point = b->get_FVector();
-	// 			auto end_point = bconn->node->get_FVector();
-	// 			start_point.Z = 12;
-	// 			end_point.Z = 12;
-	// 			DrawDebugLine(GetWorld(), start_point, end_point, FColor::Black, true, -1, 0, 10);
-	// 		}
-	// 		if (b->get_type() == main_road && bconn->node->get_type() == main_road && DebugParams.draw_main)
-	// 		{
-	// 			auto start_point = b->get_FVector();
-	// 			auto end_point = bconn->node->get_FVector();
-	// 			start_point.Z = 1.2f;
-	// 			end_point.Z = 1.2f;
-	// 			DrawDebugLine(GetWorld(), start_point, end_point, FColor::Red, true, -1, 0, 10);
-	// 		}
-	// 		if (DebugParams.draw_usual_roads)
-	// 		{
-	// 			auto start_point = b->get_FVector();
-	// 			auto end_point = bconn->node->get_FVector();
-	// 			start_point.Z = 1.0f;
-	// 			end_point.Z = 1.0f;
-	// 			DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
-	// 		}
-	// 	}
-	// }
 	AProceduralBlockMeshActor* Base =
 	GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 
@@ -484,9 +469,6 @@ void AMainTerrain::draw_all()
 	static int32 ActorCounter = 0;
 	for (auto& r : figures_array)
 	{
-		// FColor color;
-		// int thickness = 1;
-
 		TArray<TSharedPtr<Point>> figure_to_print;
 		if (!r->self_figure.IsEmpty())
 		{
@@ -575,7 +557,7 @@ void AMainTerrain::draw_all()
 		}
 		else if (r->get_type() == tower)
 		{
-			ActorName = FString::Printf(TEXT("DistrictResidence_%d"), ++ActorCounter);
+			ActorName = FString::Printf(TEXT("Tower_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);

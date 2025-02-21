@@ -174,8 +174,7 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 			}
 		}
 	}
-	// figure_vertices = new_points;
-
+	
 	area = AllGeometry::get_poygon_area(new_points);
 	return new_points;
 }
@@ -387,6 +386,38 @@ bool District::attach_district(TSharedPtr<District> other_district)
 	}
 	figure = this_figure_new;
 	return true;
+}
+bool District::is_adjacent(TSharedPtr<District> other_district)
+{
+	TArray<TSharedPtr<Node>> this_figure;
+	TArray<TSharedPtr<Node>> other_figure;
+	for (auto p : figure)
+	{
+		this_figure.AddUnique(p);
+	}
+	for (auto p : other_district->figure)
+	{
+		other_figure.AddUnique(p);
+	}
+	int figure_num = this_figure.Num();
+	int o_figure_num = other_figure.Num();
+	int count = 0;
+	for (int i = 0; i < figure_num; i++)
+	{
+		for (int j = 0; j < o_figure_num; j++)
+		{
+			if (this_figure[i] == other_figure[j % o_figure_num])
+			{
+				count++;
+				if (count == 2)
+				{
+					return true;
+				}
+				break;
+			}
+		}
+	}
+	return false;
 }
 
 Point::~Point()
