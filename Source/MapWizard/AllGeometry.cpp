@@ -107,7 +107,7 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 	{
 		exit_vertices.Add(*vertice->get_point());
 	}
-	if (type == river)
+	if (type == district_type::water)
 	{
 		return exit_vertices;
 	}
@@ -467,6 +467,7 @@ void Node::delete_me()
 		}
 	}
 }
+
 void Node::print_connections()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Я: %d"), debug_ind_)
@@ -937,7 +938,7 @@ bool AllGeometry::is_point_near_figure(const TArray<FVector> given_line, const F
 	}
 	return false;
 }
-TArray<FVector> AllGeometry::line_to_polygon(const TArray<FVector> given_line, double width, double height)
+TArray<FVector> AllGeometry::line_to_polygon(const TArray<FVector> given_line, double width)
 {
 	if (given_line.Num() < 2)
 	{

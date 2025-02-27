@@ -131,6 +131,14 @@ struct FDebugParams
 
 struct DrawingObject
 {
+	// ~DrawingObject()
+	// {
+	// 	delete_mesh();
+	// }
+	void delete_mesh()
+	{
+		mesh->Destroy();
+	}
 	void get_mesh()
 	{
 		name = mesh->GetActorLabel();
@@ -165,10 +173,6 @@ struct DrawingDistrict : DrawingObject
 		mesh = mesh_;
 		get_mesh();
 	}
-	void delete_mesh()
-	{
-		mesh->Destroy();
-	}
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
@@ -199,16 +203,12 @@ struct DrawingStreet : DrawingObject
 	                          , is_2d(is_2d_)
 	                          , start_height(start_height_)
 	{
-		if (street->type == wall)
+		if (street->type == point_type::wall)
 		{
 			is_changing = true;
 		}
 		mesh = mesh_;
 		get_mesh();
-	}
-	void delete_mesh()
-	{
-		mesh->Destroy();
 	}
 	void draw_me()
 	{
@@ -216,6 +216,27 @@ struct DrawingStreet : DrawingObject
 		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
 		mesh->Material = material;
 		mesh->DefaultMaterial = def_material;
+		if (is_2d || !is_changing)
+		{
+			create_mesh_2d(mesh, street->street_vertexes, start_height);
+		}
+		else
+		{
+			create_mesh_3d(mesh, street->street_vertexes, start_height, 10);
+		}
+	}
+	void redraw_me(double width, double height)
+	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
+		TArray<FVector> vertices;
+		for (auto BaseVertex : street->street_vertices)
+		{
+			vertices.Add(BaseVertex->get_FVector());
+		}
+		street->street_vertexes = AllGeometry::line_to_polygon(vertices, width);
 		if (is_2d || !is_changing)
 		{
 			create_mesh_2d(mesh, street->street_vertexes, start_height);
@@ -243,10 +264,6 @@ struct DrawingHouse : DrawingObject
 	{
 		mesh = mesh_;
 		get_mesh();
-	}
-	void delete_mesh()
-	{
-		mesh->Destroy();
 	}
 	void draw_me()
 	{

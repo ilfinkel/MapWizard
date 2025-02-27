@@ -305,11 +305,27 @@ void AMainTerrain::AttachDistricts()
 	districts_to_attach.Sort([&](TSharedPtr<District> d1, TSharedPtr<District> d2) { return d1->is_adjacent(d2); });
 	for (int i = 1; i < districts_to_attach.Num(); i++)
 	{
+		TArray<TSharedPtr<Node>> figure1 = districts_to_attach[0]->figure;
+		TArray<TSharedPtr<Node>> figure2 = districts_to_attach[i]->figure;
 		if (districts_to_attach[0]->attach_district(districts_to_attach[i]) && districts_to_attach[0]->is_adjacent(districts_to_attach[i]))
 		{
 			districts_to_remove.Add(districts_to_attach[i]);
 			districts_to_attach[0]->self_figure = districts_to_attach[0]->shrink_figure_with_roads(districts_to_attach[0]->figure,
 				MapParams.road_width, MapParams.main_road_width);
+			for (auto j = 0; j < figure1.Num(); j++)
+			{
+				if (districts_to_attach[0]->figure.Contains(figure1[j]))
+				{
+					figure1[j]->delete_me();
+				}
+			}
+			for (auto j = 0; j < figure2.Num(); j++)
+			{
+				if (districts_to_attach[0]->figure.Contains(figure2[j]))
+				{
+					figure2[j]->delete_me();
+				}
+			}
 		}
 	}
 	drawing_districts.RemoveAll([&](DrawingDistrict dist)
@@ -320,7 +336,6 @@ void AMainTerrain::AttachDistricts()
 			return true;
 		}
 		return false;
-		
 	});
 	for (auto dd : drawing_districts)
 	{
@@ -333,10 +348,55 @@ void AMainTerrain::AttachDistricts()
 			dd.draw_me();
 		}
 	}
+	TArray<DrawingStreet> new_streets;
+	TArray<int> delete_streets;
+
+
+	for (int i = 0; i < drawing_streets.Num(); i++)
+	{
+		auto street = drawing_streets[i];
+		TArray<TSharedPtr<Node>> cur_street{drawing_streets[i].street->street_vertices[0]};
+		for (int j = 1; j < drawing_streets[i].street->street_vertices.Num(); j++)
+		{
+			if (!drawing_streets[i].street->street_vertices[j - 1]->get_next_point(drawing_streets[i].street->street_vertices[j]->get_point()).IsSet())
+			{
+				if (!cur_street.IsEmpty())
+				{
+					auto new_street = drawing_streets[i];
+					new_street.street->street_vertices.Empty();
+					for (auto& p : cur_street)
+					{
+						new_street.street->street_vertices.Add(p);
+					}
+					new_streets.Add(new_street);
+					cur_street.Empty();
+				}
+				break;
+			}
+			if (cur_street.IsEmpty())
+			{
+				cur_street.Add(drawing_streets[i].street->street_vertices[j - 1]);
+			}
+			cur_street.Add(drawing_streets[i].street->street_vertices[j]);
+		}
+	}
+	delete_streets.Sort([](int32 A, int32 B) { return A > B; });
+
+	for (int32 Index : delete_streets)
+	{
+		if (drawing_streets.IsValidIndex(Index))
+		{
+			drawing_streets.RemoveAt(Index);
+		}
+	}
+	for (auto& ns : new_streets)
+	{
+		ns.draw_me();
+		drawing_streets.Add(ns);
+	}
 }
 void AMainTerrain::clear_all()
 {
-
 	TArray<AActor*> ActorsToDestroy;
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProceduralBlockMeshActor::StaticClass(), FoundActors);
@@ -448,7 +508,6 @@ UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, cons
 	return MaterialInterface;
 }
 
-
 void AMainTerrain::draw_all()
 {
 	clear_all();
@@ -482,7 +541,7 @@ void AMainTerrain::draw_all()
 			continue;
 		}
 		FString ActorName;
-		if (r->get_type() == water)
+		if (r->get_type() == district_type::water)
 		{
 			ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -495,7 +554,7 @@ void AMainTerrain::draw_all()
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 			// create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
 		}
-		else if (r->get_type() == luxury)
+		else if (r->get_type() == district_type::luxury)
 		{
 			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -507,7 +566,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->SetDistrict(r);
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r->get_type() == dock)
+		else if (r->get_type() == district_type::dock)
 		{
 			ActorName = FString::Printf(TEXT("DistrictDocks_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -519,7 +578,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->SetDistrict(r);
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r->get_type() == royal)
+		else if (r->get_type() == district_type::royal)
 		{
 			ActorName = FString::Printf(TEXT("DistrictRoyal_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -531,7 +590,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->SetDistrict(r);
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r->get_type() == slums)
+		else if (r->get_type() == district_type::slums)
 		{
 			ActorName = FString::Printf(TEXT("DistrictSlums_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -543,7 +602,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->SetDistrict(r);
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r->get_type() == residential)
+		else if (r->get_type() == district_type::residential)
 		{
 			ActorName = FString::Printf(TEXT("DistrictResidence_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -555,7 +614,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->SetDistrict(r);
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r->get_type() == tower)
+		else if (r->get_type() == district_type::tower)
 		{
 			ActorName = FString::Printf(TEXT("Tower_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -615,7 +674,7 @@ void AMainTerrain::draw_all()
 
 	for (auto street : streets_array)
 	{
-		if (street->type == road)
+		if (street->type == point_type::road)
 		{
 			FString ActorName = FString::Printf(TEXT("Street_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -627,7 +686,7 @@ void AMainTerrain::draw_all()
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
 			// create_mesh_2d(MeshComponent2, street->street_vertexes, 0.19);
 		}
-		else if (street->type == main_road)
+		else if (street->type == point_type::main_road)
 		{
 			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -639,7 +698,7 @@ void AMainTerrain::draw_all()
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
 			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
-		else if (street->type == river)
+		else if (street->type == point_type::river)
 		{
 			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -651,7 +710,7 @@ void AMainTerrain::draw_all()
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.21, false, is_2d));
 			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
-		else if (street->type == wall)
+		else if (street->type == point_type::wall)
 		{
 			FString ActorName = FString::Printf(TEXT("StreetWall_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
