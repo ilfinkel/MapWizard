@@ -129,6 +129,162 @@ struct FDebugParams
 	bool draw_main = true;
 };
 
+struct DrawingObject
+{
+	// ~DrawingObject()
+	// {
+	// 	delete_mesh();
+	// }
+	void delete_mesh()
+	{
+		mesh->Destroy();
+	}
+	void get_mesh()
+	{
+		name = mesh->GetActorLabel();
+		material_interface = mesh->ProceduralMesh->GetMaterial(NULL);
+		material = mesh->Material;
+		def_material = mesh->DefaultMaterial;
+	}
+	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
+	                    float ExtrusionHeight);
+	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight,
+	                    float ExtrusionHeight);
+	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight,
+	                    float ExtrusionHeight);
+	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight);
+	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight);
+	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight);
+	AProceduralBlockMeshActor* mesh;
+	FString name;
+	UMaterialInterface* material_interface;
+	UMaterialInterface* material;
+	UMaterialInterface* def_material;
+	
+};
+
+struct DrawingDistrict : DrawingObject
+{
+	DrawingDistrict(TSharedPtr<District> district_,
+	                AProceduralBlockMeshActor* mesh_,
+	                double start_height_): district(district_)
+	                                     , start_height(start_height_)
+	{
+		mesh = mesh_;
+		get_mesh();
+	}
+	void draw_me()
+	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
+		TArray<FVector> vertices;
+		for (auto BaseVertex : district->self_figure)
+		{
+			FVector aa = BaseVertex.point;
+			vertices.Add(aa);
+		}
+		create_mesh_2d(mesh, vertices, start_height);
+		mesh->SetDistrict(district);
+	}
+
+	TSharedPtr<District> district;
+	double start_height;
+};
+
+struct DrawingStreet : DrawingObject
+{
+	DrawingStreet(TSharedPtr<Street> street_,
+	              AProceduralBlockMeshActor* mesh_,
+	              double start_height_,
+	              bool is_changing_,
+	              bool is_2d_): street(street_)
+	                          , is_2d(is_2d_)
+	                          , start_height(start_height_)
+	{
+		if (street->type == point_type::wall)
+		{
+			is_changing = true;
+		}
+		mesh = mesh_;
+		get_mesh();
+	}
+	void draw_me()
+	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
+		if (is_2d || !is_changing)
+		{
+			create_mesh_2d(mesh, street->street_vertexes, start_height);
+		}
+		else
+		{
+			create_mesh_3d(mesh, street->street_vertexes, start_height, 10);
+		}
+	}
+	void redraw_me(double width, double height)
+	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
+		TArray<FVector> vertices;
+		for (auto BaseVertex : street->street_vertices)
+		{
+			vertices.Add(BaseVertex->get_FVector());
+		}
+		street->street_vertexes = AllGeometry::line_to_polygon(vertices, width);
+		if (is_2d || !is_changing)
+		{
+			create_mesh_2d(mesh, street->street_vertexes, start_height);
+		}
+		else
+		{
+			create_mesh_3d(mesh, street->street_vertexes, start_height, 10);
+		}
+	}
+
+	TSharedPtr<Street> street;
+	bool is_changing = false;
+	bool is_2d;
+	double start_height;
+};
+
+struct DrawingHouse : DrawingObject
+{
+	DrawingHouse(TSharedPtr<House> house_,
+	             AProceduralBlockMeshActor* mesh_,
+	             double start_height_,
+	             bool is_2d_): house(house_)
+	                         , is_2d(is_2d_)
+	                         , start_height(start_height_)
+	{
+		mesh = mesh_;
+		get_mesh();
+	}
+	void draw_me()
+	{
+		mesh->SetActorLabel(name);
+		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->Material = material;
+		mesh->DefaultMaterial = def_material;
+		if (is_2d)
+		{
+			create_mesh_2d(mesh, house->house_figure, start_height);
+		}
+		else
+		{
+			create_mesh_3d(mesh, house->house_figure, start_height, house->height);
+		}
+	}
+	TSharedPtr<House> house;
+	bool is_2d;
+	double start_height;
+};
+
 UCLASS()
 class MAPWIZARD_API AMainTerrain : public AActor
 {
@@ -143,13 +299,19 @@ public:
 	FMapParams MapParams;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FDebugParams DebugParams;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vertices", meta = (AllowPrivateAccess = "true"))
-	TArray<FVector> VerticesRemembered;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vertices", meta = (AllowPrivateAccess = "true"))
+	// TArray<FVector> VerticesRemembered;
 
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void ClearAll(FMapParams& map_params, FDebugParams& debug_params);
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void AttachDistricts();
+	
+	void clear_all();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool is_2d = true;
@@ -180,22 +342,16 @@ private:
 	UMaterialInterface* MainRoadMaterial;
 	UMaterialInterface* WallMaterial;
 	UMaterialInterface* load_material(const FString& TexturePack, const FString& MaterialName);
-	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
-	                    float ExtrusionHeight);
-	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight,
-	                    float ExtrusionHeight);
-	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight,
-	                    float ExtrusionHeight);
-	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight);
-	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight);
-	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight);
 	void draw_all();
 	void get_cursor_hit_location();
 	TArray<TSharedPtr<Node>> map_borders_array{};
-	TArray<District> figures_array{};
-	TArray<Street> streets_array{};
+	TArray<TSharedPtr<District>> figures_array{};
+	TArray<TSharedPtr<Street>> streets_array{};
 	TArray<FVector> debug_points_array{};
 	TArray<TSharedPtr<Node>> roads{};
-	District river_figure;
+	TArray<TSharedPtr<District>> river_figures;
+	TArray<DrawingDistrict> drawing_districts;
+	TArray<DrawingStreet> drawing_streets;
+	TArray<DrawingHouse> drawing_houses;
 };
 

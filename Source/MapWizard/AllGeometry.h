@@ -7,7 +7,8 @@
 
 struct Node;
 class AllGeometry;
-enum point_type
+
+enum class point_type
 {
 	unidentified = 0,
 	road = 1,
@@ -16,7 +17,7 @@ enum point_type
 	river = 4,
 };
 
-enum district_type
+enum class district_type
 {
 	water,
 	royal,
@@ -79,7 +80,7 @@ struct Point
 struct Street
 {
 	Street(TArray<TSharedPtr<Node>> points_): street_vertices(points_)
-	                                        , type(unidentified)
+	                                        , type(point_type::unidentified)
 	{
 	}
 	TArray<FVector> street_vertexes;
@@ -120,11 +121,11 @@ struct Conn
 		// street = MakeShared<TArray<TSharedPtr<Point>>>();
 		not_in_figure = false;
 		in_street = false;
-		street_type = road;
+		street_type = point_type::road;
 	}
 	~Conn();
 	TSharedPtr<Node> node;
-	point_type street_type = road;
+	point_type street_type = point_type::road;
 	TSharedPtr<TArray<TSharedPtr<Node>>> figure{};
 	// TSharedPtr<TArray<TSharedPtr<Point>>> street{};
 	bool not_in_figure;
@@ -172,6 +173,7 @@ struct Node : TSharedFromThis<Node>
 	TOptional<TSharedPtr<Conn>> get_next_point(TSharedPtr<Point> point_);
 	TOptional<TSharedPtr<Conn>> get_prev_point(TSharedPtr<Point> point_);
 	void add_connection(const TSharedPtr<Node>& node_);
+	
 	void delete_me();
 	bool operator==(const Node&) const { return FVector::Distance(this->point->point, point->point) < 0.001; }
 	void print_connections();
@@ -209,7 +211,6 @@ struct District
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
 	}
-
 	District(TArray<TSharedPtr<Node>> figure_);
 	~District()
 	{
@@ -218,7 +219,7 @@ struct District
 	}
 	TArray<TSharedPtr<Node>> figure;
 	TArray<Point> self_figure;
-	TArray<House> houses;
+	TArray<TSharedPtr<House>> houses;
 	double area;
 	int main_roads;
 	bool is_river_in;
@@ -230,9 +231,16 @@ struct District
 	TArray<Point> shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
+	bool attach_district(TSharedPtr<District> other_district);
+	bool is_adjacent(TSharedPtr<District> other_district);
+	void select() { selected = true; };
+	void unselect() { selected = false; };
+	bool is_selected() { return selected; };
+	
 
 private:
 	district_type type;
+	bool selected = false;
 };
 
 
@@ -275,5 +283,5 @@ public:
 	static bool is_point_in_figure(FVector point_, TArray<FVector> figure);
 	static float point_to_seg_distance(const FVector& SegmentStart, const FVector& SegmentEnd, const FVector& Point);
 	static bool is_point_near_figure(const TArray<FVector> given_line, const FVector& Point, double distance);
-	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line, double width, double height);
+	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line, double width);
 };

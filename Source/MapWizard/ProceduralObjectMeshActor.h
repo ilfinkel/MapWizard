@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "AllGeometry.h"
 
 #include "ProceduralObjectMeshActor.generated.h"
 
@@ -16,6 +17,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
@@ -40,4 +42,9 @@ public:
 	{
 		MeshComponentName = NewName;
 	}
+	void SetDistrict(TSharedPtr<District> distr)
+	{
+		district = distr;
+	}
+	TSharedPtr<District> district;
 };

@@ -7,188 +7,10 @@
 #include "ProceduralObjectMeshActor.h"
 #include "TerrainGen.h"
 
-
-// #include "Async/AsyncWork.h"
-
-AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
-                             , WaterMaterial(nullptr)
-                             , DocsMaterial(nullptr)
-                             , RoyalMaterial(nullptr)
-                             , ResidentialMaterial(nullptr)
-                             , LuxuryMaterial(nullptr)
-                             , SlumsMaterial(nullptr)
-                             , BuildingMaterial(nullptr)
-                             , RoadMaterial(nullptr)
-                             , MainRoadMaterial(nullptr)
-                             , WallMaterial(nullptr)
-                             , MapParams()
-                             , BaseComponent(nullptr)
+void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
+                                   float ExtrusionHeight)
 {
-	// PrimaryActorTick.bCanEverTick = false;
-}
-
-void AMainTerrain::RedrawAll(bool is_2d_)
-{
-	is_2d = is_2d_;
-	draw_all();
-}
-void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
-{
-	roads.Empty();
-	figures_array.Empty();
-	streets_array.Empty();
-	map_borders_array.Empty();
-	debug_points_array.Empty();
-	SetActorTickEnabled(true);
-	SetActorHiddenInGame(false);
-	auto World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-
-	// Список акторов, которые нужно оставить
-	TArray<AActor*> ActorsToKeep;
-	APlayerController* PlayerController = World->GetFirstPlayerController();
-	if (PlayerController)
-	{
-		ActorsToKeep.Add(PlayerController);
-		if (AActor* PlayerPawn = PlayerController->GetPawn())
-		{
-			ActorsToKeep.Add(PlayerPawn);
-		}
-	}
-
-	for (TActorIterator<AActor> ActorIt(World); ActorIt; ++ActorIt)
-	{
-		AActor* Actor = *ActorIt;
-
-		// Пропускаем обязательные и системные акторы
-		if (!ActorsToKeep.Contains(Actor) && Actor)
-		{
-			Actor->Destroy();
-		}
-	}
-
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
-	MapParams.update_me();
-
-	if (FoundActors.Num() > 0)
-	{
-		AActor* OrthographicCamera = FoundActors[0];
-
-		FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
-		OrthographicCamera->SetActorLocation(NewLocation);
-		FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
-		OrthographicCamera->SetActorRotation(DownwardRotation);
-
-		TerrainGen gen(MapParams);
-		gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
-		gen.empty_all();
-		draw_all();
-		AActor* ViewTarget = PlayerController->GetViewTarget();
-		if (ViewTarget)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
-		}
-	}
-}
-void AMainTerrain::BeginPlay()
-{
-	Super::BeginPlay();
-	initialize_all();
-}
-
-// Called every frame
-void AMainTerrain::Tick(float DeltaTime)
-{
-	
-}
-inline void AMainTerrain::initialize_all()
-{
-
-	SetActorTickEnabled(true);
-	SetActorHiddenInGame(false);
-	MapParams.update_me();
-	BaseMaterial = load_material("Pack1", "MaterialBase");
-	WaterMaterial = load_material("Pack1", "MaterialWater");
-	DocsMaterial = load_material("Pack1", "MaterialDocks");
-	RoyalMaterial = load_material("Pack1", "MaterialRoyal");
-	ResidentialMaterial = load_material("Pack1", "MaterialResidential");
-	LuxuryMaterial = load_material("Pack1", "MaterialLuxury");
-	SlumsMaterial = load_material("Pack1", "MaterialSlums");
-	BuildingMaterial = load_material("Pack1", "MaterialBuilding");
-	RoadMaterial = load_material("Pack1", "MaterialRoad");
-	MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
-	WallMaterial = load_material("Pack1", "MaterialWall");
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
-	AOrthographicCameraPawn* OrthographicCamera;
-	if (FoundActors.Num() > 0)
-	{
-		OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
-		if (OrthographicCamera)
-		{
-			// Теперь OrthographicCamera доступна как объект вашего класса
-			UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"), *OrthographicCamera->GetName());
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
-		return;
-	}
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	if (PlayerController && OrthographicCamera)
-	{
-		PlayerController->Possess(OrthographicCamera);
-	}
-	// AActor* OrthographicCamera = FoundActors[0];
-
-	FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
-	OrthographicCamera->SetActorLocation(NewLocation);
-	FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
-	OrthographicCamera->SetActorRotation(DownwardRotation);
-	if (PlayerController)
-	{
-		PlayerController->bShowMouseCursor = true; // Показываем курсор
-		PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
-		PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
-		PlayerController->SetViewTargetWithBlend(OrthographicCamera);
-	}
-
-	// PrimaryActorTick.bCanEverTick = true;
-	// Super::BeginPlay();
-
-	TerrainGen gen(MapParams);
-	gen.create_terrain(roads, figures_array, streets_array, river_figure, map_borders_array, debug_points_array);
-	gen.empty_all();
-	draw_all();
-	AActor* ViewTarget = PlayerController->GetViewTarget();
-	if (ViewTarget)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
-	}
-}
-UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, const FString& MaterialName)
-{
-	FString MaterialPath = FString::Printf(TEXT("Material'/Game/Packs/%s/%s.%s'"), *TexturePack, *MaterialName, *MaterialName);
-
-	// Загружаем материал как UMaterialInterface
-	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(StaticLoadObject(UMaterialInterface::StaticClass(), nullptr, *MaterialPath));
-
-	// Проверяем, удалось ли загрузить материал
-	if (!MaterialInterface)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"), *MaterialPath)
-	}
-
-	return MaterialInterface;
-}
-void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
-                                  float ExtrusionHeight)
-{
+	Mesh->ProceduralMesh->ClearAllMeshSections();
 	int32 NumVertices = BaseVertices.Num();
 	if (NumVertices < 3)
 	{
@@ -262,8 +84,8 @@ void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVecto
 		true);
 }
 
-void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices,
-                                  float StarterHeight, float ExtrusionHeight)
+void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices,
+                                   float StarterHeight, float ExtrusionHeight)
 {
 	TArray<FVector> vertices;
 	for (auto BaseVertex : BaseVertices)
@@ -272,8 +94,8 @@ void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 	}
 	create_mesh_3d(Mesh, vertices, StarterHeight, ExtrusionHeight);
 }
-void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices,
-                                  float StarterHeight, float ExtrusionHeight)
+void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices,
+                                   float StarterHeight, float ExtrusionHeight)
 {
 	TArray<FVector> vertices;
 	for (auto BaseVertex : BaseVertices)
@@ -283,8 +105,9 @@ void AMainTerrain::create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 	create_mesh_3d(Mesh, vertices, StarterHeight, ExtrusionHeight);
 }
 
-void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight)
+void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight)
 {
+	Mesh->ProceduralMesh->ClearAllMeshSections();
 	int32 NumVertices = BaseVertices.Num();
 
 	if (NumVertices < 3)
@@ -339,14 +162,13 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVecto
 	// TArray<FVector2D> UV0;
 	TArray<FLinearColor> VertexColors;
 	TArray<FProcMeshTangent> Tangents;
-	VerticesRemembered = Vertices;
+	// VerticesRemembered = Vertices;
 
 	// Создаем меш
 	Mesh->ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
-	return;
 }
-void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices,
-                                  float StarterHeight)
+void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices,
+                                   float StarterHeight)
 {
 	TArray<FVector> vertices;
 	for (auto BaseVertex : BaseVertices)
@@ -355,8 +177,8 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 	}
 	create_mesh_2d(Mesh, vertices, StarterHeight);
 }
-void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices,
-                                  float StarterHeight)
+void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices,
+                                   float StarterHeight)
 {
 	TArray<FVector> vertices;
 	for (auto BaseVertex : BaseVertices)
@@ -366,86 +188,350 @@ void AMainTerrain::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TShare
 	}
 	create_mesh_2d(Mesh, vertices, StarterHeight);
 }
-
-void AMainTerrain::draw_all()
+AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
+                             , WaterMaterial(nullptr)
+                             , DocsMaterial(nullptr)
+                             , RoyalMaterial(nullptr)
+                             , ResidentialMaterial(nullptr)
+                             , LuxuryMaterial(nullptr)
+                             , SlumsMaterial(nullptr)
+                             , BuildingMaterial(nullptr)
+                             , RoadMaterial(nullptr)
+                             , MainRoadMaterial(nullptr)
+                             , WallMaterial(nullptr)
+                             , MapParams()
+                             , BaseComponent(nullptr)
 {
-	TSubclassOf<AProceduralBlockMeshActor> ActorClass;
+	// PrimaryActorTick.bCanEverTick = false;
+}
 
-	if (!GetWorld() && ActorClass)
+void AMainTerrain::RedrawAll(bool is_2d_)
+{
+	is_2d = is_2d_;
+	for (auto s : drawing_streets)
+	{
+		if (s.is_changing)
+		{
+			s.is_2d = is_2d_;
+			// s.delete_mesh();
+			s.draw_me();
+		}
+	}
+	for (auto s : drawing_houses)
+	{
+		s.is_2d = is_2d_;
+		// s.delete_mesh();
+		s.draw_me();
+	}
+	// draw_all();
+}
+void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
+{
+	roads.Empty();
+	figures_array.Empty();
+	streets_array.Empty();
+	map_borders_array.Empty();
+	debug_points_array.Empty();
+	SetActorTickEnabled(true);
+	SetActorHiddenInGame(false);
+	auto World = GetWorld();
+	if (!World)
 	{
 		return;
 	}
 
-	TArray<AActor*> ActorsToDestroy;
-
-	for (TActorIterator<AActor> It(GetWorld(), ActorClass); It; ++It)
+	// Список акторов, которые нужно оставить
+	TArray<AActor*> ActorsToKeep;
+	APlayerController* PlayerController = World->GetFirstPlayerController();
+	if (PlayerController)
 	{
-		AActor* Actor = *It;
-		if (Actor)
+		ActorsToKeep.Add(PlayerController);
+		if (AActor* PlayerPawn = PlayerController->GetPawn())
 		{
-			ActorsToDestroy.Add(Actor);
+			ActorsToKeep.Add(PlayerPawn);
 		}
 	}
 
+	for (TActorIterator<AActor> ActorIt(World); ActorIt; ++ActorIt)
+	{
+		AActor* Actor = *ActorIt;
+
+		// Пропускаем обязательные и системные акторы
+		if (!ActorsToKeep.Contains(Actor) && Actor)
+		{
+			Actor->Destroy();
+		}
+	}
+
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
+	MapParams.update_me();
+
+	if (FoundActors.Num() > 0)
+	{
+		AActor* OrthographicCamera = FoundActors[0];
+
+		FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
+		OrthographicCamera->SetActorLocation(NewLocation);
+		FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
+		OrthographicCamera->SetActorRotation(DownwardRotation);
+
+		TerrainGen gen(MapParams);
+		gen.create_terrain(roads, figures_array, streets_array, river_figures, map_borders_array, debug_points_array);
+		gen.empty_all();
+		draw_all();
+		AActor* ViewTarget = PlayerController->GetViewTarget();
+		if (ViewTarget)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
+		}
+	}
+}
+void AMainTerrain::ClearAll(FMapParams& map_params, FDebugParams& debug_params)
+{
+	clear_all();
+}
+void AMainTerrain::AttachDistricts()
+{
+	TArray<TSharedPtr<District>> districts_to_attach;
+	TArray<TSharedPtr<District>> districts_to_remove;
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		if (drawing_districts[i].district->is_selected())
+		{
+			districts_to_attach.Add(drawing_districts[i].district);
+		}
+	}
+	districts_to_attach.Sort([&](TSharedPtr<District> d1, TSharedPtr<District> d2) { return d1->is_adjacent(d2); });
+	for (int i = 1; i < districts_to_attach.Num(); i++)
+	{
+		TArray<TSharedPtr<Node>> figure1 = districts_to_attach[0]->figure;
+		TArray<TSharedPtr<Node>> figure2 = districts_to_attach[i]->figure;
+		if (districts_to_attach[0]->attach_district(districts_to_attach[i]) && districts_to_attach[0]->is_adjacent(districts_to_attach[i]))
+		{
+			districts_to_remove.Add(districts_to_attach[i]);
+			districts_to_attach[0]->self_figure = districts_to_attach[0]->shrink_figure_with_roads(districts_to_attach[0]->figure,
+				MapParams.road_width, MapParams.main_road_width);
+			for (auto j = 0; j < figure1.Num(); j++)
+			{
+				if (districts_to_attach[0]->figure.Contains(figure1[j]))
+				{
+					figure1[j]->delete_me();
+				}
+			}
+			for (auto j = 0; j < figure2.Num(); j++)
+			{
+				if (districts_to_attach[0]->figure.Contains(figure2[j]))
+				{
+					figure2[j]->delete_me();
+				}
+			}
+		}
+	}
+	drawing_districts.RemoveAll([&](DrawingDistrict dist)
+	{
+		if (districts_to_remove.Contains(dist.district))
+		{
+			dist.delete_mesh();
+			return true;
+		}
+		return false;
+	});
+	for (auto dd : drawing_districts)
+	{
+		if (dd.district->is_selected())
+		{
+			dd.district->unselect();
+		}
+		if (districts_to_attach[0] == dd.district)
+		{
+			dd.draw_me();
+		}
+	}
+	TArray<DrawingStreet> new_streets;
+	TArray<int> delete_streets;
+
+
+	for (int i = 0; i < drawing_streets.Num(); i++)
+	{
+		auto street = drawing_streets[i];
+		TArray<TSharedPtr<Node>> cur_street{drawing_streets[i].street->street_vertices[0]};
+		for (int j = 1; j < drawing_streets[i].street->street_vertices.Num(); j++)
+		{
+			if (!drawing_streets[i].street->street_vertices[j - 1]->get_next_point(drawing_streets[i].street->street_vertices[j]->get_point()).IsSet())
+			{
+				if (!cur_street.IsEmpty())
+				{
+					auto new_street = drawing_streets[i];
+					new_street.street->street_vertices.Empty();
+					for (auto& p : cur_street)
+					{
+						new_street.street->street_vertices.Add(p);
+					}
+					new_streets.Add(new_street);
+					cur_street.Empty();
+				}
+				break;
+			}
+			if (cur_street.IsEmpty())
+			{
+				cur_street.Add(drawing_streets[i].street->street_vertices[j - 1]);
+			}
+			cur_street.Add(drawing_streets[i].street->street_vertices[j]);
+		}
+	}
+	delete_streets.Sort([](int32 A, int32 B) { return A > B; });
+
+	for (int32 Index : delete_streets)
+	{
+		if (drawing_streets.IsValidIndex(Index))
+		{
+			drawing_streets.RemoveAt(Index);
+		}
+	}
+	for (auto& ns : new_streets)
+	{
+		ns.draw_me();
+		drawing_streets.Add(ns);
+	}
+}
+void AMainTerrain::clear_all()
+{
+	TArray<AActor*> ActorsToDestroy;
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProceduralBlockMeshActor::StaticClass(), FoundActors);
+	for (AActor* Actor : FoundActors)
+	{
+		AProceduralBlockMeshActor* MyActor = Cast<AProceduralBlockMeshActor>(Actor);
+		if (MyActor)
+		{
+			ActorsToDestroy.Add(MyActor);
+		}
+	}
 	for (AActor* Actor : ActorsToDestroy)
 	{
 		Actor->Destroy();
 	}
-	
+
 	FlushPersistentDebugLines(GetWorld());
+}
+void AMainTerrain::BeginPlay()
+{
+	Super::BeginPlay();
+	initialize_all();
+}
+
+// Called every frame
+void AMainTerrain::Tick(float DeltaTime)
+{
+	
+}
+inline void AMainTerrain::initialize_all()
+{
+
+	SetActorTickEnabled(true);
+	SetActorHiddenInGame(false);
+	MapParams.update_me();
+	BaseMaterial = load_material("Pack1", "MaterialBase");
+	WaterMaterial = load_material("Pack1", "MaterialWater");
+	DocsMaterial = load_material("Pack1", "MaterialDocks");
+	RoyalMaterial = load_material("Pack1", "MaterialRoyal");
+	ResidentialMaterial = load_material("Pack1", "MaterialResidential");
+	LuxuryMaterial = load_material("Pack1", "MaterialLuxury");
+	SlumsMaterial = load_material("Pack1", "MaterialSlums");
+	BuildingMaterial = load_material("Pack1", "MaterialBuilding");
+	RoadMaterial = load_material("Pack1", "MaterialRoad");
+	MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
+	WallMaterial = load_material("Pack1", "MaterialWall");
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AOrthographicCameraPawn::StaticClass(), FoundActors);
+	AOrthographicCameraPawn* OrthographicCamera;
+	if (FoundActors.Num() > 0)
+	{
+		OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
+		if (OrthographicCamera)
+		{
+			// Теперь OrthographicCamera доступна как объект вашего класса
+			UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"), *OrthographicCamera->GetName());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
+		return;
+	}
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerController && OrthographicCamera)
+	{
+		PlayerController->Possess(OrthographicCamera);
+	}
+	// AActor* OrthographicCamera = FoundActors[0];
+
+	FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2, (MapParams.x_size + MapParams.y_size) / 2);
+	OrthographicCamera->SetActorLocation(NewLocation);
+	FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
+	OrthographicCamera->SetActorRotation(DownwardRotation);
+	if (PlayerController)
+	{
+		PlayerController->bShowMouseCursor = true; // Показываем курсор
+		PlayerController->bEnableClickEvents = true; // Включаем обработку событий кликов
+		PlayerController->bEnableMouseOverEvents = true; // Включаем обработку событий наведения
+		PlayerController->SetViewTargetWithBlend(OrthographicCamera);
+	}
+
+	// PrimaryActorTick.bCanEverTick = true;
+	// Super::BeginPlay();
+
+	TerrainGen gen(MapParams);
+	gen.create_terrain(roads, figures_array, streets_array, river_figures, map_borders_array, debug_points_array);
+	gen.empty_all();
+	draw_all();
+	AActor* ViewTarget = PlayerController->GetViewTarget();
+	if (ViewTarget)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Current View Target: %s"), *ViewTarget->GetName())
+	}
+}
+UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack, const FString& MaterialName)
+{
+	FString MaterialPath = FString::Printf(TEXT("Material'/Game/Packs/%s/%s.%s'"), *TexturePack, *MaterialName, *MaterialName);
+
+	// Загружаем материал как UMaterialInterface
+	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(StaticLoadObject(UMaterialInterface::StaticClass(), nullptr, *MaterialPath));
+
+	// Проверяем, удалось ли загрузить материал
+	if (!MaterialInterface)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"), *MaterialPath)
+	}
+
+	return MaterialInterface;
+}
+
+void AMainTerrain::draw_all()
+{
+	clear_all();
 	int ind = 0;
 	for (auto b : roads)
 	{
 		b->debug_ind_ = ind;
 		ind++;
 	}
-	for (auto b : roads)
-	{
-		for (auto bconn : b->conn)
-		{
-			if (b->get_type() == wall && bconn->node->get_type() == wall && DebugParams.draw_walls)
-			{
-				auto start_point = b->get_FVector();
-				auto end_point = bconn->node->get_FVector();
-				start_point.Z = 12;
-				end_point.Z = 12;
-				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Black, true, -1, 0, 10);
-			}
-			if (b->get_type() == main_road && bconn->node->get_type() == main_road && DebugParams.draw_main)
-			{
-				auto start_point = b->get_FVector();
-				auto end_point = bconn->node->get_FVector();
-				start_point.Z = 1.2f;
-				end_point.Z = 1.2f;
-				DrawDebugLine(GetWorld(), start_point, end_point, FColor::Red, true, -1, 0, 10);
-			}
-			if (DebugParams.draw_usual_roads)
-			{
-				auto start_point = b->get_FVector();
-				auto end_point = bconn->node->get_FVector();
-				start_point.Z = 1.0f;
-				end_point.Z = 1.0f;
-				DrawDebugLine(GetWorld(), start_point, end_point, FColor::White, true, -1, 0, 4);
-			}
-		}
-	}
 	AProceduralBlockMeshActor* Base =
 	GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 
 	// Создаем физическое тело для коллизии
-	create_mesh_2d(Base, map_borders_array, 0);
+	DrawingObject obj;
+	obj.create_mesh_2d(Base, map_borders_array, 0);
 
 
 	static int32 ActorCounter = 0;
 	for (auto& r : figures_array)
 	{
-		// FColor color;
-		// int thickness = 1;
-
 		TArray<TSharedPtr<Point>> figure_to_print;
-		if (!r.self_figure.IsEmpty())
+		if (!r->self_figure.IsEmpty())
 		{
-			for (auto& p : r.self_figure)
+			for (auto& p : r->self_figure)
 			{
 				figure_to_print.Add(MakeShared<Point>(p));
 			}
@@ -455,7 +541,7 @@ void AMainTerrain::draw_all()
 			continue;
 		}
 		FString ActorName;
-		if (r.get_type() == water)
+		if (r->get_type() == district_type::water)
 		{
 			ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -464,9 +550,11 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			// create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
 		}
-		else if (r.get_type() == luxury)
+		else if (r->get_type() == district_type::luxury)
 		{
 			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -475,9 +563,10 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
 			MeshComponent2->Material = LuxuryMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r.get_type() == dock)
+		else if (r->get_type() == district_type::dock)
 		{
 			ActorName = FString::Printf(TEXT("DistrictDocks_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -486,9 +575,10 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, DocsMaterial);
 			MeshComponent2->Material = DocsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r.get_type() == royal)
+		else if (r->get_type() == district_type::royal)
 		{
 			ActorName = FString::Printf(TEXT("DistrictRoyal_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -497,9 +587,10 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
 			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r.get_type() == slums)
+		else if (r->get_type() == district_type::slums)
 		{
 			ActorName = FString::Printf(TEXT("DistrictSlums_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -508,9 +599,10 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
 			MeshComponent2->Material = SlumsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r.get_type() == residential)
+		else if (r->get_type() == district_type::residential)
 		{
 			ActorName = FString::Printf(TEXT("DistrictResidence_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -519,18 +611,20 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidentialMaterial);
 			MeshComponent2->Material = ResidentialMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
-		else if (r.get_type() == tower)
+		else if (r->get_type() == district_type::tower)
 		{
-			ActorName = FString::Printf(TEXT("DistrictResidence_%d"), ++ActorCounter);
+			ActorName = FString::Printf(TEXT("Tower_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
 			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, figure_to_print, 0.01);
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
 		else
 		{
@@ -541,14 +635,12 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BaseMaterial);
 			MeshComponent2->Material = BaseMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			if (is_2d)
-			{
-				create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
-			}
+			MeshComponent2->SetDistrict(r);
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
 		}
 
 		int house_count = 0;
-		for (auto& p : r.houses)
+		for (auto& p : r->houses)
 		{
 			FString HouseName = FString::Printf(TEXT("%s_House_%d"), *ActorName, ++house_count);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -557,20 +649,17 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			if (is_2d)
-			{
-				create_mesh_2d(MeshComponent2, p.house_figure, 0.02);
-			}
-			else
-			{
-				create_mesh_3d(MeshComponent2, p.house_figure, 0.02, p.height);
-			}
+			MeshComponent2->SetDistrict(r);
+
+			drawing_houses.Add(DrawingHouse(p, MeshComponent2, 0.02, is_2d));
 		}
 	}
 	// {
-	// 	if (!river_figure.figure.IsEmpty())
+	// if (!river_figures.IsEmpty())
+	// {
+	// 	for (auto& river_figure : river_figures)
 	// 	{
-	// 		Algo::Reverse(river_figure.figure);
+	// 		// Algo::Reverse(river_figure.figure);
 	//
 	// 		FString ActorName = FString::Printf(TEXT("River_%d"), ++ActorCounter);
 	// 		AProceduralBlockMeshActor* MeshComponent2 =
@@ -579,13 +668,13 @@ void AMainTerrain::draw_all()
 	// 		MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
 	// 		MeshComponent2->Material = WaterMaterial;
 	// 		MeshComponent2->DefaultMaterial = BaseMaterial;
-	// 		create_mesh_2d(MeshComponent2, river_figure.figure, 0.02);
+	// 		create_mesh_2d(MeshComponent2, river_figure->figure, 150);
 	// 	}
 	// }
 
 	for (auto street : streets_array)
 	{
-		if (street.type == road)
+		if (street->type == point_type::road)
 		{
 			FString ActorName = FString::Printf(TEXT("Street_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -594,9 +683,10 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoadMaterial);
 			MeshComponent2->Material = RoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.19);
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
+			// create_mesh_2d(MeshComponent2, street->street_vertexes, 0.19);
 		}
-		else if (street.type == main_road)
+		else if (street->type == point_type::main_road)
 		{
 			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -605,9 +695,22 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
 			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
+			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
-		else if (street.type == wall)
+		else if (street->type == point_type::river)
+		{
+			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(ActorName);
+			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
+			MeshComponent2->Material = WaterMaterial;
+			MeshComponent2->DefaultMaterial = BaseMaterial;
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.21, false, is_2d));
+			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
+		}
+		else if (street->type == point_type::wall)
 		{
 			FString ActorName = FString::Printf(TEXT("StreetWall_%d"), ++ActorCounter);
 			AProceduralBlockMeshActor* MeshComponent2 =
@@ -616,14 +719,15 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WallMaterial);
 			MeshComponent2->Material = WallMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			if (is_2d)
-			{
-				create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
-			}
-			else
-			{
-				create_mesh_3d(MeshComponent2, street.street_vertexes, 0.022, 10);
-			}
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.022, true, is_2d));
+			// if (is_2d)
+			// {
+			// 	create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
+			// }
+			// else
+			// {
+			// 	create_mesh_3d(MeshComponent2, street.street_vertexes, 0.022, 10);
+			// }
 		}
 		else
 		{
@@ -634,8 +738,22 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			create_mesh_2d(MeshComponent2, street.street_vertexes, 0.024);
+
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.24, false, is_2d));
+			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.024);
 		}
+	}
+	for (auto a : drawing_streets)
+	{
+		a.draw_me();
+	}
+	for (auto a : drawing_houses)
+	{
+		a.draw_me();
+	}
+	for (auto a : drawing_districts)
+	{
+		a.draw_me();
 	}
 }
 void AMainTerrain::get_cursor_hit_location()

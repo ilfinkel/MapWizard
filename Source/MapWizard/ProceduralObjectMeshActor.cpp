@@ -35,6 +35,18 @@ void AProceduralBlockMeshActor::BeginPlay()
 	ProceduralMesh->OnBeginCursorOver.AddDynamic(this, &AProceduralBlockMeshActor::OnMouseOver);
 	ProceduralMesh->OnEndCursorOver.AddDynamic(this, &AProceduralBlockMeshActor::OnMouseOut);
 }
+void AProceduralBlockMeshActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// if (district.IsValid() && district->is_selected())
+	// {
+	// 	ProceduralMesh->SetMaterial(0, DefaultMaterial);
+	// }
+	// if (district.IsValid() && !district->is_selected())
+	// {
+	// 	ProceduralMesh->SetMaterial(0, Material);
+	// }
+}
 
 void AProceduralBlockMeshActor::OnMeshClicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
@@ -46,6 +58,16 @@ void AProceduralBlockMeshActor::OnMeshClicked(UPrimitiveComponent* TouchedCompon
 			UE_LOG(LogTemp, Warning, TEXT("Vertex: %s"), *Vertex.ToString());
 		}
 	}
+	if (district.IsValid() && !district->is_selected())
+	{
+		district->select();
+		TouchedComponent->SetMaterial(0, DefaultMaterial);
+	}
+	else if (district.IsValid() && district->is_selected())
+	{
+		district->unselect();
+		TouchedComponent->SetMaterial(0, Material);
+	}
 }
 void AProceduralBlockMeshActor::OnMouseOver(UPrimitiveComponent* Component)
 {
@@ -56,7 +78,7 @@ void AProceduralBlockMeshActor::OnMouseOver(UPrimitiveComponent* Component)
 }
 void AProceduralBlockMeshActor::OnMouseOut(UPrimitiveComponent* Component)
 {
-	if (Component && Material)
+	if (Component && Material && !(district.IsValid() && district->is_selected()))
 	{
 		Component->SetMaterial(0, Material);
 	}
