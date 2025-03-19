@@ -54,17 +54,17 @@ public:
 	                                   , road_left_chance(map_params.road_left_chance)
 	                                   , road_forward_chance(map_params.road_forward_chance)
 	                                   , road_right_chance(map_params.road_right_chance)
-	                                   , city_plan(map_params.city_plan)
-	                                   , water_type(map_params.water_type)
-	                                   , draw_stage(map_params.draw_stage)
 	                                   , main_road_width(map_params.main_road_width)
 	                                   , road_width(map_params.road_width)
+	                                   , city_plan(map_params.city_plan)
+	                                   , draw_stage(map_params.draw_stage)
+	                                   , water_type(map_params.water_type)
 	{
 	}
 
 	void create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<TSharedPtr<District>>& figures_array_, TArray<TSharedPtr<Street>>& streets_array_,
-	                    TArray<TSharedPtr<District>>& river_figure_,
-	                    TArray<TSharedPtr<Node>>& map_borders_array_, TArray<FVector>& debug_points_array_);
+	                    TArray<TSharedPtr<Street>>& segments_array_,
+	                    TArray<TSharedPtr<District>>& river_figure_, TArray<TSharedPtr<Node>>& map_borders_array_, TArray<FVector>& debug_points_array_);
 	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
 	static TSharedPtr<Node> insert_conn(const TSharedPtr<Node>& node1_to_insert,
 	                                    const TSharedPtr<Node>& node2_to_insert, FVector node3_point);
@@ -90,6 +90,7 @@ public:
 	void create_special_district(TArray<FVector>& figure, point_type type, FVector point);
 	void create_circle(FVector point, double radius, district_type type, point_type road_type, int vertex_count);
 	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<TSharedPtr<Street>>& fig_array, point_type type, bool is_persistent);
+	TArray<TSharedPtr<Street>> process_segments(TArray<TSharedPtr<Street>>& fig_array);
 	TSharedPtr<Node> get_next_road_node(TSharedPtr<Node> first_point, TSharedPtr<Node> second_point, point_type type, bool is_persistent);
 	void empty_all()
 	{
@@ -130,8 +131,7 @@ public:
 		}
 		roads.Reset();
 	}
-	TArray<TSharedPtr<District>> figures_array;
-	// TArray<Way> ways_array;
+	TArray<TSharedPtr<District>> shapes_array;
 	TArray<TSharedPtr<Node>> river{};
 	TArray<TSharedPtr<Node>> guiding_river{};
 	TArray<TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> bridges{};
@@ -139,6 +139,7 @@ public:
 	TArray<FVector> map_points_array{};
 	TArray<TSharedPtr<Node>> map_borders_array{};
 	TArray<TSharedPtr<Street>> streets_array{};
+	TArray<TSharedPtr<Street>> segments_array{};
 	TArray<TSharedPtr<Node>> guididng_roads_array{};
 	TArray<WeightedPoint> weighted_points{};
 	TArray<TSharedPtr<Node>> roads{};

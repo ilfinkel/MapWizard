@@ -6,7 +6,7 @@
 
 District::District(TArray<TSharedPtr<Node>> figure_)
 {
-	
+	// UE_LOG(LogTemp, Warning, TEXT("ditrict_figure(%p)"),this)
 	// figure = figure_;
 	bool is_found;
 	if (figure_.Num() > 3)
@@ -121,11 +121,11 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 		float road_height2 = main_road / 2;
 		auto prev_curr = figure_vertices[Prev]->get_next_point(figure_vertices[Curr]->get_point());
 		auto curr_next = figure_vertices[Curr]->get_next_point(figure_vertices[Next]->get_point());
-		if (prev_curr.IsSet() && (prev_curr.GetValue()->street_type == point_type::road))
+		if (prev_curr.IsSet() && (prev_curr.GetValue()->street_type() == point_type::road))
 		{
 			road_height1 = road / 2;
 		}
-		if (curr_next.IsSet() && (curr_next.GetValue()->street_type == point_type::road))
+		if (curr_next.IsSet() && (curr_next.GetValue()->street_type() == point_type::road))
 		{
 			road_height2 = road / 2;
 		}
@@ -260,7 +260,7 @@ bool District::create_house(TArray<FVector> given_line, double width, double hei
 	houses.Add(MakeShared<House>(house));
 	return true;
 }
-bool District::attach_district(TSharedPtr<District> other_district)
+bool District::attach_district(TSharedPtr<District> other_district, TArray<TSharedPtr<Street>>& streets_to_delete)
 {
 	TArray<TSharedPtr<Node>> this_figure_new;
 	TArray<TSharedPtr<Node>> this_figure;
@@ -299,7 +299,7 @@ bool District::attach_district(TSharedPtr<District> other_district)
 			break;
 		}
 	}
-	is_attachment_found = false;
+	// is_attachment_found = false;
 	int max_figure = current_i + figure_num * 2;
 	int max_o_figure = current_j + o_figure_num * 2;
 	TSharedPtr<Node> first_node = this_figure[current_i];
@@ -324,6 +324,8 @@ bool District::attach_district(TSharedPtr<District> other_district)
 					{
 						this_figure_new.Add(this_figure[i % figure_num]);
 						is_attachment_found = true;
+						auto next = this_figure[i % figure_num]->get_next_point(this_figure[(i+1) % figure_num]->get_point());
+						if (next.IsSet()) {streets_to_delete.AddUnique(next.GetValue()->get_street());}
 						current_j = j;
 						break;
 					}
@@ -353,6 +355,8 @@ bool District::attach_district(TSharedPtr<District> other_district)
 					{
 						this_figure_new.Add(other_figure[j % o_figure_num]);
 						is_attachment_found = true;
+						auto next = other_figure[j % o_figure_num]->get_next_point(other_figure[(j+1) % o_figure_num]->get_point());
+						if (next.IsSet()){streets_to_delete.AddUnique(next.GetValue()->get_street());}
 						current_i = i;
 						break;
 					}
@@ -371,19 +375,19 @@ bool District::attach_district(TSharedPtr<District> other_district)
 	{
 		return false;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Attaching:"))
-	for (int i = 0; i < this_figure.Num(); i++)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("1: %f, %f"), this_figure[i]->get_FVector().X, this_figure[i]->get_FVector().Y)
-	}
-	for (int i = 0; i < other_figure.Num(); i++)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("2: %f, %f"), other_figure[i]->get_FVector().X, other_figure[i]->get_FVector().Y)
-	}
-	for (int i = 0; i < this_figure_new.Num(); i++)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("F: %f, %f"), this_figure_new[i]->get_FVector().X, this_figure_new[i]->get_FVector().Y)
-	}
+	// UE_LOG(LogTemp, Warning, TEXT("Attaching:"))
+	// for (int i = 0; i < this_figure.Num(); i++)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("1: %f, %f"), this_figure[i]->get_FVector().X, this_figure[i]->get_FVector().Y)
+	// }
+	// for (int i = 0; i < other_figure.Num(); i++)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("2: %f, %f"), other_figure[i]->get_FVector().X, other_figure[i]->get_FVector().Y)
+	// }
+	// for (int i = 0; i < this_figure_new.Num(); i++)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("F: %f, %f"), this_figure_new[i]->get_FVector().X, this_figure_new[i]->get_FVector().Y)
+	// }
 	figure = this_figure_new;
 	return true;
 }
