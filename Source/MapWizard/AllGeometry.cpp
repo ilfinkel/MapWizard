@@ -121,14 +121,38 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 		float road_height2 = main_road / 2;
 		auto prev_curr = figure_vertices[Prev]->get_next_point(figure_vertices[Curr]->get_point());
 		auto curr_next = figure_vertices[Curr]->get_next_point(figure_vertices[Next]->get_point());
-		if (prev_curr.IsSet() && (prev_curr.GetValue()->street_type() == point_type::road))
+		if (prev_curr.IsSet())
 		{
-			road_height1 = road / 2;
+			if (prev_curr->IsValid() )
+			{
+				if (prev_curr.GetValue()->street_type() == point_type::road)
+				{
+					road_height1 = road / 2;
+				}
+				else if (prev_curr.GetValue()->street_type() == point_type::main_road)
+				{
+					road_height1 = main_road / 2;
+				}
+			}
+			else road_height1 = 0;
 		}
-		if (curr_next.IsSet() && (curr_next.GetValue()->street_type() == point_type::road))
+		if (curr_next.IsSet())
 		{
-			road_height2 = road / 2;
+			if (curr_next->IsValid() )
+			{
+				if (curr_next.GetValue()->street_type() == point_type::road)
+				{
+					road_height2 = road / 2;
+				}
+				else if (curr_next.GetValue()->street_type() == point_type::main_road)
+				{
+					road_height2 = main_road / 2;
+				}
+			}
+			else road_height2 = 0;
 		}
+		
+		
 		FVector parralel1_beg = AllGeometry::create_segment_at_angle(figure_vertices[Prev]->get_FVector(), figure_vertices[Curr]->get_FVector(),
 			figure_vertices[Prev]->get_FVector(), 90, road_height1);
 		FVector parralel2_beg = AllGeometry::create_segment_at_angle(figure_vertices[Curr]->get_FVector(), figure_vertices[Next]->get_FVector(),

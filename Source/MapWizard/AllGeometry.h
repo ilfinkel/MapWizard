@@ -126,7 +126,7 @@ struct Conn
 	~Conn();
 	void set_street(TSharedPtr<Street> street_){street=street_;}
 	void set_segment(TSharedPtr<Street> segment_){segment=segment_;}
-	TSharedPtr<Street> get_street(){return street;}
+	TSharedPtr<Street> get_street(){return segment;}
 	TSharedPtr<Node> node;
 	// point_type street_type = point_type::road;
 	TSharedPtr<TArray<TSharedPtr<Node>>> figure{};

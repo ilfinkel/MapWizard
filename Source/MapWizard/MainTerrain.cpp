@@ -343,16 +343,19 @@ void AMainTerrain::AttachDistricts()
 			}
 		}
 	}
-	drawing_districts.RemoveAll([&](DrawingDistrict dist)
+
+	drawing_streets.RemoveAll([&](DrawingStreet& d_street)
 	{
-		if (districts_to_remove.Contains(dist.district))
+		if (segments_to_delete.Contains(d_street.street))
 		{
-			dist.delete_mesh();
+			d_street.delete_mesh();
+			d_street.street.Reset();
 			return true;
 		}
 		return false;
 	});
-	for (auto dd : drawing_districts)
+	
+	for (auto& dd : drawing_districts)
 	{
 		if (dd.district->is_selected())
 		{
@@ -365,12 +368,13 @@ void AMainTerrain::AttachDistricts()
 			dd.draw_me();
 		}
 	}
-	drawing_streets.RemoveAll([&](DrawingStreet d_street)
+	
+	drawing_districts.RemoveAll([&](DrawingDistrict& d_district)
 	{
-		if (segments_to_delete.Contains(d_street.street))
+		if (districts_to_remove.Contains(d_district.district))
 		{
-			d_street.delete_mesh();
-			d_street.street.Reset();
+			d_district.delete_mesh();
+			d_district.district.Reset();
 			return true;
 		}
 		return false;

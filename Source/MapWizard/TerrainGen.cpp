@@ -1737,11 +1737,11 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 	}
 	while (named_districts < districts_count && old_named_districts != named_districts);
 
-	// districts.RemoveAll([this](TSharedPtr<District>& district)
-	// {
-	// 	district->self_figure = district->shrink_figure_with_roads(district->figure, road_width, main_road_width);
-	// 	return district->self_figure.IsEmpty();
-	// });
+	districts.RemoveAll([this](TSharedPtr<District>& district)
+	{
+		district->self_figure = district->shrink_figure_with_roads(district->figure, road_width, main_road_width);
+		return district->self_figure.IsEmpty();
+	});
 }
 void TerrainGen::process_houses(TSharedPtr<District> district)
 {
