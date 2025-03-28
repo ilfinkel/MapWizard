@@ -7,7 +7,7 @@
 
 #include "ProceduralObjectMeshActor.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class MAPWIZARD_API AProceduralBlockMeshActor : public AActor
 {
 	GENERATED_BODY()

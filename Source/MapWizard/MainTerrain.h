@@ -316,6 +316,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool is_2d = true;
 
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllSelected();
 	UProceduralMeshComponent* BaseComponent;
 
 	
