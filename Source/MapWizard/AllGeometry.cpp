@@ -399,22 +399,40 @@ bool District::attach_district(TSharedPtr<District> other_district, TArray<TShar
 	{
 		return false;
 	}
-	// UE_LOG(LogTemp, Warning, TEXT("Attaching:"))
-	// for (int i = 0; i < this_figure.Num(); i++)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("1: %f, %f"), this_figure[i]->get_FVector().X, this_figure[i]->get_FVector().Y)
-	// }
-	// for (int i = 0; i < other_figure.Num(); i++)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("2: %f, %f"), other_figure[i]->get_FVector().X, other_figure[i]->get_FVector().Y)
-	// }
-	// for (int i = 0; i < this_figure_new.Num(); i++)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("F: %f, %f"), this_figure_new[i]->get_FVector().X, this_figure_new[i]->get_FVector().Y)
-	// }
 	figure = this_figure_new;
 	return true;
 }
+
+bool District::divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2, TSharedPtr<Street> new_seg)
+{
+	
+	int points_num = figure.Num();
+	if (points_num<=3) return false;
+	int rand_point = FMath::FRand()*(points_num-1);
+	new_seg->street_vertices.Add(figure[rand_point]);
+	for (int i = 0; i < points_num; i++)
+	{
+		if ((abs(rand_point-i+points_num)%points_num-(rand_point+i+points_num)%points_num)<=1)
+		{
+			if ((rand_point-i+points_num)%points_num == (rand_point+i+points_num)%points_num)
+			{
+				new_seg->street_vertices.Add(figure[(rand_point-i+points_num)%points_num]);
+			}
+			else
+			{
+				new_seg->street_vertices.Add(figure[(rand_point-i+points_num)%points_num+FMath::RandBool()]);
+			}
+			break;
+		}
+		FVector new_point(figure[(rand_point-i+points_num)%points_num]->get_FVector()+figure[(rand_point+i+points_num)%points_num]->get_FVector()/2);
+		new_seg->street_vertices.Add(MakeShared<Node>(new_point));
+	}
+
+	
+
+	return true;
+}
+
 bool District::is_adjacent(TSharedPtr<District> other_district)
 {
 	TArray<TSharedPtr<Node>> this_figure;

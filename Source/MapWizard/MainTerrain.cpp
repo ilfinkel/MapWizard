@@ -225,6 +225,22 @@ void AMainTerrain::RedrawAll(bool is_2d_)
 	}
 	// draw_all();
 }
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllSelected()
+{
+	TArray<AProceduralBlockMeshActor*> districts_to_get{};
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
+		if (drawing_districts[i].district->is_selected())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
+			districts_to_get.Add(drawing_districts[i].mesh);
+		}
+	}
+	return districts_to_get;
+}
+
 void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
 {
 	roads.Empty();
@@ -372,6 +388,30 @@ void AMainTerrain::AttachDistricts()
 	drawing_districts.RemoveAll([&](DrawingDistrict& d_district)
 	{
 		if (districts_to_remove.Contains(d_district.district))
+		{
+			d_district.delete_mesh();
+			d_district.district.Reset();
+			return true;
+		}
+		return false;
+	});
+}
+void AMainTerrain::DivideDistricts()
+{
+	TArray<TSharedPtr<District>> districts_to_divide{};
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
+		if (drawing_districts[i].district->is_selected())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
+			districts_to_divide.Add(drawing_districts[i].district);
+		}
+	}
+	
+	drawing_districts.RemoveAll([&](DrawingDistrict& d_district)
+	{
+		if (districts_to_divide.Contains(d_district.district))
 		{
 			d_district.delete_mesh();
 			d_district.district.Reset();

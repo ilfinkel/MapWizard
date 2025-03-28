@@ -305,11 +305,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ClearAll(FMapParams& map_params, FDebugParams& debug_params);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void AttachDistricts();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void DivideDistricts();
 	
 	void clear_all();
 

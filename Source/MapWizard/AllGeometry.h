@@ -229,6 +229,11 @@ struct District
 		figure.Empty();
 		self_figure.Empty();
 	}
+	void clear_me()
+	{
+		figure.Empty();
+		self_figure.Empty();
+	}
 	TArray<TSharedPtr<Node>> figure;
 	TArray<Point> self_figure;
 	TArray<TSharedPtr<House>> houses;
@@ -244,6 +249,7 @@ struct District
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
 	bool attach_district(TSharedPtr<District> other_district, TArray<TSharedPtr<Street>>& streets_to_delete);
+	bool divide_me(TSharedPtr<District> dist1,TSharedPtr<District> dist2, TSharedPtr<Street> new_seg);
 	bool is_adjacent(TSharedPtr<District> other_district);
 	void select()
 	{
