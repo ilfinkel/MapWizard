@@ -83,9 +83,9 @@ struct Street
 	                                        , type(point_type::unidentified)
 	{
 	}
-	TArray<FVector> street_vertexes;
-	TArray<TSharedPtr<Node>> street_vertices;
-	point_type type;
+	TArray<FVector> street_vertexes{};
+	TArray<TSharedPtr<Node>> street_vertices{};
+	point_type type = point_type::unidentified;
 	FString name;
 	
 };
@@ -121,16 +121,26 @@ struct Conn
 		// street = MakeShared<TArray<TSharedPtr<Point>>>();
 		not_in_figure = false;
 		in_street = false;
-		street_type = point_type::road;
+		// street_type = point_type::road;
 	}
 	~Conn();
+	void set_street(TSharedPtr<Street> street_){street=street_;}
+	void set_segment(TSharedPtr<Street> segment_){segment=segment_;}
+	TSharedPtr<Street> get_street(){return segment;}
 	TSharedPtr<Node> node;
-	point_type street_type = point_type::road;
+	// point_type street_type = point_type::road;
 	TSharedPtr<TArray<TSharedPtr<Node>>> figure{};
 	// TSharedPtr<TArray<TSharedPtr<Point>>> street{};
+	point_type street_type()
+	{
+		return segment.IsValid()? segment->type:point_type::road;
+	}
 	bool not_in_figure;
 	bool in_street;
 	bool operator==(Conn& other) { return this->node == other.node; }
+private:
+	TSharedPtr<Street> street;
+	TSharedPtr<Street> segment;
 };
 
 struct Node : TSharedFromThis<Node>
@@ -204,15 +214,22 @@ struct House
 
 struct District
 {
-	District(): main_roads(0)
+	explicit District(): main_roads(0)
 	          , is_river_in(false)
 	{
+		// UE_LOG(LogTemp, Warning, TEXT("ditrict(%p)"),this)
 		type = district_type::unknown;
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
 	}
-	District(TArray<TSharedPtr<Node>> figure_);
+	explicit District(TArray<TSharedPtr<Node>> figure_);
 	~District()
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("~ditrict"))
+		figure.Empty();
+		self_figure.Empty();
+	}
+	void clear_me()
 	{
 		figure.Empty();
 		self_figure.Empty();
@@ -231,10 +248,18 @@ struct District
 	TArray<Point> shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
-	bool attach_district(TSharedPtr<District> other_district);
+	bool attach_district(TSharedPtr<District> other_district, TArray<TSharedPtr<Street>>& streets_to_delete);
+	bool divide_me(TSharedPtr<District> dist1,TSharedPtr<District> dist2, TSharedPtr<Street> new_seg);
 	bool is_adjacent(TSharedPtr<District> other_district);
-	void select() { selected = true; };
-	void unselect() { selected = false; };
+	void select()
+	{
+		selected = true;
+		// UE_LOG(LogTemp, Warning, TEXT("selected %p"), this)
+	}
+	void unselect() {
+		selected = false; 
+		UE_LOG(LogTemp, Warning, TEXT("unselected"))
+	}
 	bool is_selected() { return selected; };
 	
 

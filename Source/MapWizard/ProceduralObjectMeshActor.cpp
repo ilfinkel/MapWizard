@@ -29,7 +29,7 @@ void AProceduralBlockMeshActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ProceduralMesh->SetMaterial(NULL, DefaultMaterial);
+	ProceduralMesh->SetMaterial(0, DefaultMaterial);
 	// Привязка события клика
 	ProceduralMesh->OnClicked.AddDynamic(this, &AProceduralBlockMeshActor::OnMeshClicked);
 	ProceduralMesh->OnBeginCursorOver.AddDynamic(this, &AProceduralBlockMeshActor::OnMouseOver);
@@ -50,22 +50,24 @@ void AProceduralBlockMeshActor::Tick(float DeltaTime)
 
 void AProceduralBlockMeshActor::OnMeshClicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
-	if (ButtonPressed == EKeys::LeftMouseButton)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Vertices for %s:"), *GetName());
-		for (const FVector& Vertex : Vertices)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Vertex: %s"), *Vertex.ToString());
-		}
-	}
+	// if (ButtonPressed == EKeys::LeftMouseButton)
+	// {
+	// 	// UE_LOG(LogTemp, Warning, TEXT("Vertices for %s:"), *GetName());
+	// 	// for (const FVector& Vertex : Vertices)
+	// 	// {
+	// 	// 	UE_LOG(LogTemp, Warning, TEXT("Vertex: %s"), *Vertex.ToString());
+	// 	// }
+	// }
 	if (district.IsValid() && !district->is_selected())
 	{
 		district->select();
+		UE_LOG(LogTemp, Warning, TEXT("mesh selected %p"), district.Get())
 		TouchedComponent->SetMaterial(0, DefaultMaterial);
 	}
 	else if (district.IsValid() && district->is_selected())
 	{
 		district->unselect();
+		UE_LOG(LogTemp, Warning, TEXT("mesh unselected"))
 		TouchedComponent->SetMaterial(0, Material);
 	}
 }

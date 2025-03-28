@@ -139,10 +139,10 @@ struct DrawingObject
 	{
 		mesh->Destroy();
 	}
-	void get_mesh()
+	void define_mesh()
 	{
 		name = mesh->GetActorLabel();
-		material_interface = mesh->ProceduralMesh->GetMaterial(NULL);
+		material_interface = mesh->ProceduralMesh->GetMaterial(0);
 		material = mesh->Material;
 		def_material = mesh->DefaultMaterial;
 	}
@@ -165,18 +165,18 @@ struct DrawingObject
 
 struct DrawingDistrict : DrawingObject
 {
-	DrawingDistrict(TSharedPtr<District> district_,
+	DrawingDistrict(TSharedPtr<District>& district_,
 	                AProceduralBlockMeshActor* mesh_,
 	                double start_height_): district(district_)
 	                                     , start_height(start_height_)
 	{
 		mesh = mesh_;
-		get_mesh();
+		define_mesh();
 	}
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
-		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
 		mesh->DefaultMaterial = def_material;
 		TArray<FVector> vertices;
@@ -208,12 +208,12 @@ struct DrawingStreet : DrawingObject
 			is_changing = true;
 		}
 		mesh = mesh_;
-		get_mesh();
+		define_mesh();
 	}
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
-		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
 		mesh->DefaultMaterial = def_material;
 		if (is_2d || !is_changing)
@@ -228,7 +228,7 @@ struct DrawingStreet : DrawingObject
 	void redraw_me(double width, double height)
 	{
 		mesh->SetActorLabel(name);
-		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
 		mesh->DefaultMaterial = def_material;
 		TArray<FVector> vertices;
@@ -263,12 +263,12 @@ struct DrawingHouse : DrawingObject
 	                         , start_height(start_height_)
 	{
 		mesh = mesh_;
-		get_mesh();
+		define_mesh();
 	}
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
-		mesh->ProceduralMesh->SetMaterial(NULL, material_interface);
+		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
 		mesh->DefaultMaterial = def_material;
 		if (is_2d)
@@ -305,11 +305,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ClearAll(FMapParams& map_params, FDebugParams& debug_params);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void AttachDistricts();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void DivideDistricts();
 	
 	void clear_all();
 
@@ -349,6 +353,7 @@ private:
 	TArray<TSharedPtr<Node>> map_borders_array{};
 	TArray<TSharedPtr<District>> figures_array{};
 	TArray<TSharedPtr<Street>> streets_array{};
+	TArray<TSharedPtr<Street>> segments_array{};
 	TArray<FVector> debug_points_array{};
 	TArray<TSharedPtr<Node>> roads{};
 	TArray<TSharedPtr<District>> river_figures;

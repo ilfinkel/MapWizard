@@ -188,7 +188,9 @@ void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TShar
 	}
 	create_mesh_2d(Mesh, vertices, StarterHeight);
 }
-AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
+AMainTerrain::AMainTerrain() : MapParams()
+                             , BaseComponent(nullptr)
+                             , BaseMaterial(nullptr)
                              , WaterMaterial(nullptr)
                              , DocsMaterial(nullptr)
                              , RoyalMaterial(nullptr)
@@ -199,8 +201,6 @@ AMainTerrain::AMainTerrain() : BaseMaterial(nullptr)
                              , RoadMaterial(nullptr)
                              , MainRoadMaterial(nullptr)
                              , WallMaterial(nullptr)
-                             , MapParams()
-                             , BaseComponent(nullptr)
 {
 	// PrimaryActorTick.bCanEverTick = false;
 }
@@ -225,6 +225,22 @@ void AMainTerrain::RedrawAll(bool is_2d_)
 	}
 	// draw_all();
 }
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllSelected()
+{
+	TArray<AProceduralBlockMeshActor*> districts_to_get{};
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
+		if (drawing_districts[i].district->is_selected())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
+			districts_to_get.Add(drawing_districts[i].mesh);
+		}
+	}
+	return districts_to_get;
+}
+
 void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
 {
 	roads.Empty();
@@ -277,7 +293,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug
 		OrthographicCamera->SetActorRotation(DownwardRotation);
 
 		TerrainGen gen(MapParams);
-		gen.create_terrain(roads, figures_array, streets_array, river_figures, map_borders_array, debug_points_array);
+		gen.create_terrain(roads, figures_array, streets_array, segments_array, river_figures, map_borders_array, debug_points_array);
 		gen.empty_all();
 		draw_all();
 		AActor* ViewTarget = PlayerController->GetViewTarget();
@@ -293,54 +309,74 @@ void AMainTerrain::ClearAll(FMapParams& map_params, FDebugParams& debug_params)
 }
 void AMainTerrain::AttachDistricts()
 {
-	TArray<TSharedPtr<District>> districts_to_attach;
-	TArray<TSharedPtr<District>> districts_to_remove;
+	TArray<TSharedPtr<District>> districts_to_attach{};
+	TArray<TSharedPtr<District>> districts_to_remove{};
+	TArray<TSharedPtr<Street>> segments_to_delete{};
 	for (int i = 0; i < drawing_districts.Num(); i++)
 	{
+		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
 		if (drawing_districts[i].district->is_selected())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
 			districts_to_attach.Add(drawing_districts[i].district);
 		}
+	}
+	if (districts_to_attach.Num()<2)
+	{
+		return;
 	}
 	districts_to_attach.Sort([&](TSharedPtr<District> d1, TSharedPtr<District> d2) { return d1->is_adjacent(d2); });
 	for (int i = 1; i < districts_to_attach.Num(); i++)
 	{
-		TArray<TSharedPtr<Node>> figure1 = districts_to_attach[0]->figure;
+		TArray<TSharedPtr<Node>> figure1 = districts_to_attach[i-1]->figure;
 		TArray<TSharedPtr<Node>> figure2 = districts_to_attach[i]->figure;
-		if (districts_to_attach[0]->attach_district(districts_to_attach[i]) && districts_to_attach[0]->is_adjacent(districts_to_attach[i]))
+		if (districts_to_attach[i-1]->attach_district(districts_to_attach[i], segments_to_delete) && districts_to_attach[0]->is_adjacent(districts_to_attach[i]))
 		{
 			districts_to_remove.Add(districts_to_attach[i]);
-			districts_to_attach[0]->self_figure = districts_to_attach[0]->shrink_figure_with_roads(districts_to_attach[0]->figure,
+			districts_to_attach[i-1]->self_figure = districts_to_attach[0]->shrink_figure_with_roads(districts_to_attach[0]->figure,
 				MapParams.road_width, MapParams.main_road_width);
 			for (auto j = 0; j < figure1.Num(); j++)
 			{
 				if (districts_to_attach[0]->figure.Contains(figure1[j]))
 				{
+					for (auto& c:figure1[j]->conn)
+					{
+						segments_to_delete.AddUnique(c->get_street());
+					}
 					figure1[j]->delete_me();
 				}
 			}
 			for (auto j = 0; j < figure2.Num(); j++)
 			{
-				if (districts_to_attach[0]->figure.Contains(figure2[j]))
+				if (districts_to_attach[i-1]->figure.Contains(figure2[j]))
 				{
+					for (auto& c:figure2[j]->conn)
+					{
+						segments_to_delete.AddUnique(c->get_street());
+					}
 					figure2[j]->delete_me();
 				}
 			}
 		}
 	}
-	drawing_districts.RemoveAll([&](DrawingDistrict dist)
+
+	drawing_streets.RemoveAll([&](DrawingStreet& d_street)
 	{
-		if (districts_to_remove.Contains(dist.district))
+		if (segments_to_delete.Contains(d_street.street))
 		{
-			dist.delete_mesh();
+			d_street.delete_mesh();
+			d_street.street.Reset();
 			return true;
 		}
 		return false;
 	});
-	for (auto dd : drawing_districts)
+	
+	for (auto& dd : drawing_districts)
 	{
 		if (dd.district->is_selected())
 		{
+			dd.district->self_figure = dd.district->shrink_figure_with_roads(dd.district->figure,MapParams.road_width, MapParams.main_road_width);
+			dd.draw_me();
 			dd.district->unselect();
 		}
 		if (districts_to_attach[0] == dd.district)
@@ -348,52 +384,41 @@ void AMainTerrain::AttachDistricts()
 			dd.draw_me();
 		}
 	}
-	TArray<DrawingStreet> new_streets;
-	TArray<int> delete_streets;
-
-
-	for (int i = 0; i < drawing_streets.Num(); i++)
+	
+	drawing_districts.RemoveAll([&](DrawingDistrict& d_district)
 	{
-		auto street = drawing_streets[i];
-		TArray<TSharedPtr<Node>> cur_street{drawing_streets[i].street->street_vertices[0]};
-		for (int j = 1; j < drawing_streets[i].street->street_vertices.Num(); j++)
+		if (districts_to_remove.Contains(d_district.district))
 		{
-			if (!drawing_streets[i].street->street_vertices[j - 1]->get_next_point(drawing_streets[i].street->street_vertices[j]->get_point()).IsSet())
-			{
-				if (!cur_street.IsEmpty())
-				{
-					auto new_street = drawing_streets[i];
-					new_street.street->street_vertices.Empty();
-					for (auto& p : cur_street)
-					{
-						new_street.street->street_vertices.Add(p);
-					}
-					new_streets.Add(new_street);
-					cur_street.Empty();
-				}
-				break;
-			}
-			if (cur_street.IsEmpty())
-			{
-				cur_street.Add(drawing_streets[i].street->street_vertices[j - 1]);
-			}
-			cur_street.Add(drawing_streets[i].street->street_vertices[j]);
+			d_district.delete_mesh();
+			d_district.district.Reset();
+			return true;
+		}
+		return false;
+	});
+}
+void AMainTerrain::DivideDistricts()
+{
+	TArray<TSharedPtr<District>> districts_to_divide{};
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
+		if (drawing_districts[i].district->is_selected())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
+			districts_to_divide.Add(drawing_districts[i].district);
 		}
 	}
-	delete_streets.Sort([](int32 A, int32 B) { return A > B; });
-
-	for (int32 Index : delete_streets)
+	
+	drawing_districts.RemoveAll([&](DrawingDistrict& d_district)
 	{
-		if (drawing_streets.IsValidIndex(Index))
+		if (districts_to_divide.Contains(d_district.district))
 		{
-			drawing_streets.RemoveAt(Index);
+			d_district.delete_mesh();
+			d_district.district.Reset();
+			return true;
 		}
-	}
-	for (auto& ns : new_streets)
-	{
-		ns.draw_me();
-		drawing_streets.Add(ns);
-	}
+		return false;
+	});
 }
 void AMainTerrain::clear_all()
 {
@@ -428,7 +453,7 @@ void AMainTerrain::Tick(float DeltaTime)
 }
 inline void AMainTerrain::initialize_all()
 {
-
+	// Vulkan.WaitForIdleOnSubmit=1;
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	MapParams.update_me();
@@ -483,7 +508,7 @@ inline void AMainTerrain::initialize_all()
 	// Super::BeginPlay();
 
 	TerrainGen gen(MapParams);
-	gen.create_terrain(roads, figures_array, streets_array, river_figures, map_borders_array, debug_points_array);
+	gen.create_terrain(roads, figures_array, streets_array, segments_array, river_figures, map_borders_array, debug_points_array);
 	gen.empty_all();
 	draw_all();
 	AActor* ViewTarget = PlayerController->GetViewTarget();
@@ -547,7 +572,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -560,7 +585,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, LuxuryMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, LuxuryMaterial);
 			MeshComponent2->Material = LuxuryMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -572,7 +597,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, DocsMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, DocsMaterial);
 			MeshComponent2->Material = DocsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -584,7 +609,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoyalMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, RoyalMaterial);
 			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -596,7 +621,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, SlumsMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, SlumsMaterial);
 			MeshComponent2->Material = SlumsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -608,7 +633,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, ResidentialMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, ResidentialMaterial);
 			MeshComponent2->Material = ResidentialMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -620,7 +645,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
 			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -632,7 +657,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BaseMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
 			MeshComponent2->Material = BaseMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -646,7 +671,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(HouseName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
@@ -665,14 +690,14 @@ void AMainTerrain::draw_all()
 	// 		AProceduralBlockMeshActor* MeshComponent2 =
 	// 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 	// 		MeshComponent2->SetActorLabel(ActorName);
-	// 		MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
+	// 		MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
 	// 		MeshComponent2->Material = WaterMaterial;
 	// 		MeshComponent2->DefaultMaterial = BaseMaterial;
 	// 		create_mesh_2d(MeshComponent2, river_figure->figure, 150);
 	// 	}
 	// }
 
-	for (auto street : streets_array)
+	for (auto street : segments_array)
 	{
 		if (street->type == point_type::road)
 		{
@@ -680,7 +705,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, RoadMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
 			MeshComponent2->Material = RoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
@@ -692,7 +717,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, MainRoadMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
 			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
@@ -704,7 +729,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WaterMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.21, false, is_2d));
@@ -716,7 +741,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, WallMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, WallMaterial);
 			MeshComponent2->Material = WallMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.022, true, is_2d));
@@ -735,7 +760,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent2->SetActorLabel(ActorName);
-			MeshComponent2->ProceduralMesh->SetMaterial(NULL, BuildingMaterial);
+			MeshComponent2->ProceduralMesh->SetMaterial(0, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 
