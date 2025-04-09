@@ -825,17 +825,3 @@ void AMainTerrain::get_cursor_hit_location()
 		}
 	}
 }
-TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllSelected()
-{
-	TArray<AProceduralBlockMeshActor*> districts_to_get{};
-	for (int i = 0; i < drawing_districts.Num(); i++)
-	{
-		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
-		if (drawing_districts[i].district->is_selected())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
-				districts_to_get.Add(drawing_districts[i].mesh);
-		}
-	}
-	return districts_to_get;
-}
