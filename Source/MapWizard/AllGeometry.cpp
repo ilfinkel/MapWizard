@@ -405,31 +405,39 @@ bool District::attach_district(TSharedPtr<District> other_district, TArray<TShar
 
 bool District::divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2, TSharedPtr<Street> new_seg)
 {
-	
+	dist1->figure.Empty();
+	dist2->figure.Empty();
+	new_seg->street_vertices.Empty();
 	int points_num = figure.Num();
 	if (points_num<=3) return false;
 	int rand_point = FMath::FRand()*(points_num-1);
 	new_seg->street_vertices.Add(figure[rand_point]);
-	for (int i = 0; i < points_num; i++)
+	for (int i = 1; i < points_num; i++)
 	{
-		if ((abs(rand_point-i+points_num)%points_num-(rand_point+i+points_num)%points_num)<=1)
+		int left = (rand_point-i+points_num)%points_num;
+		int right = (rand_point+i+points_num)%points_num;
+		if (abs(left-right)<=1)
 		{
-			if ((rand_point-i+points_num)%points_num == (rand_point+i+points_num)%points_num)
+			if (left == right)
 			{
-				new_seg->street_vertices.Add(figure[(rand_point-i+points_num)%points_num]);
+				new_seg->street_vertices.Add(figure[left]);
 			}
 			else
 			{
-				new_seg->street_vertices.Add(figure[(rand_point-i+points_num)%points_num+FMath::RandBool()]);
+				new_seg->street_vertices.Add(figure[left+FMath::RandBool()]);
 			}
 			break;
 		}
-		FVector new_point(figure[(rand_point-i+points_num)%points_num]->get_FVector()+figure[(rand_point+i+points_num)%points_num]->get_FVector()/2);
+		FVector new_point(figure[left]->get_FVector()+figure[right]->get_FVector()/2);
 		new_seg->street_vertices.Add(MakeShared<Node>(new_point));
+		dist1->figure.Add(figure[right]);
+		dist2->figure.Insert(figure[left],0);
 	}
-
-	
-
+	for (auto& node: new_seg->street_vertices)
+	{
+		dist1->figure.Insert(node,0);
+		dist2->figure.Add(node);
+	}
 	return true;
 }
 

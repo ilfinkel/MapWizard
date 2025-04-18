@@ -165,7 +165,7 @@ struct DrawingObject
 
 struct DrawingDistrict : DrawingObject
 {
-	DrawingDistrict(TSharedPtr<District>& district_,
+	DrawingDistrict(TSharedPtr<District> district_,
 	                AProceduralBlockMeshActor* mesh_,
 	                double start_height_): district(district_)
 	                                     , start_height(start_height_)

@@ -404,7 +404,6 @@ void AMainTerrain::DivideDistricts()
 		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
 		if (drawing_districts[i].district->is_selected())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
 			districts_to_divide.Add(drawing_districts[i].district);
 		}
 	}
@@ -413,6 +412,40 @@ void AMainTerrain::DivideDistricts()
 	{
 		if (districts_to_divide.Contains(d_district.district))
 		{
+			AProceduralBlockMeshActor* MeshComponent =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent->SetActorLabel(d_district.mesh->GetActorLabel());
+			MeshComponent->ProceduralMesh->SetMaterial(0, d_district.mesh->Material);
+			MeshComponent->Material = d_district.mesh->Material;
+			MeshComponent->DefaultMaterial = d_district.mesh->DefaultMaterial;
+			auto District1 = MakeShared<District>();
+			District1->set_type(d_district.district->get_type());
+			
+			AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetActorLabel(d_district.mesh->GetActorLabel());
+			MeshComponent2->ProceduralMesh->SetMaterial(0, d_district.mesh->Material);
+			MeshComponent2->Material = d_district.mesh->Material;
+			MeshComponent2->DefaultMaterial = d_district.mesh->DefaultMaterial;
+			auto District2 = MakeShared<District>();
+			District2->set_type(d_district.district->get_type());
+
+			DrawingDistrict dd1(District1, MeshComponent, d_district.start_height);
+			DrawingDistrict dd2(District2, MeshComponent2, d_district.start_height);
+
+			Street street({});
+
+			d_district.district->divide_me(dd1.district,dd2.district, MakeShared<Street>(street));
+			
+			dd1.district->self_figure = dd1.district->shrink_figure_with_roads(dd1.district->figure,MapParams.road_width, MapParams.main_road_width);
+			dd2.district->self_figure = dd2.district->shrink_figure_with_roads(dd2.district->figure,MapParams.road_width, MapParams.main_road_width);
+
+			dd1.draw_me();
+			dd2.draw_me();
+
+			drawing_districts.Add(dd1);
+			drawing_districts.Add(dd2);
+
 			d_district.delete_mesh();
 			d_district.district.Reset();
 			return true;

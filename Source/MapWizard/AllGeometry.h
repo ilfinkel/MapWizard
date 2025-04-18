@@ -222,6 +222,7 @@ struct District
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
 	}
+	
 	explicit District(TArray<TSharedPtr<Node>> figure_);
 	~District()
 	{
