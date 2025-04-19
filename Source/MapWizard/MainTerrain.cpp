@@ -580,7 +580,7 @@ void AMainTerrain::draw_all()
 
 	// Создаем физическое тело для коллизии
 	DrawingObject obj;
-	obj.create_mesh_2d(Base, map_borders_array, 0);
+	obj.create_mesh_2d(Base, map_borders_array, 0.01);
 
 
 	static int32 ActorCounter = 0;
@@ -609,7 +609,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 			// create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
 		}
 		else if (r->get_type() == district_type::luxury)
@@ -622,7 +622,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = LuxuryMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 		else if (r->get_type() == district_type::dock)
 		{
@@ -634,7 +634,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = DocsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 		else if (r->get_type() == district_type::royal)
 		{
@@ -646,7 +646,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = RoyalMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 		else if (r->get_type() == district_type::slums)
 		{
@@ -658,7 +658,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = SlumsMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 		else if (r->get_type() == district_type::residential)
 		{
@@ -670,7 +670,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = ResidentialMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 		else if (r->get_type() == district_type::tower)
 		{
@@ -682,7 +682,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 		else
 		{
@@ -694,7 +694,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = BaseMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.01));
+			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 
 		int house_count = 0;
@@ -709,7 +709,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->DefaultMaterial = BaseMaterial;
 			MeshComponent2->SetDistrict(r);
 
-			drawing_houses.Add(DrawingHouse(p, MeshComponent2, 0.02, is_2d));
+			drawing_houses.Add(DrawingHouse(p, MeshComponent2, 0.04, is_2d));
 		}
 	}
 	// {
@@ -741,7 +741,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
 			MeshComponent2->Material = RoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.03, false, is_2d));
 			// create_mesh_2d(MeshComponent2, street->street_vertexes, 0.19);
 		}
 		else if (street->type == point_type::main_road)
@@ -753,7 +753,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
 			MeshComponent2->Material = MainRoadMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.19, false, is_2d));
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.031, false, is_2d));
 			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
 		else if (street->type == point_type::river)
@@ -765,7 +765,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
 			MeshComponent2->Material = WaterMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.21, false, is_2d));
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.032, false, is_2d));
 			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
 		}
 		else if (street->type == point_type::wall)
@@ -777,15 +777,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(0, WallMaterial);
 			MeshComponent2->Material = WallMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.022, true, is_2d));
-			// if (is_2d)
-			// {
-			// 	create_mesh_2d(MeshComponent2, street.street_vertexes, 0.022);
-			// }
-			// else
-			// {
-			// 	create_mesh_3d(MeshComponent2, street.street_vertexes, 0.022, 10);
-			// }
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.033, true, is_2d));
 		}
 		else
 		{
@@ -796,9 +788,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->ProceduralMesh->SetMaterial(0, BuildingMaterial);
 			MeshComponent2->Material = BuildingMaterial;
 			MeshComponent2->DefaultMaterial = BaseMaterial;
-
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.24, false, is_2d));
-			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.024);
+			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.034, false, is_2d));
 		}
 	}
 	for (auto a : drawing_streets)
@@ -834,11 +824,11 @@ void AMainTerrain::get_cursor_hit_location()
 			FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
 			FVector CameraForwardVector = PlayerController->PlayerCameraManager->GetCameraRotation().Vector();
 			FVector Start = CameraLocation; // Начальная точка линии (например, от камеры)
-			FVector End = Start + (CameraForwardVector * 10000.01); // Конечная точка линии
+			FVector End = Start + (CameraForwardVector * 10000.02); // Конечная точка линии
 
 			// FVector HitLocation = HitResult.Location;
 			// FVector HitWatch = HitLocation;
-			// DrawDebugString(GetWorld(), HitWatch, HitLocation.ToString(), nullptr, FColor::Red, 50.01,
+			// DrawDebugString(GetWorld(), HitWatch, HitLocation.ToString(), nullptr, FColor::Red, 50.02,
 			// 				true);
 			FHitResult HitResult;
 			FCollisionQueryParams Params;

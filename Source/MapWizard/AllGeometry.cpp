@@ -136,6 +136,7 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 			}
 			else road_height1 = 0;
 		}
+		else road_height1 = 0;
 		if (curr_next.IsSet())
 		{
 			if (curr_next->IsValid() )
@@ -151,6 +152,7 @@ TArray<Point> District::shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figur
 			}
 			else road_height2 = 0;
 		}
+		else road_height2 = 0;
 		
 		
 		FVector parralel1_beg = AllGeometry::create_segment_at_angle(figure_vertices[Prev]->get_FVector(), figure_vertices[Curr]->get_FVector(),
@@ -410,34 +412,52 @@ bool District::divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2,
 	new_seg->street_vertices.Empty();
 	int points_num = figure.Num();
 	if (points_num<=3) return false;
-	int rand_point = FMath::FRand()*(points_num-1);
-	new_seg->street_vertices.Add(figure[rand_point]);
-	for (int i = 1; i < points_num; i++)
+	
+	int beg_point = FMath::FRand()*(points_num-1);
+	int end_point = (beg_point+(points_num/2))%points_num;
+	// dist1->figure.Add(figure[rand_point]);
+	// dist2->figure.Add(figure[rand_point]);
+	new_seg->street_vertices.Add(figure[beg_point]);
+	if (end_point<beg_point)
 	{
-		int left = (rand_point-i+points_num)%points_num;
-		int right = (rand_point+i+points_num)%points_num;
-		if (abs(left-right)<=1)
-		{
-			if (left == right)
-			{
-				new_seg->street_vertices.Add(figure[left]);
-			}
-			else
-			{
-				new_seg->street_vertices.Add(figure[left+FMath::RandBool()]);
-			}
-			break;
-		}
-		FVector new_point(figure[left]->get_FVector()+figure[right]->get_FVector()/2);
-		new_seg->street_vertices.Add(MakeShared<Node>(new_point));
-		dist1->figure.Add(figure[right]);
-		dist2->figure.Insert(figure[left],0);
+		int point = end_point;
+		end_point = beg_point;
+		beg_point = point;
 	}
-	for (auto& node: new_seg->street_vertices)
+	for (int i = beg_point; i<=end_point; i++)
 	{
-		dist1->figure.Insert(node,0);
-		dist2->figure.Add(node);
+		dist1->figure.Add(figure[i]);
 	}
+	for (int i = 0; i<=end_point-beg_point; i++)
+	{
+		dist1->figure.Add(figure[(i+end_point)%points_num]);
+	}
+	// for (int i = 1; i < points_num; i++)
+	// {
+	// 	int left = (rand_point-i+points_num)%points_num;
+	// 	int right = (rand_point+i+points_num)%points_num;
+	// 	if (abs(left-right)<=1)
+	// 	{
+	// 		if (left == right)
+	// 		{
+	// 			new_seg->street_vertices.Add(figure[left]);
+	// 		}
+	// 		else
+	// 		{
+	// 			new_seg->street_vertices.Add(figure[left+FMath::RandBool()]);
+	// 		}
+	// 		break;
+	// 	}
+	// 	FVector new_point(figure[left]->get_FVector()+figure[right]->get_FVector()/2);
+	// 	new_seg->street_vertices.Add(MakeShared<Node>(new_point));
+	// 	dist1->figure.Add(figure[right]);
+	// 	dist2->figure.Insert(figure[left],0);
+	// }
+	// for (auto& node: new_seg->street_vertices)
+	// {
+	// 	dist1->figure.Insert(node,0);
+	// 	dist2->figure.Add(node);
+	// }
 	return true;
 }
 
