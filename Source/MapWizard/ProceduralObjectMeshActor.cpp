@@ -38,26 +38,10 @@ void AProceduralBlockMeshActor::BeginPlay()
 void AProceduralBlockMeshActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// if (district.IsValid() && district->is_selected())
-	// {
-	// 	ProceduralMesh->SetMaterial(0, DefaultMaterial);
-	// }
-	// if (district.IsValid() && !district->is_selected())
-	// {
-	// 	ProceduralMesh->SetMaterial(0, Material);
-	// }
 }
 
 void AProceduralBlockMeshActor::OnMeshClicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
-	// if (ButtonPressed == EKeys::LeftMouseButton)
-	// {
-	// 	// UE_LOG(LogTemp, Warning, TEXT("Vertices for %s:"), *GetName());
-	// 	// for (const FVector& Vertex : Vertices)
-	// 	// {
-	// 	// 	UE_LOG(LogTemp, Warning, TEXT("Vertex: %s"), *Vertex.ToString());
-	// 	// }
-	// }
 	if (district.IsValid() && !district->is_selected())
 	{
 		district->select();

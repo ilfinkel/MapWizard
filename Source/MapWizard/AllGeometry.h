@@ -74,15 +74,34 @@ struct Point
 		}
 		return *this;
 	}
+	bool operator==(const Point& Other) const
+	{
+		return point == Other.point;
+	}
 
 };
-
-struct Street
+struct DynamicObject
 {
+	void select()
+	{
+		selected = true;
+		// UE_LOG(LogTemp, Warning, TEXT("selected %p"), this)
+	}
+	void unselect() {
+		selected = false; 
+	}
+	bool is_selected() { return selected; };
+	protected:
+	bool selected = false;
+};
+struct Street : public DynamicObject
+{
+	Street(){};
 	Street(TArray<TSharedPtr<Node>> points_): street_vertices(points_)
 	                                        , type(point_type::unidentified)
 	{
 	}
+	
 	TArray<FVector> street_vertexes{};
 	TArray<TSharedPtr<Node>> street_vertices{};
 	point_type type = point_type::unidentified;
@@ -199,20 +218,21 @@ public:
 	bool unmovable = false;
 };
 
-struct House
+struct House : public DynamicObject
 {
 	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
 	                                               , height(height_)
 	{
 	}
 	~House();
+	
 	TArray<FVector> house_figure;
 	double height;
 };
 
 
 
-struct District
+struct District : public DynamicObject
 {
 	explicit District(): main_roads(0)
 	          , is_river_in(false)
@@ -252,21 +272,9 @@ struct District
 	bool attach_district(TSharedPtr<District> other_district, TArray<TSharedPtr<Street>>& streets_to_delete);
 	bool divide_me(TSharedPtr<District> dist1,TSharedPtr<District> dist2, TSharedPtr<Street> new_seg);
 	bool is_adjacent(TSharedPtr<District> other_district);
-	void select()
-	{
-		selected = true;
-		// UE_LOG(LogTemp, Warning, TEXT("selected %p"), this)
-	}
-	void unselect() {
-		selected = false; 
-		UE_LOG(LogTemp, Warning, TEXT("unselected"))
-	}
-	bool is_selected() { return selected; };
 	
-
 private:
 	district_type type;
-	bool selected = false;
 };
 
 

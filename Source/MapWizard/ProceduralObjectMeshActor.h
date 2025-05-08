@@ -42,9 +42,9 @@ public:
 	{
 		MeshComponentName = NewName;
 	}
-	void SetDistrict(TSharedPtr<District> distr)
+	void SetDynamicObject(TSharedPtr<DynamicObject> distr)
 	{
 		district = distr;
 	}
-	TSharedPtr<District> district;
+	TSharedPtr<DynamicObject> district;
 };

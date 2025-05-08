@@ -173,6 +173,12 @@ struct DrawingDistrict : DrawingObject
 		mesh = mesh_;
 		define_mesh();
 	}
+	void delete_mesh()
+	{
+		// district->unselect();
+		district.Reset();
+		mesh->Destroy();
+	}
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
@@ -186,7 +192,7 @@ struct DrawingDistrict : DrawingObject
 			vertices.Add(aa);
 		}
 		create_mesh_2d(mesh, vertices, start_height);
-		mesh->SetDistrict(district);
+		mesh->SetDynamicObject(district);
 	}
 
 	TSharedPtr<District> district;
@@ -198,7 +204,6 @@ struct DrawingStreet : DrawingObject
 	DrawingStreet(TSharedPtr<Street> street_,
 	              AProceduralBlockMeshActor* mesh_,
 	              double start_height_,
-	              bool is_changing_,
 	              bool is_2d_): street(street_)
 	                          , is_2d(is_2d_)
 	                          , start_height(start_height_)
@@ -225,7 +230,7 @@ struct DrawingStreet : DrawingObject
 			create_mesh_3d(mesh, street->street_vertexes, start_height, 10);
 		}
 	}
-	void redraw_me(double width, double height)
+	void redraw_me(double width)
 	{
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
@@ -305,7 +310,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
-	TArray<AProceduralBlockMeshActor*> GetAllSelected();
+	TArray<AProceduralBlockMeshActor*> GetAllDistrictsSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllStreetsSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllHousesSelected();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
