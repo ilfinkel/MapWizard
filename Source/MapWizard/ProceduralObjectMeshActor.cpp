@@ -46,26 +46,26 @@ void AProceduralBlockMeshActor::OnMeshClicked(UPrimitiveComponent* TouchedCompon
 	{
 		district->select();
 		UE_LOG(LogTemp, Warning, TEXT("mesh selected %p"), district.Get())
-		TouchedComponent->SetMaterial(0, DefaultMaterial);
+		// TouchedComponent->SetMaterial(0, DefaultMaterial);
 	}
 	else if (district.IsValid() && district->is_selected())
 	{
 		district->unselect();
 		UE_LOG(LogTemp, Warning, TEXT("mesh unselected"))
-		TouchedComponent->SetMaterial(0, Material);
+		// TouchedComponent->SetMaterial(0, Material);
 	}
 }
 void AProceduralBlockMeshActor::OnMouseOver(UPrimitiveComponent* Component)
 {
-	if (Material)
-	{
-		Component->SetMaterial(0, DefaultMaterial);
-	}
+	// if (Material)
+	// {
+	// 	Component->SetMaterial(0, DefaultMaterial);
+	// }
 }
 void AProceduralBlockMeshActor::OnMouseOut(UPrimitiveComponent* Component)
 {
-	if (Component && Material && !(district.IsValid() && district->is_selected()))
-	{
-		Component->SetMaterial(0, Material);
-	}
+	// if (Component && Material && !(district.IsValid() && district->is_selected()))
+	// {
+	// 	Component->SetMaterial(0, Material);
+	// }
 }
