@@ -78,7 +78,14 @@ struct Point
 	{
 		return point == Other.point;
 	}
+};
 
+enum class object_type
+{
+	house,
+	street,
+	district,
+	unknown
 };
 struct DynamicObject
 {
@@ -90,18 +97,25 @@ struct DynamicObject
 	void unselect() {
 		selected = false; 
 	}
+	object_type get_object_type(){return object_type;}
 	bool is_selected() { return selected; };
 	protected:
 	bool selected = false;
+	object_type object_type;
+	
 };
 struct Street : public DynamicObject
 {
-	Street(){};
+	Street()
+	{
+		object_type = object_type::street;
+	};
 	Street(TArray<TSharedPtr<Node>> points_): street_vertices(points_)
 	                                        , type(point_type::unidentified)
 	{
+		object_type = object_type::street;
 	}
-	
+	// object_type get_object_type() override {return object_type;}
 	TArray<FVector> street_vertexes{};
 	TArray<TSharedPtr<Node>> street_vertices{};
 	point_type type = point_type::unidentified;
@@ -197,7 +211,7 @@ struct Node : TSharedFromThis<Node>
 	void set_used(bool used_) { point->used = used_; }
 	void set_unmovable() { unmovable = true; }
 	bool is_unmovable() { return unmovable; }
-	point_type get_type() { return point->type; }
+	point_type get_node_type() { return point->type; }
 	void set_type(point_type type_) { point->type = type_; }
 	TOptional<TSharedPtr<Conn>> get_next_point(TSharedPtr<Point> point_);
 	TOptional<TSharedPtr<Conn>> get_prev_point(TSharedPtr<Point> point_);
@@ -223,6 +237,7 @@ struct House : public DynamicObject
 	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
 	                                               , height(height_)
 	{
+		object_type = object_type::house;
 	}
 	~House();
 	
@@ -241,6 +256,8 @@ struct District : public DynamicObject
 		type = district_type::unknown;
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
+		
+		object_type = object_type::district;
 	}
 	
 	explicit District(TArray<TSharedPtr<Node>> figure_);
@@ -250,6 +267,7 @@ struct District : public DynamicObject
 		figure.Empty();
 		self_figure.Empty();
 	}
+
 	void clear_me()
 	{
 		figure.Empty();

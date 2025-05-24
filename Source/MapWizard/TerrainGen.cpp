@@ -36,9 +36,9 @@ TSharedPtr<Node> TerrainGen::insert_conn(const TSharedPtr<Node>& node1_to_insert
 		}
 	}
 	TSharedPtr<Node> new_node(MakeShared<Node>(node3_point));
-	if (node2_to_insert->get_type() == node1_to_insert->get_type())
+	if (node2_to_insert->get_node_type() == node1_to_insert->get_node_type())
 	{
-		new_node->set_type(node2_to_insert->get_type());
+		new_node->set_type(node2_to_insert->get_node_type());
 	}
 	add_conn(node1_to_insert, new_node);
 	add_conn(node2_to_insert, new_node);
@@ -121,7 +121,7 @@ void TerrainGen::move_road(const TSharedPtr<Node>& node)
 	FVector backup_point = node->get_FVector();
 	point_shift(point);
 
-	// if (node->get_type() == wall)
+	// if (node->get_node_type() == wall)
 	// {
 	// 	TSharedPtr<Node> wall1;
 	// 	TSharedPtr<Node> wall2;
@@ -129,7 +129,7 @@ void TerrainGen::move_road(const TSharedPtr<Node>& node)
 	// 	TSharedPtr<Node> main_road2;
 	// 	for (auto conn : node->conn)
 	// 	{
-	// 		if (conn->node->get_type() == wall)
+	// 		if (conn->node->get_node_type() == wall)
 	// 		{
 	// 			if (!wall1)
 	// 			{
@@ -137,7 +137,7 @@ void TerrainGen::move_road(const TSharedPtr<Node>& node)
 	// 			}
 	// 			wall2 = conn->node;
 	// 		}
-	// 		if (conn->node->get_type() == main_road)
+	// 		if (conn->node->get_node_type() == main_road)
 	// 		{
 	// 			if (!main_road1)
 	// 			{
@@ -711,7 +711,7 @@ void TerrainGen::create_guiding_roads()
 	// 		bridges[i].Key->get_FVector(), bridges[i].Value->get_FVector(), bridges[i].Value->get_FVector(), 0, 20));
 	// 	auto bridge2 = MakeShared<Node>(AllGeometry::create_segment_at_angle(
 	// 		bridges[i].Value->get_FVector(), bridges[i].Key->get_FVector(), bridges[i].Key->get_FVector(), 0, 20));
-	// 	create_segment(roads, bridge1, bridge2, true, bridge1->get_type(), 5000);
+	// 	create_segment(roads, bridge1, bridge2, true, bridge1->get_node_type(), 5000);
 	// 	roads.Add(bridge1);
 	// 	roads.Add(bridge2);
 	// }
@@ -1063,7 +1063,7 @@ void TerrainGen::shrink_roads()
 					}
 				}
 
-				if (target_node.IsValid() && node.IsValid() && node->get_type() < target_node->get_type())
+				if (target_node.IsValid() && node.IsValid() && node->get_node_type() < target_node->get_node_type())
 				{
 					for (auto del_node : node->conn)
 					{
@@ -1102,7 +1102,7 @@ void TerrainGen::create_usual_roads()
 
 	for (auto road_node : roads)
 	{
-		if (!road_node->is_used() && road_node->get_type() != point_type::river)
+		if (!road_node->is_used() && road_node->get_node_type() != point_type::river)
 		{
 			bool is_end = false;
 			if (road_node->conn.Num() == 1)
@@ -1158,7 +1158,7 @@ void TerrainGen::create_usual_roads()
 						
 						// create_usual_road_segment(add_road, road_node, new_node);
 						auto finish = create_segment(add_road, road_node, new_node, false, point_type::road, max_road_length);
-						if (finish.IsSet() && (finish.GetValue() != new_node || finish.GetValue()->get_type() == point_type::river))
+						if (finish.IsSet() && (finish.GetValue() != new_node || finish.GetValue()->get_node_type() == point_type::river))
 						{
 							is_end = true;
 						}
@@ -1294,7 +1294,7 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(TArray<TSharedPtr<Node>>&
 
 		while (intersection.IsSet())
 		{
-			if (intersection.GetValue()->get_type() == point_type::wall && type != point_type::wall)
+			if (intersection.GetValue()->get_node_type() == point_type::wall && type != point_type::wall)
 			{
 				return TSharedPtr<Node>();
 			}
@@ -1367,7 +1367,7 @@ void TerrainGen::point_shift(FVector& point)
 void TerrainGen::get_closed_figures(TArray<TSharedPtr<Node>> nodes, TArray<TSharedPtr<District>>& fig_array, int figure_threshold)
 {
 	// bool is_river;
-	// if (nodes.Num() > 0 && nodes[0]->get_type() == point_type::river)
+	// if (nodes.Num() > 0 && nodes[0]->get_node_type() == point_type::river)
 	// {
 	// 	is_river = true;
 	// }
@@ -1562,7 +1562,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 				{
 					point1 = true;
 				}
-				if (p->get_type() == point_type::main_road)
+				if (p->get_node_type() == point_type::main_road)
 				{
 					is_in_main++;
 				}
@@ -1929,11 +1929,11 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes, TArray<TSharedP
 			{
 				continue;
 			}
-			if (type != point_type::unidentified && (node->get_type() != type_used || nconn->node->get_type() != type_used))
+			if (type != point_type::unidentified && (node->get_node_type() != type_used || nconn->node->get_node_type() != type_used))
 			{
 				continue;
 			}
-			if (node->get_type() != nconn->node->get_type() && is_persistent)
+			if (node->get_node_type() != nconn->node->get_node_type() && is_persistent)
 			{
 				continue;
 			}
@@ -2072,7 +2072,7 @@ TSharedPtr<Node> TerrainGen::get_next_road_node(TSharedPtr<Node> first_point, TS
 	{
 		third_point = second_node_conn->node;
 
-		if ((is_persistent && third_point->get_type() != type) || third_point == first_point)
+		if ((is_persistent && third_point->get_node_type() != type) || third_point == first_point)
 		{
 			continue;
 		}

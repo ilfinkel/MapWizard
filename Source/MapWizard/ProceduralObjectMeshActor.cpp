@@ -12,8 +12,6 @@ AProceduralBlockMeshActor::AProceduralBlockMeshActor()
 
 	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(*MeshComponentName);
 	RootComponent = ProceduralMesh;
-	// ProceduralMesh->SetupAttachment(RootComponent);
-	// ProceduralMesh->RegisterComponent();
 	ProceduralMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // Включаем коллизии
 	ProceduralMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic); // Устанавливаем тип объекта
 	ProceduralMesh->SetCollisionResponseToAllChannels(ECR_Ignore); // Игнорируем все каналы
@@ -29,8 +27,6 @@ void AProceduralBlockMeshActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ProceduralMesh->SetMaterial(0, DefaultMaterial);
-	// Привязка события клика
 	ProceduralMesh->OnClicked.AddDynamic(this, &AProceduralBlockMeshActor::OnMeshClicked);
 	ProceduralMesh->OnBeginCursorOver.AddDynamic(this, &AProceduralBlockMeshActor::OnMouseOver);
 	ProceduralMesh->OnEndCursorOver.AddDynamic(this, &AProceduralBlockMeshActor::OnMouseOut);
@@ -42,6 +38,7 @@ void AProceduralBlockMeshActor::Tick(float DeltaTime)
 
 void AProceduralBlockMeshActor::OnMeshClicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
+	selected_object=this;
 	if (district.IsValid() && !district->is_selected())
 	{
 		district->select();

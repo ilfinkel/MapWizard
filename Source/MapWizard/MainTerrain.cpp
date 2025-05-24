@@ -269,6 +269,25 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHousesSelected()
 	return houses_to_get;
 }
 
+AProceduralBlockMeshActor* AMainTerrain::GetLastSelected()
+{
+	return selected_object;
+}
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetLastTypeSelected()
+{
+	switch (selected_object->district->get_object_type())
+	{
+		case object_type::district:
+		return GetAllDistrictsSelected();
+		case object_type::street:
+		return GetAllStreetsSelected();
+		case object_type::house:
+		return GetAllHousesSelected();
+	default:return {};
+	}
+}
+
+
 void AMainTerrain::ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params)
 {
 	roads.Empty();
@@ -435,19 +454,21 @@ void AMainTerrain::DivideDistricts()
 			IndicesToRemove.Add(i);
 			AProceduralBlockMeshActor* MeshComponent =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent->SetSelectedObject(selected_object);
 			MeshComponent->SetActorLabel(drawing_districts[i].mesh->GetActorLabel());
 			MeshComponent->ProceduralMesh->SetMaterial(0, drawing_districts[i].mesh->Material);
 			MeshComponent->Material = drawing_districts[i].mesh->Material;
-			MeshComponent->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
+			// MeshComponent->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
 			auto District1 = MakeShared<District>();
 			District1->set_type(drawing_districts[i].district->get_type());
 		
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent2->SetSelectedObject(selected_object);
 			MeshComponent2->SetActorLabel(drawing_districts[i].mesh->GetActorLabel());
 			MeshComponent2->ProceduralMesh->SetMaterial(0, drawing_districts[i].mesh->Material);
 			MeshComponent2->Material = drawing_districts[i].mesh->Material;
-			MeshComponent2->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
+			// MeshComponent2->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
 			auto District2 = MakeShared<District>();
 			District2->set_type(drawing_districts[i].district->get_type());
 
@@ -642,6 +663,7 @@ void AMainTerrain::draw_all()
 		FString ActorName;
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+		MeshComponent2->SetSelectedObject(selected_object);
 		MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
 		MeshComponent2->Material = BaseMaterial;
 		if (r->get_type() == district_type::water)
@@ -715,40 +737,25 @@ void AMainTerrain::draw_all()
 			FString HouseName = FString::Printf(TEXT("%s_House_%d"), *ActorName, ++house_count);
 			AProceduralBlockMeshActor* MeshComponent =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+			MeshComponent->SetSelectedObject(selected_object);
 			MeshComponent->SetActorLabel(HouseName);
 			MeshComponent->ProceduralMesh->SetMaterial(0, BuildingMaterial);
 			MeshComponent->Material = BuildingMaterial;
-			MeshComponent->DefaultMaterial = BaseMaterial;
+			// MeshComponent->DefaultMaterial = BaseMaterial;
 			MeshComponent->SetDynamicObject(p);
 
 			drawing_houses.Add(DrawingHouse(p, MeshComponent, 0.04, is_2d));
 		}
 	}
-	// {
-	// if (!river_figures.IsEmpty())
-	// {
-	// 	for (auto& river_figure : river_figures)
-	// 	{
-	// 		// Algo::Reverse(river_figure.figure);
-	//
-	// 		FString ActorName = FString::Printf(TEXT("River_%d"), ++ActorCounter);
-	// 		AProceduralBlockMeshActor* MeshComponent2 =
-	// 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-	// 		MeshComponent2->SetActorLabel(ActorName);
-	// 		MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-	// 		MeshComponent2->Material = WaterMaterial;
-	// 		MeshComponent2->DefaultMaterial = BaseMaterial;
-	// 		create_mesh_2d(MeshComponent2, river_figure->figure, 150);
-	// 	}
-	// }
 
 	for (auto street : segments_array)
 	{
 		AProceduralBlockMeshActor* MeshComponent2 =
 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+		MeshComponent2->SetSelectedObject(selected_object);
 		MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
 		MeshComponent2->Material = RoadMaterial;
-		MeshComponent2->DefaultMaterial = BaseMaterial;
+		// MeshComponent2->DefaultMaterial = BaseMaterial;
 		MeshComponent2->SetDynamicObject(street);
 		if (street->type == point_type::road)
 		{
@@ -829,10 +836,6 @@ void AMainTerrain::get_cursor_hit_location()
 			FVector Start = CameraLocation; // Начальная точка линии (например, от камеры)
 			FVector End = Start + (CameraForwardVector * 10000.02); // Конечная точка линии
 
-			// FVector HitLocation = HitResult.Location;
-			// FVector HitWatch = HitLocation;
-			// DrawDebugString(GetWorld(), HitWatch, HitLocation.ToString(), nullptr, FColor::Red, 50.02,
-			// 				true);
 			FHitResult HitResult;
 			FCollisionQueryParams Params;
 			Params.AddIgnoredActor(this); // Игнорировать самого себя

@@ -46,5 +46,10 @@ public:
 	{
 		district = distr;
 	}
+	void SetSelectedObject(AProceduralBlockMeshActor* selected_object_)
+	{
+		selected_object = selected_object_;
+	}
 	TSharedPtr<DynamicObject> district;
+	AProceduralBlockMeshActor* selected_object;
 };

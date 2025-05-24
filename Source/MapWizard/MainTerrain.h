@@ -316,6 +316,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllHousesSelected();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	AProceduralBlockMeshActor* GetLastSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetLastTypeSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ReinitializeActor(FMapParams& map_params, FDebugParams& debug_params);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void ClearAll(FMapParams& map_params, FDebugParams& debug_params);
@@ -367,5 +371,6 @@ private:
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
+	AProceduralBlockMeshActor* selected_object;
 };
 
