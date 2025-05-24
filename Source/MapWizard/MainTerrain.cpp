@@ -234,7 +234,6 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllDistrictsSelected()
 		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
 		if (drawing_districts[i].district->is_selected())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
 			districts_to_get.Add(drawing_districts[i].mesh);
 		}
 	}
@@ -247,7 +246,6 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreetsSelected()
 	{
 		if (drawing_streets[i].street->is_selected())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
 			streets_to_get.Add(drawing_streets[i].mesh);
 		}
 	}
@@ -262,28 +260,107 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHousesSelected()
 		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
 		if (drawing_houses[i].house->is_selected())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("selected in loop"))
 			houses_to_get.Add(drawing_districts[i].mesh);
 		}
 	}
 	return houses_to_get;
 }
 
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllDistricts()
+{
+	TArray<AProceduralBlockMeshActor*> districts_to_get{};
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		districts_to_get.Add(drawing_districts[i].mesh);
+	}
+	return districts_to_get;
+}
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreets()
+{
+	TArray<AProceduralBlockMeshActor*> streets_to_get{};
+	for (int i = 0; i < drawing_streets.Num(); i++)
+	{
+		streets_to_get.Add(drawing_streets[i].mesh);
+	}
+	return streets_to_get;
+}
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHouses()
+{
+	TArray<AProceduralBlockMeshActor*> houses_to_get{};
+	for (int i = 0; i < drawing_houses.Num(); i++)
+	{
+		houses_to_get.Add(drawing_houses[i].mesh);
+	}
+	return houses_to_get;
+}
+TArray<AProceduralBlockMeshActor*> AMainTerrain::UnselectAllDistricts()
+{
+	TArray<AProceduralBlockMeshActor*> districts_to_get{};
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		drawing_districts[i].district->unselect();
+	}
+	return districts_to_get;
+}
+TArray<AProceduralBlockMeshActor*> AMainTerrain::UnselectAllStreets()
+{
+	TArray<AProceduralBlockMeshActor*> streets_to_get{};
+	for (int i = 0; i < drawing_streets.Num(); i++)
+	{
+		drawing_streets[i].street->unselect();
+	}
+	return streets_to_get;
+}
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::UnselectAllHouses()
+{
+	TArray<AProceduralBlockMeshActor*> houses_to_get{};
+	for (int i = 0; i < drawing_houses.Num(); i++)
+	{
+		drawing_houses[i].house->unselect();
+	}
+	return houses_to_get;
+}
+
 AProceduralBlockMeshActor* AMainTerrain::GetLastSelected()
 {
-	return selected_object;
+	TArray<AProceduralBlockMeshActor*> selected ;
+	// return selected_objects->Last();
+	switch (selected_objects->Last()->get_object_type())
+	{
+	case object_type::district:
+		selected = GetAllDistrictsSelected();
+		break;
+	case object_type::street:
+		selected = GetAllStreetsSelected();
+		break;
+	case object_type::house:
+		selected = GetAllHousesSelected();
+		break;
+	}
+	
+	for (int i = 0; i < selected.Num(); i++)
+	{
+		if (selected[i]->object == selected_objects->Last())
+		{
+			return selected[i];
+		}
+	}
+	return nullptr;
 }
+
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetLastTypeSelected()
 {
-	switch (selected_object->district->get_object_type())
+	switch (selected_objects->Last()->get_object_type())
 	{
 		case object_type::district:
-		return GetAllDistrictsSelected();
+			return GetAllDistrictsSelected();
 		case object_type::street:
-		return GetAllStreetsSelected();
+			return GetAllStreetsSelected();
 		case object_type::house:
-		return GetAllHousesSelected();
-	default:return {};
+			return GetAllHousesSelected();
+		default:return {};
 	}
 }
 
@@ -454,7 +531,7 @@ void AMainTerrain::DivideDistricts()
 			IndicesToRemove.Add(i);
 			AProceduralBlockMeshActor* MeshComponent =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-			MeshComponent->SetSelectedObject(selected_object);
+			MeshComponent->SetSelectedObject(selected_objects);
 			MeshComponent->SetActorLabel(drawing_districts[i].mesh->GetActorLabel());
 			MeshComponent->ProceduralMesh->SetMaterial(0, drawing_districts[i].mesh->Material);
 			MeshComponent->Material = drawing_districts[i].mesh->Material;
@@ -464,7 +541,7 @@ void AMainTerrain::DivideDistricts()
 		
 			AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-			MeshComponent2->SetSelectedObject(selected_object);
+			MeshComponent2->SetSelectedObject(selected_objects);
 			MeshComponent2->SetActorLabel(drawing_districts[i].mesh->GetActorLabel());
 			MeshComponent2->ProceduralMesh->SetMaterial(0, drawing_districts[i].mesh->Material);
 			MeshComponent2->Material = drawing_districts[i].mesh->Material;
@@ -663,7 +740,7 @@ void AMainTerrain::draw_all()
 		FString ActorName;
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetSelectedObject(selected_object);
+		MeshComponent2->SetSelectedObject(selected_objects);
 		MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
 		MeshComponent2->Material = BaseMaterial;
 		if (r->get_type() == district_type::water)
@@ -737,7 +814,7 @@ void AMainTerrain::draw_all()
 			FString HouseName = FString::Printf(TEXT("%s_House_%d"), *ActorName, ++house_count);
 			AProceduralBlockMeshActor* MeshComponent =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-			MeshComponent->SetSelectedObject(selected_object);
+			MeshComponent->SetSelectedObject(selected_objects);
 			MeshComponent->SetActorLabel(HouseName);
 			MeshComponent->ProceduralMesh->SetMaterial(0, BuildingMaterial);
 			MeshComponent->Material = BuildingMaterial;
@@ -752,7 +829,7 @@ void AMainTerrain::draw_all()
 	{
 		AProceduralBlockMeshActor* MeshComponent2 =
 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetSelectedObject(selected_object);
+		MeshComponent2->SetSelectedObject(selected_objects);
 		MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
 		MeshComponent2->Material = RoadMaterial;
 		// MeshComponent2->DefaultMaterial = BaseMaterial;

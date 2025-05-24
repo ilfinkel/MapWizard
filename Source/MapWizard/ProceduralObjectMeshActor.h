@@ -28,8 +28,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	TArray<int32> Triangles;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
-	UMaterialInterface* DefaultMaterial;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
 	UMaterialInterface* Material;
 	UFUNCTION()
 	void OnMeshClicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed);
@@ -44,12 +42,12 @@ public:
 	}
 	void SetDynamicObject(TSharedPtr<DynamicObject> distr)
 	{
-		district = distr;
+		object = distr;
 	}
-	void SetSelectedObject(AProceduralBlockMeshActor* selected_object_)
+	void SetSelectedObject(TSharedPtr<TArray<TSharedPtr<DynamicObject>>> selected_object_)
 	{
 		selected_object = selected_object_;
 	}
-	TSharedPtr<DynamicObject> district;
-	AProceduralBlockMeshActor* selected_object;
+	TSharedPtr<DynamicObject> object;
+	TSharedPtr<TArray<TSharedPtr<DynamicObject>>> selected_object;
 };

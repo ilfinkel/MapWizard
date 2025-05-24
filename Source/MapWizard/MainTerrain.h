@@ -144,7 +144,6 @@ struct DrawingObject
 		name = mesh->GetActorLabel();
 		material_interface = mesh->ProceduralMesh->GetMaterial(0);
 		material = mesh->Material;
-		def_material = mesh->DefaultMaterial;
 	}
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
 	                    float ExtrusionHeight);
@@ -159,7 +158,6 @@ struct DrawingObject
 	FString name;
 	UMaterialInterface* material_interface;
 	UMaterialInterface* material;
-	UMaterialInterface* def_material;
 	
 };
 
@@ -184,7 +182,6 @@ struct DrawingDistrict : DrawingObject
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
-		mesh->DefaultMaterial = def_material;
 		TArray<FVector> vertices;
 		for (auto BaseVertex : district->self_figure)
 		{
@@ -220,7 +217,6 @@ struct DrawingStreet : DrawingObject
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
-		mesh->DefaultMaterial = def_material;
 		if (is_2d || !is_changing)
 		{
 			create_mesh_2d(mesh, street->street_vertexes, start_height);
@@ -235,7 +231,6 @@ struct DrawingStreet : DrawingObject
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
-		mesh->DefaultMaterial = def_material;
 		TArray<FVector> vertices;
 		for (auto BaseVertex : street->street_vertices)
 		{
@@ -275,7 +270,6 @@ struct DrawingHouse : DrawingObject
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
 		mesh->Material = material;
-		mesh->DefaultMaterial = def_material;
 		if (is_2d)
 		{
 			create_mesh_2d(mesh, house->house_figure, start_height);
@@ -317,6 +311,18 @@ public:
 	TArray<AProceduralBlockMeshActor*> GetAllHousesSelected();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	AProceduralBlockMeshActor* GetLastSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllStreets();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllHouses();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllDistricts();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> UnselectAllStreets();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> UnselectAllHouses();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> UnselectAllDistricts();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetLastTypeSelected();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
@@ -371,6 +377,6 @@ private:
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
-	AProceduralBlockMeshActor* selected_object;
+	TSharedPtr<TArray<TSharedPtr<DynamicObject>>> selected_objects;
 };
 

@@ -38,16 +38,20 @@ void AProceduralBlockMeshActor::Tick(float DeltaTime)
 
 void AProceduralBlockMeshActor::OnMeshClicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
-	selected_object=this;
-	if (district.IsValid() && !district->is_selected())
+	if (object.IsValid() && !object->is_selected())
 	{
-		district->select();
-		UE_LOG(LogTemp, Warning, TEXT("mesh selected %p"), district.Get())
+		object->select();
+		// selected_object->Add(object);
+		UE_LOG(LogTemp, Warning, TEXT("mesh selected %p"), object.Get())
 		// TouchedComponent->SetMaterial(0, DefaultMaterial);
 	}
-	else if (district.IsValid() && district->is_selected())
+	else if (object.IsValid() && object->is_selected())
 	{
-		district->unselect();
+		object->unselect();
+		// selected_object->RemoveAll([this]( TSharedPtr<DynamicObject> obj)
+		// {
+		// 	return obj = object;
+		// });
 		UE_LOG(LogTemp, Warning, TEXT("mesh unselected"))
 		// TouchedComponent->SetMaterial(0, Material);
 	}
