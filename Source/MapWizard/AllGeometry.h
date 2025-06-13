@@ -34,9 +34,10 @@ enum class district_type
 struct WeightedPoint
 {
 	WeightedPoint(const FVector& point_, const double weight_) : point(point_)
-	                                                           , weight(weight_)
+		, weight(weight_)
 	{
 	}
+
 	FVector point;
 	double weight;
 };
@@ -45,18 +46,20 @@ struct WeightedPoint
 struct Point
 {
 	Point() : point(FVector(0, 0, 0))
-	        , type()
+	          , type()
 	{
 	}
+
 	Point(double X, double Y, double Z) : point(FVector(X, Y, Z))
-	                                    , type()
+	                                      , type()
 	{
 	}
 
 	Point(FVector node_) : Point(node_.X, node_.Y, node_.Z)
-	                                             
+
 	{
 	}
+
 	~Point();
 	FVector point;
 	point_type type;
@@ -74,6 +77,7 @@ struct Point
 		}
 		return *this;
 	}
+
 	bool operator==(const Point& Other) const
 	{
 		return point == Other.point;
@@ -87,40 +91,67 @@ enum class object_type
 	district,
 	unknown
 };
-struct DynamicObject
+
+static unsigned int object_counter = 0;
+struct SelectableObject
 {
+	SelectableObject()
+	{
+		object_counter++;
+		object_id = object_counter;
+	}
+	unsigned int get_id() const
+	{
+		return object_id;
+	}
 	void select()
 	{
 		selected = true;
 		// UE_LOG(LogTemp, Warning, TEXT("selected %p"), this)
 	}
-	void unselect() {
-		selected = false; 
+	void unselect()
+	{
+		selected = false;
 	}
-	object_type get_object_type(){return object_type;}
-	bool is_selected() { return selected; };
-	protected:
-	bool selected = false;
-	object_type object_type;
 	
+	void hover()
+	{
+		hovered = true;
+		// UE_LOG(LogTemp, Warning, TEXT("selected %p"), this)
+	}
+	void unhover()
+	{
+		hovered = false;
+	}
+
+	object_type get_object_type() { return object_type; }
+	bool is_selected() { return selected; };
+	bool is_hovered() { return hovered; };
+
+protected:
+	bool selected = false;
+	bool hovered = false;
+	object_type object_type;
+	unsigned int object_id;
 };
-struct Street : public DynamicObject
+
+struct Street : public SelectableObject
 {
 	Street()
 	{
 		object_type = object_type::street;
 	};
+
 	Street(TArray<TSharedPtr<Node>> points_): street_vertices(points_)
-	                                        , type(point_type::unidentified)
 	{
 		object_type = object_type::street;
 	}
+
 	// object_type get_object_type() override {return object_type;}
 	TArray<FVector> street_vertexes{};
 	TArray<TSharedPtr<Node>> street_vertices{};
 	point_type type = point_type::unidentified;
 	FString name;
-	
 };
 
 // struct Way
@@ -141,8 +172,9 @@ struct Street : public DynamicObject
 
 struct Conn
 {
-	Conn(TSharedPtr<Node> node_, TSharedPtr<TArray<TSharedPtr<Node>>> figure_) : node(node_)
-	                                                                           , figure(figure_)
+	Conn(TSharedPtr<Node> node_,
+	     TSharedPtr<TArray<TSharedPtr<Node>>> figure_) : node(node_)
+		, figure(figure_)
 	{
 		not_in_figure = false;
 		in_street = false;
@@ -156,21 +188,24 @@ struct Conn
 		in_street = false;
 		// street_type = point_type::road;
 	}
+
 	~Conn();
-	void set_street(TSharedPtr<Street> street_){street=street_;}
-	void set_segment(TSharedPtr<Street> segment_){segment=segment_;}
-	TSharedPtr<Street> get_street(){return segment;}
+	void set_street(TSharedPtr<Street> street_) { street = street_; }
+	void set_segment(TSharedPtr<Street> segment_) { segment = segment_; }
+	TSharedPtr<Street> get_street() { return segment; }
 	TSharedPtr<Node> node;
 	// point_type street_type = point_type::road;
 	TSharedPtr<TArray<TSharedPtr<Node>>> figure{};
 	// TSharedPtr<TArray<TSharedPtr<Point>>> street{};
 	point_type street_type()
 	{
-		return segment.IsValid()? segment->type:point_type::road;
+		return segment.IsValid() ? segment->type : point_type::road;
 	}
+
 	bool not_in_figure;
 	bool in_street;
 	bool operator==(Conn& other) { return this->node == other.node; }
+
 private:
 	TSharedPtr<Street> street;
 	TSharedPtr<Street> segment;
@@ -178,27 +213,32 @@ private:
 
 struct Node : TSharedFromThis<Node>
 {
-	Node(double X, double Y, double Z, int debug_ind = 0) : point(MakeShared<Point>(FVector(X, Y, Z)))
-	                                                      , debug_ind_(debug_ind)
-	                                                      , unshrinkable(false)
-	                                                      , in_figure(false)
+	Node(double X, double Y, double Z, int debug_ind = 0) :
+		point(MakeShared<Point>(FVector(X, Y, Z)))
+		, debug_ind_(debug_ind)
+		, unshrinkable(false)
+		, in_figure(false)
 	{
 	}
+
 	Node() : point(MakeShared<Point>(FVector(0, 0, 0)))
-	       , unshrinkable(false)
-	       , in_figure(false)
+	         , unshrinkable(false)
+	         , in_figure(false)
 	{
 	}
+
 	Node(FVector node_) : point(MakeShared<Point>(node_.X, node_.Y, node_.Z))
-	                    , unshrinkable(false)
-	                    , in_figure(false)
+	                      , unshrinkable(false)
+	                      , in_figure(false)
 	{
 	}
+
 	~Node()
 	{
 		conn.Empty();
 		point.Reset();
 	}
+
 	TArray<TSharedPtr<Conn>> conn;
 	void set_FVector(FVector point_) { point->point = point_; }
 	void set_FVector_X(double X) { point->point.X = X; }
@@ -216,9 +256,14 @@ struct Node : TSharedFromThis<Node>
 	TOptional<TSharedPtr<Conn>> get_next_point(TSharedPtr<Point> point_);
 	TOptional<TSharedPtr<Conn>> get_prev_point(TSharedPtr<Point> point_);
 	void add_connection(const TSharedPtr<Node>& node_);
-	
+
 	void delete_me();
-	bool operator==(const Node&) const { return FVector::Distance(this->point->point, point->point) < 0.001; }
+
+	bool operator==(const Node&) const
+	{
+		return FVector::Distance(this->point->point, point->point) < 0.001;
+	}
+
 	void print_connections();
 	void set_unshrinkable() { unshrinkable = true; }
 
@@ -232,35 +277,36 @@ public:
 	bool unmovable = false;
 };
 
-struct House : public DynamicObject
+struct House : public SelectableObject
 {
 	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
-	                                               , height(height_)
+		, height(height_)
 	{
 		object_type = object_type::house;
 	}
+
 	~House();
-	
+
 	TArray<FVector> house_figure;
 	double height;
 };
 
 
-
-struct District : public DynamicObject
+struct District : public SelectableObject
 {
 	explicit District(): main_roads(0)
-	          , is_river_in(false)
+	                     , is_river_in(false)
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("ditrict(%p)"),this)
 		type = district_type::unknown;
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
-		
+
 		object_type = object_type::district;
 	}
-	
+
 	explicit District(TArray<TSharedPtr<Node>> figure_);
+
 	~District()
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("~ditrict"))
@@ -273,6 +319,7 @@ struct District : public DynamicObject
 		figure.Empty();
 		self_figure.Empty();
 	}
+
 	TArray<TSharedPtr<Node>> figure;
 	TArray<Point> self_figure;
 	TArray<TSharedPtr<House>> houses;
@@ -284,13 +331,16 @@ struct District : public DynamicObject
 	bool is_point_in_self_figure(FVector point_);
 	bool is_point_in_figure(FVector point_);
 	void get_self_figure();
-	TArray<Point> shrink_figure_with_roads(TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
+	TArray<Point> shrink_figure_with_roads(
+		TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
-	bool attach_district(TSharedPtr<District> other_district, TArray<TSharedPtr<Street>>& streets_to_delete);
-	bool divide_me(TSharedPtr<District> dist1,TSharedPtr<District> dist2, TSharedPtr<Street> new_seg);
+	bool attach_district(TSharedPtr<District> other_district,
+	                     TArray<TSharedPtr<Street>>& streets_to_delete);
+	bool divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2,
+	               TSharedPtr<Street> new_seg);
 	bool is_adjacent(TSharedPtr<District> other_district);
-	
+
 private:
 	district_type type;
 };
@@ -299,41 +349,71 @@ private:
 class MAPWIZARD_API AllGeometry
 {
 public:
-	static TOptional<FVector> is_intersect(const FVector& line1_begin, const FVector& line1_end,
-	                                       const FVector& line2_begin, const FVector& line2_end, bool is_opened);
+	static TOptional<FVector> is_intersect(const FVector& line1_begin,
+	                                       const FVector& line1_end,
+	                                       const FVector& line2_begin,
+	                                       const FVector& line2_end,
+	                                       bool is_opened);
 
 
-	static TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>> is_intersect_array(
-		const TSharedPtr<Node>& line1_begin, const TSharedPtr<Node>& line1_end, const TArray<TSharedPtr<Node>>& lines,
+	static TOptional<TTuple<FVector, TTuple<
+		                        TSharedPtr<Node>, TSharedPtr<Node>>>>
+	is_intersect_array(
+		const TSharedPtr<Node>& line1_begin, const TSharedPtr<Node>& line1_end,
+		const TArray<TSharedPtr<Node>>& lines,
 		bool is_opened);
-	static TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>> is_intersect_array(
-		FVector line1_begin, FVector line1_end, const TArray<TSharedPtr<Node>>& lines, bool is_opened);
-	static TOptional<FVector> is_intersect_array(FVector line_begin, FVector line_end,
-	                                             const TArray<FVector>& array_point, bool is_opened);
-	static TOptional<TSharedPtr<Node>> is_intersect_array_clear(const TSharedPtr<Node>& line1_begin,
-	                                                            const TSharedPtr<Node>& line1_end,
-	                                                            const TArray<TSharedPtr<Node>>& lines, bool is_opened);
-	static int is_intersect_array_count(const TSharedPtr<Node>& line_begin, const TSharedPtr<Node>& line_end,
-	                                    const TArray<TSharedPtr<Node>>& lines, bool is_opened);
-	static TOptional<FVector> is_intersect_array_clear(const FVector& line_begin, const FVector& line_end,
-	                                                   const TArray<TSharedPtr<Node>>& lines, bool is_opened);
-	static FVector create_segment_at_angle(const FVector& line_begin, const FVector& line_end,
-	                                       const FVector& line_beginPoint, double angle_in_degrees, double length);
-	static float calculate_angle(const FVector& A, const FVector& B, const FVector& C, bool is_clockwork = false);
-	static float calculate_angle_clock(const FVector& A, const FVector& B, const FVector& C, bool is_clockwork = false);
-	static float calculate_angle_counterclock(const FVector& A, const FVector& B, const FVector& C,
+	static TOptional<TTuple<FVector, TTuple<
+		                        TSharedPtr<Node>, TSharedPtr<Node>>>>
+	is_intersect_array(
+		FVector line1_begin, FVector line1_end,
+		const TArray<TSharedPtr<Node>>& lines, bool is_opened);
+	static TOptional<FVector> is_intersect_array(
+		FVector line_begin, FVector line_end,
+		const TArray<FVector>& array_point, bool is_opened);
+	static TOptional<TSharedPtr<Node>> is_intersect_array_clear(
+		const TSharedPtr<Node>& line1_begin,
+		const TSharedPtr<Node>& line1_end,
+		const TArray<TSharedPtr<Node>>& lines, bool is_opened);
+	static int is_intersect_array_count(const TSharedPtr<Node>& line_begin,
+	                                    const TSharedPtr<Node>& line_end,
+	                                    const TArray<TSharedPtr<Node>>& lines,
+	                                    bool is_opened);
+	static TOptional<FVector> is_intersect_array_clear(
+		const FVector& line_begin, const FVector& line_end,
+		const TArray<TSharedPtr<Node>>& lines, bool is_opened);
+	static FVector create_segment_at_angle(const FVector& line_begin,
+	                                       const FVector& line_end,
+	                                       const FVector& line_beginPoint,
+	                                       double angle_in_degrees,
+	                                       double length);
+	static float calculate_angle(const FVector& A, const FVector& B,
+	                             const FVector& C, bool is_clockwork = false);
+	static float calculate_angle_clock(const FVector& A, const FVector& B,
+	                                   const FVector& C,
+	                                   bool is_clockwork = false);
+	static float calculate_angle_counterclock(const FVector& A,
+	                                          const FVector& B,
+	                                          const FVector& C,
 	                                          bool is_clockwork = false);
 	static float get_poygon_area(const TArray<TSharedPtr<Node>>& Vertices);
 	static float get_poygon_area(const TArray<TSharedPtr<Point>>& Vertices);
 	static float get_poygon_area(const TArray<Point>& Vertices);
-	static bool IsConvex(const FVector& Prev, const FVector& Curr, const FVector& Next);
-	static bool IsEar(TArray<FVector> Vertices, int32 PrevIndex, int32 CurrIndex, int32 NextIndex,
+	static bool IsConvex(const FVector& Prev, const FVector& Curr,
+	                     const FVector& Next);
+	static bool IsEar(TArray<FVector> Vertices, int32 PrevIndex,
+	                  int32 CurrIndex, int32 NextIndex,
 	                  TArray<int32> RemainingVertices);
-	static bool IsPointInTriangle(const FVector& Point, const FVector& A, const FVector& B, const FVector& C);
+	static bool IsPointInTriangle(const FVector& Point, const FVector& A,
+	                              const FVector& B, const FVector& C);
 
-	static void TriangulatePolygon(const TArray<FVector>& Polygon, TArray<int32>& Triangles);
+	static void TriangulatePolygon(const TArray<FVector>& Polygon,
+	                               TArray<int32>& Triangles);
 	static bool is_point_in_figure(FVector point_, TArray<FVector> figure);
-	static float point_to_seg_distance(const FVector& SegmentStart, const FVector& SegmentEnd, const FVector& Point);
-	static bool is_point_near_figure(const TArray<FVector> given_line, const FVector& Point, double distance);
-	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line, double width);
+	static float point_to_seg_distance(const FVector& SegmentStart,
+	                                   const FVector& SegmentEnd,
+	                                   const FVector& Point);
+	static bool is_point_near_figure(const TArray<FVector> given_line,
+	                                 const FVector& Point, double distance);
+	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line,
+	                                       double width);
 };
