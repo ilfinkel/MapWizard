@@ -59,6 +59,12 @@ public:
 		return object->get_angle();
 	}
 	
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	float GetHeight()
+	{
+		return object->get_height();
+	}
+	
 	void SetDynamicObject(TSharedPtr<SelectableObject> distr)
 	{
 		object = distr;

@@ -197,6 +197,7 @@ struct SelectableObject
 		hovered = false;
 	}
 	float get_angle(){return 0;}
+	float get_height(){return 0;}
 	object_type get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
@@ -261,6 +262,10 @@ struct House : public SelectableObject
 		FVector f3 = house_figure[1];
 		f3.X+=1000;
 		return AllGeometry::calculate_angle(f1, f2, f3);
+	}
+	float get_height()
+	{
+		return height;
 	}
 	TArray<FVector> house_figure;
 	double height;
