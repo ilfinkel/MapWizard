@@ -166,6 +166,7 @@ enum class object_type
 };
 
 static unsigned int object_counter = 0;
+
 struct SelectableObject
 {
 	SelectableObject()
@@ -173,31 +174,15 @@ struct SelectableObject
 		object_counter++;
 		object_id = object_counter;
 	}
-	unsigned int get_id() const
-	{
-		return object_id;
-	}
-	void select()
-	{
-		selected = true;
-		// UE_LOG(LogTemp, Warning, TEXT("selected %p"), this)
-	}
-	void unselect()
-	{
-		selected = false;
-	}
-	
-	void hover()
-	{
-		hovered = true;
-		// UE_LOG(LogTemp, Warning, TEXT("selected %p"), this)
-	}
-	void unhover()
-	{
-		hovered = false;
-	}
-	float get_angle(){return 0;}
-	float get_height(){return 0;}
+
+	unsigned int get_id() const { return object_id; }
+	void select() { selected = true; }
+	void unselect() { selected = false; }
+	void hover() { hovered = true; }
+	void unhover() { hovered = false; }
+
+	float get_angle() { return 0; }
+	float get_height() { return 0; }
 	object_type get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
@@ -254,19 +239,21 @@ struct House : public SelectableObject
 	}
 
 	~House();
-	
+
 	float get_angle()
 	{
 		FVector f1 = house_figure[0];
 		FVector f2 = house_figure[1];
 		FVector f3 = house_figure[1];
-		f3.X+=1000;
+		f3.X += 1000;
 		return AllGeometry::calculate_angle(f1, f2, f3);
 	}
+
 	float get_height()
 	{
 		return height;
 	}
+
 	TArray<FVector> house_figure;
 	double height;
 };
@@ -275,7 +262,7 @@ struct House : public SelectableObject
 struct District : public SelectableObject
 {
 	explicit District(): main_roads(0)
-						 , is_river_in(false)
+	                     , is_river_in(false)
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("ditrict(%p)"),this)
 		type = district_type::unknown;
@@ -316,9 +303,9 @@ struct District : public SelectableObject
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
 	bool attach_district(TSharedPtr<District> other_district,
-						 TArray<TSharedPtr<Street>>& streets_to_delete);
+	                     TArray<TSharedPtr<Street>>& streets_to_delete);
 	bool divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2,
-				   TSharedPtr<Street> new_seg);
+	               TSharedPtr<Street> new_seg);
 	bool is_adjacent(TSharedPtr<District> other_district);
 
 private:
@@ -431,5 +418,3 @@ public:
 	bool in_figure;
 	bool unmovable = false;
 };
-
-
