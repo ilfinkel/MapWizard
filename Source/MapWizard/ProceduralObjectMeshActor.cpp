@@ -67,24 +67,15 @@ void AProceduralBlockMeshActor::OnMeshClicked(
 			return obj == object_id;
 		});
 		UE_LOG(LogTemp, Warning, TEXT("mesh unselected"))
-		// TouchedComponent->SetMaterial(0, Material);
 	}
 }
 
 void AProceduralBlockMeshActor::OnMouseOver(UPrimitiveComponent* Component)
 {
 	object->hover();
-	// if (Material)
-	// {
-	// 	Component->SetMaterial(0, DefaultMaterial);
-	// }
 }
 
 void AProceduralBlockMeshActor::OnMouseOut(UPrimitiveComponent* Component)
 {
 	object->unhover();
-	// if (Component && Material && !(district.IsValid() && district->is_selected()))
-	// {
-	// 	Component->SetMaterial(0, Material);
-	// }
 }

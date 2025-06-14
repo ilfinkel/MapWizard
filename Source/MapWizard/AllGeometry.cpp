@@ -2,6 +2,7 @@
 
 
 #include "AllGeometry.h"
+#include "AllGeometry.h"
 
 
 District::District(TArray<TSharedPtr<Node>> figure_)
@@ -623,7 +624,6 @@ House::~House()
 {
 	house_figure.Empty();
 }
-
 
 TOptional<FVector> AllGeometry::is_intersect(const FVector& line1_begin,
                                              const FVector& line1_end,

@@ -53,6 +53,12 @@ public:
 		MeshComponentName = NewName;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	float GetAngle()
+	{
+		return object->get_angle();
+	}
+	
 	void SetDynamicObject(TSharedPtr<SelectableObject> distr)
 	{
 		object = distr;
