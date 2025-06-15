@@ -30,24 +30,52 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
 	UMaterialInterface* Material;
 	UFUNCTION()
-	void OnMeshClicked(UPrimitiveComponent* TouchedComponent, FKey ButtonPressed);
+	void OnMeshClicked(UPrimitiveComponent* TouchedComponent,
+	                   FKey ButtonPressed);
 	UFUNCTION()
 	void OnMouseOver(UPrimitiveComponent* Component);
 	UFUNCTION()
 	void OnMouseOut(UPrimitiveComponent* Component);
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	bool IsHovered()
+	{
+		return object->is_hovered();
+	}
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	bool IsSelected()
+	{
+		return object->is_selected();
+	}
 	FString MeshComponentName;
+
 	void SetMeshComponentName(const FString& NewName)
 	{
 		MeshComponentName = NewName;
 	}
-	void SetDynamicObject(TSharedPtr<DynamicObject> distr)
+
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	float GetAngle()
+	{
+		return object->get_angle();
+	}
+	
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	float GetHeight()
+	{
+		return object->get_height();
+	}
+	
+	void SetDynamicObject(TSharedPtr<SelectableObject> distr)
 	{
 		object = distr;
 	}
-	void SetSelectedObject(TSharedPtr<TArray<TSharedPtr<DynamicObject>>> selected_object_)
+
+	void SetSelectedObject(
+		TSharedPtr<TArray<unsigned int>> selected_object_)
 	{
 		selected_object = selected_object_;
 	}
-	TSharedPtr<DynamicObject> object;
-	TSharedPtr<TArray<TSharedPtr<DynamicObject>>> selected_object;
+
+	TSharedPtr<SelectableObject> object;
+	TSharedPtr<TArray<unsigned int>> selected_object;
 };

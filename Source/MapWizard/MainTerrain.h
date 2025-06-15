@@ -158,7 +158,6 @@ struct DrawingObject
 	FString name;
 	UMaterialInterface* material_interface;
 	UMaterialInterface* material;
-	
 };
 
 struct DrawingDistrict : DrawingObject
@@ -334,7 +333,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void DivideDistricts();
 	
-	void clear_all();
+	void clear_all(); 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool is_2d = true;
@@ -377,6 +376,6 @@ private:
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
-	TSharedPtr<TArray<TSharedPtr<DynamicObject>>> selected_objects;
+	TSharedPtr<TArray<unsigned int>> selected_objects;
 };
 
