@@ -72,10 +72,10 @@ void AProceduralBlockMeshActor::OnMeshClicked(
 
 void AProceduralBlockMeshActor::OnMouseOver(UPrimitiveComponent* Component)
 {
-	object->hover();
+	// object->hover();
 }
 
 void AProceduralBlockMeshActor::OnMouseOut(UPrimitiveComponent* Component)
 {
-	object->unhover();
+	// object->unhover();
 }

@@ -610,7 +610,7 @@ void AMainTerrain::DivideDistricts()
 			                    drawing_districts[i].start_height);
 
 			TSharedPtr<Street> street;
-			street->type = point_type::road;
+			// street->type = point_type::road;
 			drawing_districts[i].district->divide_me(
 				dd1.district, dd2.district, street);
 

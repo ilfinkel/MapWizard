@@ -464,7 +464,7 @@ bool District::divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2,
 {
 	dist1->figure.Empty();
 	dist2->figure.Empty();
-	new_seg->street_vertices.Empty();
+	// new_seg->street_vertices.Empty();
 	int points_num = figure.Num();
 	if (points_num <= 3) return false;
 
