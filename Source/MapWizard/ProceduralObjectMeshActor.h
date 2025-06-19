@@ -60,9 +60,9 @@ public:
 	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Custom")
-	float GetHeight()
+	FVector GetMeasure()
 	{
-		return object->get_height();
+		return object->get_measure();
 	}
 	
 	void SetDynamicObject(TSharedPtr<SelectableObject> distr)

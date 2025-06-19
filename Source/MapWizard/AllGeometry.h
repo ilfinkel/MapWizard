@@ -181,8 +181,11 @@ struct SelectableObject
 	void hover() { hovered = true; }
 	void unhover() { hovered = false; }
 
-	float get_angle() { return 0; }
-	float get_height() { return 0; }
+	virtual float get_angle()
+	{
+		return 0;
+	}
+	virtual FVector get_measure() { return FVector(); }
 	object_type get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
@@ -205,10 +208,17 @@ struct Street : public SelectableObject
 	{
 		object_type = object_type::street;
 	}
-
+	float get_angle() override
+	{
+		return 0;
+	}
+	FVector get_measure() override
+	{
+		return FVector();
+	}
 	// object_type get_object_type() override {return object_type;}
-	TArray<FVector> street_vertexes{};
-	TArray<TSharedPtr<Node>> street_vertices{};
+	TArray<FVector> street_vertexes;
+	TArray<TSharedPtr<Node>> street_vertices;
 	point_type type = point_type::unidentified;
 	FString name;
 };
@@ -240,7 +250,7 @@ struct House : public SelectableObject
 
 	~House();
 
-	float get_angle()
+	float get_angle() override
 	{
 		FVector f1 = house_figure[0];
 		FVector f2 = house_figure[1];
@@ -248,10 +258,13 @@ struct House : public SelectableObject
 		f3.X += 1000;
 		return AllGeometry::calculate_angle(f1, f2, f3);
 	}
-
-	float get_height()
+	FVector get_measure() override
 	{
-		return height;
+		FVector vec;
+		vec.X = FVector::Distance(house_figure[0], house_figure[1]);
+		vec.Y = FVector::Distance(house_figure[1], house_figure[2]);
+		vec.Z = height;
+		return vec;
 	}
 
 	TArray<FVector> house_figure;
@@ -285,6 +298,15 @@ struct District : public SelectableObject
 	{
 		figure.Empty();
 		self_figure.Empty();
+	}
+
+	float get_angle() override
+	{
+		return 0;
+	}
+	FVector get_measure() override
+	{
+		return FVector();
 	}
 
 	TArray<TSharedPtr<Node>> figure;
