@@ -277,12 +277,12 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreetsSelected()
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHousesSelected()
 {
 	TArray<AProceduralBlockMeshActor*> houses_to_get{};
-	for (int i = 0; i < drawing_districts.Num(); i++)
+	for (int i = 0; i < drawing_houses.Num(); i++)
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
 		if (drawing_houses[i].house->is_selected())
 		{
-			houses_to_get.Add(drawing_districts[i].mesh);
+			houses_to_get.Add(drawing_houses[i].mesh);
 		}
 	}
 	return houses_to_get;
@@ -357,15 +357,15 @@ AProceduralBlockMeshActor* AMainTerrain::GetLastSelected()
 		if (distr->object->get_id() == selected_objects->Last())
 			return distr;
 	}
-	for (auto distr : GetAllStreetsSelected())
+	for (auto street : GetAllStreetsSelected())
 	{
-		if (distr->object->get_id() == selected_objects->Last())
-			return distr;
+		if (street->object->get_id() == selected_objects->Last())
+			return street;
 	}
-	for (auto distr : GetAllHousesSelected())
+	for (auto house : GetAllHousesSelected())
 	{
-		if (distr->object->get_id() == selected_objects->Last())
-			return distr;
+		if (house->object->get_id() == selected_objects->Last())
+			return house;
 	}
 	return nullptr;
 }
