@@ -256,7 +256,7 @@ struct House : public SelectableObject
 		FVector f2 = house_figure[1];
 		FVector f3 = house_figure[1];
 		f3.X += 1000;
-		return AllGeometry::calculate_angle(f1, f2, f3);
+		return AllGeometry::calculate_angle_clock(f1, f2, f3);
 	}
 	FVector get_measure() override
 	{
