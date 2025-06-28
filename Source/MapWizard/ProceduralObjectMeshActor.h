@@ -65,6 +65,12 @@ public:
 		return object->get_measure();
 	}
 	
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	district_type GetDistrictType()
+	{
+		return object->get_district_type();
+	}
+	
 	void SetDynamicObject(TSharedPtr<SelectableObject> distr)
 	{
 		object = distr;

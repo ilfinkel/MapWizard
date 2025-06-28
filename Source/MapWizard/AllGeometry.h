@@ -198,6 +198,7 @@ struct SelectableObject
 	object_type get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
+	district_type get_district_type(){return district_type::unknown;}
 
 protected:
 	bool selected = false;
@@ -322,7 +323,8 @@ struct District : public SelectableObject
 	{
 		return FVector();
 	}
-
+	district_type get_district_type(){return type;}
+	
 	TArray<TSharedPtr<Node>> figure;
 	TArray<Point> self_figure;
 	TArray<TSharedPtr<House>> houses;
