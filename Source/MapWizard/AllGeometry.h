@@ -115,22 +115,29 @@ struct WeightedPoint
 	double weight;
 };
 
+static unsigned int point_counter = 0;
 
 struct Point
 {
 	Point() : point(FVector(0, 0, 0))
 	          , type()
 	{
+		point_id = point_counter;
+		point_counter++;
 	}
 
 	Point(double X, double Y, double Z) : point(FVector(X, Y, Z))
 	                                      , type()
 	{
+		point_id = point_counter;
+		point_counter++;
 	}
 
 	Point(FVector node_) : Point(node_.X, node_.Y, node_.Z)
 
 	{
+		point_id = point_counter;
+		point_counter++;
 	}
 
 	~Point();
@@ -138,6 +145,7 @@ struct Point
 	point_type type;
 	bool used = false;
 	TArray<district_type> districts_nearby;
+	unsigned int point_id = 0;
 
 	Point& operator=(const Point& Other)
 	{
@@ -153,7 +161,7 @@ struct Point
 
 	bool operator==(const Point& Other) const
 	{
-		return point == Other.point;
+		return this->point_id == Other.point_id;
 	}
 };
 
@@ -185,6 +193,7 @@ struct SelectableObject
 	{
 		return 0;
 	}
+
 	virtual FVector get_measure() { return FVector(); }
 	object_type get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
@@ -208,14 +217,17 @@ struct Street : public SelectableObject
 	{
 		object_type = object_type::street;
 	}
+
 	float get_angle() override
 	{
 		return 0;
 	}
+
 	FVector get_measure() override
 	{
 		return FVector();
 	}
+
 	// object_type get_object_type() override {return object_type;}
 	TArray<FVector> street_vertexes;
 	TArray<TSharedPtr<Node>> street_vertices;
@@ -258,6 +270,7 @@ struct House : public SelectableObject
 		f3.X += 1000;
 		return AllGeometry::calculate_angle_clock(f1, f2, f3);
 	}
+
 	FVector get_measure() override
 	{
 		FVector vec;
@@ -304,6 +317,7 @@ struct District : public SelectableObject
 	{
 		return 0;
 	}
+
 	FVector get_measure() override
 	{
 		return FVector();
@@ -423,9 +437,14 @@ struct Node : TSharedFromThis<Node>
 
 	void delete_me();
 
-	bool operator==(const Node&) const
+	bool operator==(const Node& other) const
 	{
-		return FVector::Distance(this->point->point, point->point) < 0.001;
+		return this->point->point_id == other.point->point_id;
+	}
+
+	bool operator==(const Point& other) const
+	{
+		return this->point->point_id == other.point_id;
 	}
 
 	void print_connections();

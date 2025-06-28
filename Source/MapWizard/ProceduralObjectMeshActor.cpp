@@ -66,7 +66,7 @@ void AProceduralBlockMeshActor::OnMeshClicked(
 			unsigned int object_id = object->get_id();
 			return obj == object_id;
 		});
-		UE_LOG(LogTemp, Warning, TEXT("mesh unselected"))
+		UE_LOG(LogTemp, Warning, TEXT("mesh unselected %p, %i"), object.Get(), object->get_id())
 	}
 }
 

@@ -449,7 +449,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 		FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
 		OrthographicCamera->SetActorRotation(DownwardRotation);
 
-		TerrainGen gen(MapParams);
+		TerrainGen gen(MapParams, ResidentialHousesParams);
 		gen.create_terrain(roads, figures_array, streets_array, segments_array,
 		                   river_figures, map_borders_array,
 		                   debug_points_array);
@@ -567,6 +567,7 @@ void AMainTerrain::AttachDistricts()
 		}
 		return false;
 	});
+	
 }
 
 void AMainTerrain::DivideDistricts()
@@ -753,7 +754,7 @@ inline void AMainTerrain::initialize_all()
 	// PrimaryActorTick.bCanEverTick = true;
 	// Super::BeginPlay();
 
-	TerrainGen gen(MapParams);
+	TerrainGen gen(MapParams, ResidentialHousesParams);
 	gen.create_terrain(roads, figures_array, streets_array, segments_array,
 	                   river_figures, map_borders_array, debug_points_array);
 	gen.empty_all();

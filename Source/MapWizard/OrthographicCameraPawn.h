@@ -29,7 +29,7 @@ public:
 	float ZoomSpeed = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float MinOrthoWidth = 1000.0f;
+	float MinOrthoWidth = -100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	float MaxOrthoWidth = 8000.0f;

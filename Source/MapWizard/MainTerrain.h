@@ -129,6 +129,37 @@ struct FDebugParams
 	bool draw_main = true;
 };
 
+
+USTRUCT(BlueprintType)
+struct FResidentialHousesParams
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseY = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseY = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseX = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseX = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseZ = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseZ = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseSidesRatio = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseSidesRatio = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinSpaceBetweenHouses = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxSpaceBetweenHouses = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxArea = 90;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HouseChance = 90;
+};
+
 struct DrawingObject
 {
 	// ~DrawingObject()
@@ -297,6 +328,8 @@ public:
 	FMapParams MapParams;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FDebugParams DebugParams;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FResidentialHousesParams ResidentialHousesParams;
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vertices", meta = (AllowPrivateAccess = "true"))
 	// TArray<FVector> VerticesRemembered;
 

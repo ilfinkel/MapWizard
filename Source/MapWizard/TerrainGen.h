@@ -38,41 +38,45 @@ public:
 	ECityPlan city_plan;
 	EDrawStage draw_stage;
 	EWaterType water_type;
-
+	FResidentialHousesParams rh_params;
+	float aaa = 0;
 	bool did_river_multiplied = false;
 
 	TArray<TSharedPtr<District>> river_figures;
 
-	TerrainGen(FMapParams& map_params) : center(map_params.center)
-	                                     , av_distance(map_params.av_distance)
-	                                     , av_river_length(
-		                                     map_params.av_river_length)
-	                                     , max_river_length(
-		                                     map_params.max_river_length)
-	                                     , min_new_road_length(
-		                                     map_params.min_new_road_length)
-	                                     , min_road_length(
-		                                     map_params.min_road_length)
-	                                     , av_road_length(
-		                                     map_params.av_road_length)
-	                                     , max_road_length(
-		                                     map_params.max_road_length)
-	                                     , river_road_distance(
-		                                     map_params.river_road_distance)
-	                                     , x_size(map_params.x_size)
-	                                     , y_size(map_params.y_size)
-	                                     , road_left_chance(
-		                                     map_params.road_left_chance)
-	                                     , road_forward_chance(
-		                                     map_params.road_forward_chance)
-	                                     , road_right_chance(
-		                                     map_params.road_right_chance)
-	                                     , main_road_width(
-		                                     map_params.main_road_width)
-	                                     , road_width(map_params.road_width)
-	                                     , city_plan(map_params.city_plan)
-	                                     , draw_stage(map_params.draw_stage)
-	                                     , water_type(map_params.water_type)
+	TerrainGen(FMapParams& map_params,
+	           FResidentialHousesParams& residential_houses_params_) :
+		center(map_params.center)
+		, av_distance(map_params.av_distance)
+		, av_river_length(
+			map_params.av_river_length)
+		, max_river_length(
+			map_params.max_river_length)
+		, min_new_road_length(
+			map_params.min_new_road_length)
+		, min_road_length(
+			map_params.min_road_length)
+		, av_road_length(
+			map_params.av_road_length)
+		, max_road_length(
+			map_params.max_road_length)
+		, river_road_distance(
+			map_params.river_road_distance)
+		, x_size(map_params.x_size)
+		, y_size(map_params.y_size)
+		, road_left_chance(
+			map_params.road_left_chance)
+		, road_forward_chance(
+			map_params.road_forward_chance)
+		, road_right_chance(
+			map_params.road_right_chance)
+		, main_road_width(
+			map_params.main_road_width)
+		, road_width(map_params.road_width)
+		, city_plan(map_params.city_plan)
+		, draw_stage(map_params.draw_stage)
+		, water_type(map_params.water_type),
+		rh_params(residential_houses_params_)
 	{
 	}
 
@@ -117,7 +121,7 @@ public:
 	                        int figure_threshold);
 	void get_river_figure();
 	void process_districts(TArray<TSharedPtr<District>>& districts);
-	static void process_houses(TSharedPtr<District> block);
+	void process_houses(TSharedPtr<District> block);
 	void create_special_district(TArray<FVector>& figure, point_type type,
 	                             FVector point);
 	void create_circle(FVector point, double radius, district_type type,

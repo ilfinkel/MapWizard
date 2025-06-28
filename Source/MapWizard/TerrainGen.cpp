@@ -125,7 +125,7 @@ void TerrainGen::move_road(const TSharedPtr<Node>& node)
 		{
 			node->set_FVector(
 				(node->conn[0]->node->get_FVector() + node->conn[1]->node->
-					get_FVector()) / 2);
+				                                                     get_FVector()) / 2);
 			// return;
 		}
 	}
@@ -262,7 +262,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 		custom_districts.Add(
 			TTuple<FVector, district_type>(
 				(cd.node1->get_FVector() + cd.node2->get_FVector() + cd.node3->
-					get_FVector()) / 3, district_type::water));
+				                                                        get_FVector()) / 3, district_type::water));
 	}
 	custom_distr_nodes.Empty();
 	// for (auto bridge : bridges)
@@ -418,18 +418,19 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 		}
 	}
 
-	if (central_node.IsValid())
-	{
-		auto central_point = central_node->get_FVector();
-		// central_node = nullptr;
-		create_circle(central_point, 200, district_type::royal,
-		              point_type::main_road, 25);
-	}
-	for (auto t : towers)
-	{
-		create_circle(t, tower_radius, district_type::tower, point_type::wall,
-		              8);
-	}
+	// if (central_node.IsValid())
+	// {
+	// 	auto central_point = central_node->get_FVector();
+	// 	// central_node = nullptr;
+	// 	create_circle(central_point, 200, district_type::royal,
+	// 	              point_type::main_road, 25);
+	// }
+
+	// for (auto t : towers)
+	// {
+	// 	create_circle(t, tower_radius, district_type::tower, point_type::wall,
+	// 	              8);
+	// }
 	process_streets(roads, streets_array, point_type::wall, true);
 	process_streets(roads, streets_array, point_type::river, true);
 	process_streets(roads, streets_array, point_type::main_road, false);
@@ -438,6 +439,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 
 	segments_array = process_segments(streets_array);
 	get_closed_figures(roads, shapes_array, 200);
+
 
 	double EndTime9 = FPlatformTime::Seconds();
 	double StartTime10 = FPlatformTime::Seconds();
@@ -934,7 +936,6 @@ void TerrainGen::create_guiding_roads()
 		auto trade_path2_end_node = MakeShared<Node>(trade_path2_end);
 		trade_path1_end_node->unshrinkable = true;
 		trade_path2_end_node->unshrinkable = true;
-
 		create_guiding_road_segment(closest_center, trade_path1_end_node, true,
 		                            point_type::main_road);
 		create_guiding_road_segment(closest_center, trade_path2_end_node, true,
@@ -2002,25 +2003,55 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 		{
 			FVector point1 = district->self_figure[i - 1].point;
 			FVector point2 = district->self_figure[i % self_figure_count].point;
+
 			double dist = FVector::Distance(point1, point2);
-			double general_width = 0;
-			while (general_width < dist)
+			if (dist >= x_size)
 			{
-				double width = FMath::FRand() * 3 + 5;
-				if (FMath::FRand() * 7 > 1)
+				continue;
+			}
+			double general_width = 0;
+			if (rh_params.MinHouseY * rh_params.MinHouseX > rh_params.MaxArea) continue;
+			while (general_width + rh_params.MinHouseY < dist)
+			{
+				bool general_width_changed = false;
+				for (int counter = 0; counter < 10; counter++)
 				{
-					double length = FMath::FRand() * 5 + 10;
-					double height = (FMath::FRand() * 2 + 1) * 4;
-					FVector point_beg = AllGeometry::create_segment_at_angle(
-						point1, point2,
-						(point2 - point1) / dist * (general_width + (width / 2))
-						+ point1, 90, 1);
-					FVector point_end = AllGeometry::create_segment_at_angle(
-						point1, point2, point_beg, 90, length);
-					TArray<FVector> figure{point_beg, point_end};
-					district->create_house(figure, width, height);
+					if (FMath::FRand() * 100 <= rh_params.HouseChance)
+					{
+						double width = FMath::RandRange(rh_params.MinHouseY, rh_params.MaxHouseY);
+						double length = FMath::RandRange(rh_params.MinHouseX, rh_params.MaxHouseX);
+						if (width / length <= rh_params.MinHouseSidesRatio || width / length >= rh_params.
+							MaxHouseSidesRatio || length * width >= rh_params.MaxArea)
+						{
+							continue;
+						}
+						double height = FMath::RandRange(rh_params.MinHouseZ, rh_params.MaxHouseZ);
+						FVector point_beg = AllGeometry::create_segment_at_angle(point1, point2,
+							(point2 - point1) / dist * (general_width + (width / 2)) + point1, 90, 1);
+						FVector point_end =
+							AllGeometry::create_segment_at_angle(
+								point1, point2, point_beg, 90, length);
+						TArray<FVector> figure{point_beg, point_end};
+						if (!district->create_house(figure, width, height))
+						{
+							continue;
+						}
+						general_width += (width + FMath::RandRange(rh_params.MinSpaceBetweenHouses, rh_params.
+						                                           MaxSpaceBetweenHouses));
+						general_width_changed = true;
+						break;
+					}
+					else
+					{
+						general_width += FMath::RandRange(rh_params.MinSpaceBetweenHouses,
+						                                  rh_params.MaxSpaceBetweenHouses);
+						general_width_changed = true;
+					}
 				}
-				general_width += (width + 1);
+				if (!general_width_changed)
+				{
+					general_width += FMath::RandRange(rh_params.MinHouseY, rh_params.MaxHouseY);
+				}
 			}
 		}
 	}
@@ -2029,21 +2060,19 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 		for (int i = 1; i <= 100; i++)
 		{
 			double angle = FMath::FRand() * 180;
-			double point_x = FMath::FRand() * (right_point - left_point) +
-				left_point;
-			double point_y = FMath::FRand() * (up_point - down_point) +
-				down_point;
+			double point_x = FMath::FRand() * (right_point - left_point) + left_point;
+			double point_y = FMath::FRand() * (up_point - down_point) + down_point;
 			FVector center_point(point_x, point_y, 0);
 			FVector left_center_point(0, point_y, 0);
 			double width = FMath::FRand() * 3 + 2;
 			double length = FMath::FRand() * 5 + 3;
 			double height = (FMath::FRand() * 2 + 1) * 4;
-			FVector point_beg = AllGeometry::create_segment_at_angle(
-				left_center_point, center_point, center_point, angle,
-				length / 2);
-			FVector point_end = AllGeometry::create_segment_at_angle(
-				left_center_point, center_point, center_point, angle + 180,
-				length / 2);
+			FVector point_beg = AllGeometry::create_segment_at_angle(left_center_point, center_point, center_point,
+			                                                         angle,
+			                                                         length / 2);
+			FVector point_end = AllGeometry::create_segment_at_angle(left_center_point, center_point, center_point,
+			                                                         angle + 180,
+			                                                         length / 2);
 			TArray<FVector> figure{point_beg, point_end};
 			district->create_house(figure, width, height);
 		}
@@ -2183,7 +2212,7 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes,
 			if (next_point.IsSet() && prev_point.IsSet())
 			{
 				if (next_point.GetValue()->in_street || prev_point.GetValue()->
-					in_street)
+				                                                   in_street)
 				{
 					continue;
 				}
@@ -2281,7 +2310,7 @@ TArray<TSharedPtr<Street>> TerrainGen::process_segments(
 		for (int i = 1; i < street->street_vertices.Num(); i++)
 		{
 			if (street->street_vertices[i]->conn.Num() > 2 || i == street->
-				street_vertices.Num() - 1)
+			                                                       street_vertices.Num() - 1)
 			{
 				cur_street->street_vertices.Add(street->street_vertices[i]);
 				cur_street->type = street->type;
@@ -2346,7 +2375,7 @@ TSharedPtr<Node> TerrainGen::get_next_road_node(TSharedPtr<Node> first_point,
 		if (second_next.IsSet() && second_prev.IsSet())
 		{
 			if (second_next.GetValue()->in_street || second_prev.GetValue()->
-				in_street)
+			                                                     in_street)
 			{
 				continue;
 			}
