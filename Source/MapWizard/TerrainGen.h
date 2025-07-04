@@ -86,7 +86,8 @@ public:
 	                    TArray<TSharedPtr<Street>>& segments_array_,
 	                    TArray<TSharedPtr<District>>& river_figure_,
 	                    TArray<TSharedPtr<Node>>& map_borders_array_,
-	                    TArray<FVector>& debug_points_array_);
+	                    TArray<FVector>& debug_points_array_,
+	                    TArray<FVector>& debug2_points_array_);
 	static void add_conn(const TSharedPtr<Node>& node1,
 	                     const TSharedPtr<Node>& node2);
 	static TSharedPtr<Node> insert_conn(const TSharedPtr<Node>& node1_to_insert,
@@ -124,8 +125,12 @@ public:
 	void process_houses(TSharedPtr<District> block);
 	void create_special_district(TArray<FVector>& figure, point_type type,
 	                             FVector point);
+	void create_special_district_by_nodes(TArray<TSharedPtr<Node>>& figure, point_type type,
+	                                      FVector point);
 	void create_circle(FVector point, double radius, district_type type,
 	                   point_type road_type, int vertex_count);
+	void create_circle_by_existing_nodes(FVector central_point, double radius, double interval, district_type type,
+	                                     point_type road_type, int vertex_count, bool sticky_river, bool sticky_walls);
 	void process_streets(TArray<TSharedPtr<Node>> nodes,
 	                     TArray<TSharedPtr<Street>>& fig_array, point_type type,
 	                     bool is_persistent);
@@ -168,11 +173,11 @@ public:
 			node.Reset();
 		}
 		map_borders_array.Reset();
-		for (auto& node : roads)
+		for (auto& node : road_nodes)
 		{
 			node.Reset();
 		}
-		roads.Reset();
+		road_nodes.Reset();
 	}
 
 	TArray<TSharedPtr<District>> shapes_array;
@@ -186,9 +191,11 @@ public:
 	TArray<TSharedPtr<Street>> segments_array{};
 	TArray<TSharedPtr<Node>> guididng_roads_array{};
 	TArray<WeightedPoint> weighted_points{};
-	TArray<TSharedPtr<Node>> roads{};
+	TArray<TSharedPtr<Node>> road_nodes{};
 	TArray<FVector> soft_borders_array{};
 	TSharedPtr<Node> central_node;
 	TArray<TTuple<FVector, district_type>> custom_districts;
 	TArray<CustomDistrNodes> custom_distr_nodes;
+	TArray<FVector> debug_points_array;
+	TArray<FVector> debug2_points_array;
 };

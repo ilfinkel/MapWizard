@@ -29,6 +29,9 @@ public:
 	TArray<int32> Triangles;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
 	UMaterialInterface* Material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual")
+	int roof_texture_turns = 0;
 	UFUNCTION()
 	void OnMeshClicked(UPrimitiveComponent* TouchedComponent,
 	                   FKey ButtonPressed);
@@ -57,6 +60,12 @@ public:
 	float GetAngle()
 	{
 		return object->get_angle();
+	}
+	
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	float GetID()
+	{
+		return object->get_id();
 	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Custom")

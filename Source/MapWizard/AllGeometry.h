@@ -16,7 +16,7 @@ public:
 	                                       const FVector& line2_begin,
 	                                       const FVector& line2_end,
 	                                       bool is_opened);
-
+	
 
 	static TOptional<TTuple<FVector, TTuple<
 		                        TSharedPtr<Node>, TSharedPtr<Node>>>>
@@ -78,6 +78,7 @@ public:
 	                                 const FVector& Point, double distance);
 	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line,
 	                                       double width);
+	static TArray<FVector> shrink_polygon(const TArray<FVector> cur_polygon, double interval);
 };
 
 
@@ -163,6 +164,7 @@ struct Point
 	{
 		return this->point_id == Other.point_id;
 	}
+
 };
 
 enum class object_type
@@ -198,6 +200,7 @@ struct SelectableObject
 	object_type get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
+	bool operator==(SelectableObject& other) const { return this->object_id == other.object_id; }
 
 protected:
 	bool selected = false;

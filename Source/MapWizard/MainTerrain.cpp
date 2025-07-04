@@ -372,7 +372,6 @@ AProceduralBlockMeshActor* AMainTerrain::GetLastSelected()
 
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetLastTypeSelected()
 {
-	
 	for (auto distr : GetAllDistrictsSelected())
 	{
 		if (distr->object->get_id() == selected_objects->Last())
@@ -400,6 +399,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 	streets_array.Empty();
 	map_borders_array.Empty();
 	debug_points_array.Empty();
+	debug2_points_array.Empty();
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	auto World = GetWorld();
@@ -452,7 +452,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 		TerrainGen gen(MapParams, ResidentialHousesParams);
 		gen.create_terrain(roads, figures_array, streets_array, segments_array,
 		                   river_figures, map_borders_array,
-		                   debug_points_array);
+		                   debug_points_array, debug2_points_array);
 		gen.empty_all();
 		draw_all();
 		AActor* ViewTarget = PlayerController->GetViewTarget();
@@ -567,7 +567,6 @@ void AMainTerrain::AttachDistricts()
 		}
 		return false;
 	});
-	
 }
 
 void AMainTerrain::DivideDistricts()
@@ -756,7 +755,7 @@ inline void AMainTerrain::initialize_all()
 
 	TerrainGen gen(MapParams, ResidentialHousesParams);
 	gen.create_terrain(roads, figures_array, streets_array, segments_array,
-	                   river_figures, map_borders_array, debug_points_array);
+	                   river_figures, map_borders_array, debug_points_array, debug2_points_array);
 	gen.empty_all();
 	draw_all();
 	AActor* ViewTarget = PlayerController->GetViewTarget();
@@ -792,6 +791,26 @@ UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack,
 void AMainTerrain::draw_all()
 {
 	clear_all();
+
+	for (auto& p : debug2_points_array)
+	{
+		FVector Start = p;
+		FVector End = p;
+		Start.Z = -10;
+		End.Z = 100;
+
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 5.0f);
+	}
+	for (auto& p : debug_points_array)
+	{
+		FVector Start = p;
+		FVector End = p;
+		Start.Z = -10;
+		End.Z = 100;
+
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 5.0f);
+	}
+
 	int ind = 0;
 	for (auto b : roads)
 	{
@@ -1018,9 +1037,9 @@ void AMainTerrain::get_cursor_hit_location()
 			MouseX, MouseY, WorldLocation, WorldDirection))
 		{
 			FVector CameraLocation = PlayerController->PlayerCameraManager->
-				GetCameraLocation();
+			                                           GetCameraLocation();
 			FVector CameraForwardVector = PlayerController->PlayerCameraManager
-				->GetCameraRotation().Vector();
+			                                              ->GetCameraRotation().Vector();
 			FVector Start = CameraLocation;
 			// Начальная точка линии (например, от камеры)
 			FVector End = Start + (CameraForwardVector * 10000.02);

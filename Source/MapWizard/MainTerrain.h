@@ -87,7 +87,7 @@ struct FMapParams
 	double av_distance;
 	UPROPERTY(BlueprintReadOnly, Category = "Folders")
 	TArray<FString> FolderNames = GetSubfoldersInDirectory("/Game/Packs/Pack1");
-	
+
 	void update_me()
 	{
 		center = FVector(x_size / 2, y_size / 2, 0);
@@ -105,6 +105,7 @@ private:
 
 		return Subfolders;
 	}
+
 	void UpdateFolderList(const FString& DirectoryPath)
 	{
 		FolderNames = GetSubfoldersInDirectory(DirectoryPath);
@@ -170,12 +171,14 @@ struct DrawingObject
 	{
 		mesh->Destroy();
 	}
+
 	void define_mesh()
 	{
 		name = mesh->GetActorLabel();
 		material_interface = mesh->ProceduralMesh->GetMaterial(0);
 		material = mesh->Material;
 	}
+
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
 	                    float ExtrusionHeight);
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight,
@@ -196,17 +199,19 @@ struct DrawingDistrict : DrawingObject
 	DrawingDistrict(TSharedPtr<District> district_,
 	                AProceduralBlockMeshActor* mesh_,
 	                double start_height_): district(district_)
-	                                     , start_height(start_height_)
+	                                       , start_height(start_height_)
 	{
 		mesh = mesh_;
 		define_mesh();
 	}
+
 	void delete_mesh()
 	{
 		// district->unselect();
 		district.Reset();
 		mesh->Destroy();
 	}
+
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
@@ -232,8 +237,8 @@ struct DrawingStreet : DrawingObject
 	              AProceduralBlockMeshActor* mesh_,
 	              double start_height_,
 	              bool is_2d_): street(street_)
-	                          , is_2d(is_2d_)
-	                          , start_height(start_height_)
+	                            , is_2d(is_2d_)
+	                            , start_height(start_height_)
 	{
 		if (street->type == point_type::wall)
 		{
@@ -242,6 +247,7 @@ struct DrawingStreet : DrawingObject
 		mesh = mesh_;
 		define_mesh();
 	}
+
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
@@ -256,6 +262,7 @@ struct DrawingStreet : DrawingObject
 			create_mesh_3d(mesh, street->street_vertexes, start_height, 10);
 		}
 	}
+
 	void redraw_me(double width)
 	{
 		mesh->SetActorLabel(name);
@@ -289,12 +296,13 @@ struct DrawingHouse : DrawingObject
 	             AProceduralBlockMeshActor* mesh_,
 	             double start_height_,
 	             bool is_2d_): house(house_)
-	                         , is_2d(is_2d_)
-	                         , start_height(start_height_)
+	                           , is_2d(is_2d_)
+	                           , start_height(start_height_)
 	{
 		mesh = mesh_;
 		define_mesh();
 	}
+
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
@@ -309,6 +317,7 @@ struct DrawingHouse : DrawingObject
 			create_mesh_3d(mesh, house->house_figure, start_height, house->height);
 		}
 	}
+
 	TSharedPtr<House> house;
 	bool is_2d;
 	double start_height;
@@ -365,25 +374,23 @@ public:
 	void AttachDistricts();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void DivideDistricts();
-	
-	void clear_all(); 
+
+	void clear_all();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool is_2d = true;
 
 	UProceduralMeshComponent* BaseComponent;
 
-	
-
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void initialize_all();
+
 private:
 	UMaterialInterface* BaseMaterial;
 	UMaterialInterface* WaterMaterial;
@@ -404,6 +411,7 @@ private:
 	TArray<TSharedPtr<Street>> streets_array{};
 	TArray<TSharedPtr<Street>> segments_array{};
 	TArray<FVector> debug_points_array{};
+	TArray<FVector> debug2_points_array{};
 	TArray<TSharedPtr<Node>> roads{};
 	TArray<TSharedPtr<District>> river_figures;
 	TArray<DrawingDistrict> drawing_districts;
@@ -411,4 +419,3 @@ private:
 	TArray<DrawingHouse> drawing_houses;
 	TSharedPtr<TArray<unsigned int>> selected_objects;
 };
-

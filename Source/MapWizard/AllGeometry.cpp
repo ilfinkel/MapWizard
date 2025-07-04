@@ -1115,12 +1115,6 @@ bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 		{
 			times_to_hit++;
 		}
-		// if (old_intersec.IsSet() && intersec.IsSet() &&
-		// 	(old_intersec.GetValue() - intersec.GetValue()).Length() < 0.01f)
-		// {
-		// 	times_to_hit--;
-		// }
-		// old_intersec = intersec;
 	}
 	if (times_to_hit % 2 == 1)
 	{
@@ -1195,4 +1189,87 @@ TArray<FVector> AllGeometry::line_to_polygon(const TArray<FVector> given_line,
 		this_figure.Add(point);
 	}
 	return this_figure;
+}
+
+// not sure if it works right
+TArray<FVector> AllGeometry::shrink_polygon(const TArray<FVector> cur_polygon, double interval)
+{
+	// 	shrink_figure_with_roads(
+	// 	TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road)
+	// {
+	int32 NumVertices = cur_polygon.Num();
+	TArray<FVector> new_points;
+	auto backup_vertices = cur_polygon;
+	if (cur_polygon[0] == cur_polygon[NumVertices - 1])
+	{
+		NumVertices--;
+	}
+	if (NumVertices < 3)
+	{
+		return TArray<FVector>();
+	}
+	for (int i = 0; i <= NumVertices; ++i)
+	{
+		auto Prev = (i + NumVertices - 1) % NumVertices;
+		auto Curr = i % NumVertices;
+		auto Next = (i + 1) % NumVertices;
+		float road_height1 = interval;
+		float road_height2 = interval;
+
+		FVector parralel1_beg = AllGeometry::create_segment_at_angle(
+			cur_polygon[Prev], cur_polygon[Curr], cur_polygon[Prev], 90, road_height1);
+		FVector parralel2_beg = AllGeometry::create_segment_at_angle(
+			cur_polygon[Curr], cur_polygon[Next], cur_polygon[Next], 90,
+			road_height2);
+		FVector parralel1_end =
+			AllGeometry::create_segment_at_angle(
+				cur_polygon[Prev], cur_polygon[Curr], parralel1_beg, 0, 5000);
+		FVector parralel2_end =
+			AllGeometry::create_segment_at_angle(
+				cur_polygon[Next], cur_polygon[Curr], parralel2_beg, 0, 5000);
+		parralel1_beg.Z = 0;
+		parralel2_beg.Z = 0;
+		parralel1_end.Z = 0;
+		parralel2_end.Z = 0;
+		auto intersection =
+			AllGeometry::is_intersect(parralel1_beg, parralel1_end,
+			                          parralel2_beg, parralel2_end, false);
+
+		if (intersection.IsSet())
+		{
+			if (!AllGeometry::is_point_in_figure(intersection.GetValue(), cur_polygon))
+			{
+				continue;
+			}
+			auto angle1 =
+				AllGeometry::calculate_angle_clock(
+					cur_polygon[Prev],
+					cur_polygon[Curr],
+					cur_polygon[Next]);
+			auto angle2 = AllGeometry::calculate_angle_clock(
+				parralel1_beg, intersection.GetValue(), parralel2_beg);
+			if (angle2 - angle1 < 0.1)
+			{
+				bool is_valid = true;
+				for (int j = 1; j <= cur_polygon.Num(); j++)
+				{
+					if (AllGeometry::point_to_seg_distance(
+						cur_polygon[j - 1],
+						cur_polygon[j % cur_polygon.Num()],
+						intersection.GetValue()) < interval)
+					{
+						is_valid = false;
+						break;
+					}
+				}
+				if (is_valid == true)
+				{
+					new_points.Add(cur_polygon[Curr]);
+				}
+			}
+		}
+	}
+
+	return new_points;
+	// }
 }
