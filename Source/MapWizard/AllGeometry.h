@@ -341,6 +341,7 @@ struct District : public SelectableObject
 		TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
 	bool create_house(TArray<FVector> given_line, double width, double height);
+	bool create_house(TArray<FVector> given_line, double height);
 	bool attach_district(TSharedPtr<District> other_district,
 	                     TArray<TSharedPtr<Street>>& streets_to_delete);
 	bool divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2,

@@ -159,6 +159,8 @@ struct FResidentialHousesParams
 	float MaxArea = 90;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float HouseChance = 90;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PavementWidth = 10;
 };
 
 struct DrawingObject

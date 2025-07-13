@@ -325,6 +325,13 @@ bool District::create_house(TArray<FVector> given_line, double width,
 	return true;
 }
 
+bool District::create_house(TArray<FVector> given_figure, double height)
+{
+	House house(given_figure, height);
+	houses.Add(MakeShared<House>(house));
+	return true;
+}
+
 bool District::attach_district(TSharedPtr<District> other_district,
                                TArray<TSharedPtr<Street>>& streets_to_delete)
 {

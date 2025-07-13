@@ -39,7 +39,6 @@ public:
 	EDrawStage draw_stage;
 	EWaterType water_type;
 	FResidentialHousesParams rh_params;
-	float aaa = 0;
 	bool did_river_multiplied = false;
 
 	TArray<TSharedPtr<District>> river_figures;

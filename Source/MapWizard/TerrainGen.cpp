@@ -428,9 +428,9 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	}
 	for (int i = 0; i < 15; i++)
 	{
-		FVector point(FMath::RandRange(0.0,x_size), FMath::RandRange(0.0,y_size), 0);
+		FVector point(FMath::RandRange(0.0, x_size), FMath::RandRange(0.0, y_size), 0);
 		create_circle_by_existing_nodes(point, 150, 20, district_type::tower,
-										point_type::main_road, 50, true, true);
+		                                point_type::main_road, 50, true, true);
 	}
 
 	for (auto t : towers)
@@ -2007,6 +2007,34 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 	else if (district->get_type() == district_type::residential)
 	{
 		int self_figure_count = district->self_figure.Num();
+		int count_without_end = district->self_figure[0] == district->self_figure[self_figure_count - 1]
+			                        ? self_figure_count - 1
+			                        : self_figure_count;
+		for (int i = 0; i < self_figure_count - 1; i++)
+		{
+			int i0 = (i - 2 + count_without_end) % count_without_end;
+			int i1 = (i - 1 + count_without_end) % count_without_end;
+			int i2 = i;
+			int i3 = (i + 1) % count_without_end;
+
+			FVector point0 = district->self_figure[i0].point;
+			FVector point1 = district->self_figure[i1].point;
+			FVector point2 = district->self_figure[i2].point;
+			FVector point3 = district->self_figure[i3].point;
+
+			auto angle1 = AllGeometry::calculate_angle_clock(point0, point1, point2);
+			auto angle2 = AllGeometry::calculate_angle_clock(point1, point2, point3);
+
+			FVector point1_end = AllGeometry::create_segment_at_angle(point0, point1, point1, angle1 / 2,
+			                                                          rh_params.PavementWidth / FMath::Sin(
+				                                                          FMath::DegreesToRadians(angle1 / 2)));
+			FVector point2_end = AllGeometry::create_segment_at_angle(point1, point2, point2, angle2 / 2,
+			                                                          rh_params.PavementWidth / FMath::Sin(
+				                                                          FMath::DegreesToRadians(angle2 / 2)));
+
+			TArray<FVector> figure{point2_end, point1_end, point1, point2};
+			district->create_house(figure, 1);
+		}
 		for (int i = 1; i <= self_figure_count; i++)
 		{
 			FVector point1 = district->self_figure[i - 1].point;
@@ -2035,7 +2063,8 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 						}
 						double height = FMath::RandRange(rh_params.MinHouseZ, rh_params.MaxHouseZ);
 						FVector point_beg = AllGeometry::create_segment_at_angle(point1, point2,
-							(point2 - point1) / dist * (general_width + (width / 2)) + point1, 90, 1);
+							(point2 - point1) / dist * (general_width + (width / 2)) + point1, 90,
+							1 + rh_params.PavementWidth);
 						FVector point_end =
 							AllGeometry::create_segment_at_angle(
 								point1, point2, point_beg, 90, length);
@@ -2222,10 +2251,10 @@ void TerrainGen::create_circle_by_existing_nodes(FVector central_point, double r
 			if (FVector::Distance(rnr->get_FVector(), central_point) > distance && AllGeometry::is_point_in_figure(
 				rnr->get_FVector(), figure1))
 			{
-				
 				cur_node = rnr;
 				distance = FVector::Distance(rnr->get_FVector(), central_point);
-				if ((sticky_river && rnr->get_node_type() == point_type::river) || (sticky_walls && rnr->get_node_type() == point_type::wall))
+				if ((sticky_river && rnr->get_node_type() == point_type::river) || (sticky_walls && rnr->get_node_type()
+					== point_type::wall))
 					break;
 			}
 		}
