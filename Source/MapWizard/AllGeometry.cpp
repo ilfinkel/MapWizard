@@ -261,7 +261,7 @@ TOptional<FVector> District::is_line_intersect(FVector point1, FVector point2)
 }
 
 bool District::create_house(TArray<FVector> given_line, double width,
-                            double height)
+                            double height, FString obj_type = "House")
 {
 	if (given_line.Num() < 2)
 	{
@@ -325,9 +325,9 @@ bool District::create_house(TArray<FVector> given_line, double width,
 	return true;
 }
 
-bool District::create_house(TArray<FVector> given_figure, double height)
+bool District::create_house(TArray<FVector> given_figure, double height, FString obj_type = "House")
 {
-	House house(given_figure, height);
+	House house(given_figure, height, obj_type);
 	houses.Add(MakeShared<House>(house));
 	return true;
 }

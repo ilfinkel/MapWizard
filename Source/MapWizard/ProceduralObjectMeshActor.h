@@ -74,6 +74,12 @@ public:
 		return object->get_measure();
 	}
 	
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	FString GetObjectType()
+	{
+		return object->get_object_type();
+	}
+	
 	void SetDynamicObject(TSharedPtr<SelectableObject> distr)
 	{
 		object = distr;

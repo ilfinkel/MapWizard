@@ -197,7 +197,7 @@ struct SelectableObject
 	}
 
 	virtual FVector get_measure() { return FVector(); }
-	object_type get_object_type() { return object_type; }
+	FString get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
 	bool operator==(SelectableObject& other) const { return this->object_id == other.object_id; }
@@ -205,20 +205,21 @@ struct SelectableObject
 protected:
 	bool selected = false;
 	bool hovered = false;
-	object_type object_type;
+	FString object_type;
 	unsigned int object_id;
+	
 };
 
 struct Street : public SelectableObject
 {
 	Street()
 	{
-		object_type = object_type::street;
+		object_type = "Street";
 	};
 
 	Street(TArray<TSharedPtr<Node>> points_): street_vertices(points_)
 	{
-		object_type = object_type::street;
+		object_type = "Street";
 	}
 
 	float get_angle() override
@@ -260,9 +261,13 @@ struct House : public SelectableObject
 	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
 		, height(height_)
 	{
-		object_type = object_type::house;
+		object_type = "House";
 	}
-
+	House(TArray<FVector> figure_, double height_, FString obj_type) : house_figure(figure_)
+		, height(height_)
+	{
+		object_type = obj_type;
+	}
 	~House();
 
 	float get_angle() override
@@ -298,7 +303,7 @@ struct District : public SelectableObject
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
 
-		object_type = object_type::district;
+		object_type = "District";
 	}
 
 	explicit District(TArray<TSharedPtr<Node>> figure_);
@@ -340,8 +345,8 @@ struct District : public SelectableObject
 	TArray<Point> shrink_figure_with_roads(
 		TArray<TSharedPtr<Node>>& figure_vertices, float road, float main_road);
 	TOptional<FVector> is_line_intersect(FVector point1, FVector point2);
-	bool create_house(TArray<FVector> given_line, double width, double height);
-	bool create_house(TArray<FVector> given_line, double height);
+	bool create_house(TArray<FVector> given_line, double width, double height, FString obj_type);
+	bool create_house(TArray<FVector> given_line, double height, FString obj_type);
 	bool attach_district(TSharedPtr<District> other_district,
 	                     TArray<TSharedPtr<Street>>& streets_to_delete);
 	bool divide_me(TSharedPtr<District> dist1, TSharedPtr<District> dist2,

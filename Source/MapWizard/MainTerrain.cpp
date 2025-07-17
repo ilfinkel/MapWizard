@@ -219,7 +219,7 @@ AMainTerrain::AMainTerrain() : MapParams()
                                , BuildingMaterial(nullptr)
                                , RoadMaterial(nullptr)
                                , MainRoadMaterial(nullptr)
-                               , WallMaterial(nullptr)
+                               , WallMaterial(nullptr), PavementMaterial(nullptr)
 {
 	TArray<unsigned int> empty_arr{};
 	selected_objects = MakeShared<TArray<unsigned int>>(empty_arr);
@@ -276,17 +276,41 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreetsSelected()
 
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHousesSelected()
 {
+	return get_all_houses_of_type_selected("House");
+}
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::get_all_houses_of_type_selected(FString type_name)
+{
 	TArray<AProceduralBlockMeshActor*> houses_to_get{};
 	for (int i = 0; i < drawing_houses.Num(); i++)
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
-		if (drawing_houses[i].house->is_selected())
+		if (drawing_houses[i].house->is_selected() && drawing_houses[i].house->get_object_type() == type_name)
 		{
 			houses_to_get.Add(drawing_houses[i].mesh);
 		}
 	}
 	return houses_to_get;
 }
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllOjectsOfTypeSelected(FString type_name)
+{
+	TArray<AProceduralBlockMeshActor*> selected_array;
+	if (type_name == "District")
+	{
+		return GetAllDistrictsSelected();
+	}
+	else if (type_name == "House" || type_name == "Pavement")
+	{
+		get_all_houses_of_type_selected(type_name);
+	}
+	else if (type_name == "Street")
+	{
+		return GetAllStreetsSelected();
+	}
+	return {};
+}
+
 
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllDistricts()
 {
@@ -310,12 +334,38 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreets()
 
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHouses()
 {
+	return get_all_houses_of_type("House");
+}
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::get_all_houses_of_type(FString type)
+{
 	TArray<AProceduralBlockMeshActor*> houses_to_get{};
 	for (int i = 0; i < drawing_houses.Num(); i++)
 	{
-		houses_to_get.Add(drawing_houses[i].mesh);
+		if (drawing_houses[i].house->get_object_type() == type)
+		{
+			houses_to_get.Add(drawing_houses[i].mesh);
+		}
 	}
 	return houses_to_get;
+}
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllOjectsOfType(FString type_name)
+{
+	TArray<AProceduralBlockMeshActor*> selected_array;
+	if (type_name == "District")
+	{
+		return GetAllDistricts();
+	}
+	else if (type_name == "House" || type_name == "Pavement")
+	{
+		get_all_houses_of_type(type_name);
+	}
+	else if (type_name == "Street")
+	{
+		return GetAllStreets();
+	}
+	return {};
 }
 
 TArray<AProceduralBlockMeshActor*> AMainTerrain::UnselectAllDistricts()
@@ -707,6 +757,7 @@ inline void AMainTerrain::initialize_all()
 	RoadMaterial = load_material("Pack1", "MaterialRoad");
 	MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
 	WallMaterial = load_material("Pack1", "MaterialWall");
+	PavementMaterial = load_material("Pack1", "MaterialPavement");
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(),
 	                                      AOrthographicCameraPawn::StaticClass(),
@@ -923,15 +974,22 @@ void AMainTerrain::draw_all()
 		int house_count = 0;
 		for (auto& p : r->houses)
 		{
+			FString type = p->get_object_type();
 			FString HouseName = FString::Printf(
-				TEXT("%s_House_%d"), *ActorName, ++house_count);
+				TEXT("%s_%s_%d"), *ActorName, *type, ++house_count);
 			AProceduralBlockMeshActor* MeshComponent =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 					AProceduralBlockMeshActor::StaticClass());
 			MeshComponent->SetSelectedObject(selected_objects);
 			MeshComponent->SetActorLabel(HouseName);
-			MeshComponent->ProceduralMesh->SetMaterial(0, BuildingMaterial);
-			MeshComponent->Material = BuildingMaterial;
+
+			if (p->get_object_type() == "House")
+				MeshComponent->ProceduralMesh->SetMaterial(0, BuildingMaterial);
+			else if (p->get_object_type() == "Pavement")
+				MeshComponent->ProceduralMesh->SetMaterial(0, PavementMaterial);
+			else
+				MeshComponent->ProceduralMesh->SetMaterial(0, BaseMaterial);
+
 			// MeshComponent->DefaultMaterial = BaseMaterial;
 			MeshComponent->SetDynamicObject(p);
 

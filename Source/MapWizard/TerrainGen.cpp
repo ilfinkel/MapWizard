@@ -1997,7 +1997,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 					district->self_figure[i % figure_num].point,
 					district_center, 180, 30);
 				TArray<FVector> figure{point1, point2};
-				if (district->create_house(figure, 40, 30))
+				if (district->create_house(figure, 40, 30, "House"))
 				{
 					break;
 				}
@@ -2033,7 +2033,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 				                                                          FMath::DegreesToRadians(angle2 / 2)));
 
 			TArray<FVector> figure{point2_end, point1_end, point1, point2};
-			district->create_house(figure, 1);
+			district->create_house(figure, 1, "Pavement");
 		}
 		for (int i = 1; i <= self_figure_count; i++)
 		{
@@ -2069,7 +2069,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 							AllGeometry::create_segment_at_angle(
 								point1, point2, point_beg, 90, length);
 						TArray<FVector> figure{point_beg, point_end};
-						if (!district->create_house(figure, width, height))
+						if (!district->create_house(figure, width, height, "House"))
 						{
 							continue;
 						}
@@ -2111,7 +2111,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 			                                                         angle + 180,
 			                                                         length / 2);
 			TArray<FVector> figure{point_beg, point_end};
-			district->create_house(figure, width, height);
+			district->create_house(figure, width, height, "House");
 		}
 	}
 }

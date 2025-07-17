@@ -359,6 +359,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllHouses();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllOjectsOfTypeSelected(FString type_name);
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllOjectsOfType(FString type_name);
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllDistricts();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> UnselectAllStreets();
@@ -405,9 +409,12 @@ private:
 	UMaterialInterface* RoadMaterial;
 	UMaterialInterface* MainRoadMaterial;
 	UMaterialInterface* WallMaterial;
+	UMaterialInterface* PavementMaterial;
 	UMaterialInterface* load_material(const FString& TexturePack, const FString& MaterialName);
 	void draw_all();
 	void get_cursor_hit_location();
+	TArray<AProceduralBlockMeshActor*> get_all_houses_of_type_selected(FString type_name);
+	TArray<AProceduralBlockMeshActor*> get_all_houses_of_type(FString type_name);
 	TArray<TSharedPtr<Node>> map_borders_array{};
 	TArray<TSharedPtr<District>> figures_array{};
 	TArray<TSharedPtr<Street>> streets_array{};
