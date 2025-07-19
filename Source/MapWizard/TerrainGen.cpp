@@ -426,11 +426,12 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 		create_circle_by_existing_nodes(central_point, 200, 40, district_type::royal,
 		                                point_type::main_road, 50, true, true);
 	}
+	// drawing squares
 	for (int i = 0; i < 15; i++)
 	{
 		FVector point(FMath::RandRange(0.0, x_size), FMath::RandRange(0.0, y_size), 0);
-		create_circle_by_existing_nodes(point, 150, 20, district_type::tower,
-		                                point_type::main_road, 50, true, true);
+		create_circle_by_existing_nodes(point, 75, 75, district_type::tower,
+		                                point_type::main_road, 8, true, true);
 	}
 
 	for (auto t : towers)
@@ -2136,7 +2137,7 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 {
 	for (auto& f : nodes)
 	{
-		debug2_points_array.Add(f->get_FVector());
+		// debug2_points_array.Add(f->get_FVector());
 	}
 
 	// FVector center_point(0, 0, 0);
@@ -2175,11 +2176,9 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 		[&, point](const TSharedPtr<Node>& node)
 		{
 			if (AllGeometry::is_point_in_figure(node->get_FVector(), inner_figure)
-				// || FVector::Distance(
-				// 	node->get_FVector(), point) < 1
 			)
 			{
-				debug_points_array.Add(node->get_FVector());
+				// debug_points_array.Add(node->get_FVector());
 				node->delete_me();
 				return true;
 			}

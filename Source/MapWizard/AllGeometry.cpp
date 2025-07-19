@@ -1101,10 +1101,10 @@ void AllGeometry::TriangulatePolygon(const TArray<FVector>& Vertices,
 
 bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 {
+	
 	FVector point = point_;
 	FVector point2 = point_;
 	point2.Y += 5000;
-	int times_to_hit = 0;
 	if (figure.Num() < 3) return false;
 	FVector figure0 = figure[0];
 	if (figure[0] != figure.Last())
@@ -1112,7 +1112,7 @@ bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 		figure.Add(figure0);
 	}
 	int fig_num = figure.Num();
-
+	bool intersected = false;
 	TOptional<FVector> old_intersec;
 	for (int i = 1; i <= fig_num; i++)
 	{
@@ -1120,14 +1120,10 @@ bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 		                             figure[i % fig_num], false);
 		if (intersec.IsSet())
 		{
-			times_to_hit++;
+			intersected = !intersected;
 		}
 	}
-	if (times_to_hit % 2 == 1)
-	{
-		return true;
-	}
-	return false;
+	return intersected;
 }
 
 float AllGeometry::point_to_seg_distance(const FVector& SegmentStart,
