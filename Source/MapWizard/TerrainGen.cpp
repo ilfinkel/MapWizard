@@ -249,6 +249,11 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 			create_guiding_rivers();
 		}
 	}
+	// for (auto& cd : guiding_river)
+	// {
+	// 	debug_points_array.Add(cd->get_FVector());
+	// 	custom_districts.Add(TTuple<FVector, district_type>(cd->get_FVector(), district_type::water));
+	// }
 	double EndTime1 = FPlatformTime::Seconds();
 	double StartTime3 = FPlatformTime::Seconds();
 	for (int iter = 0; iter < 100; iter++)
@@ -258,14 +263,14 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 			move_river(b.Key, b.Value);
 		}
 	}
-	for (auto& cd : custom_distr_nodes)
-	{
-		custom_districts.Add(
-			TTuple<FVector, district_type>(
-				(cd.node1->get_FVector() + cd.node2->get_FVector() + cd.node3->
-				                                                        get_FVector()) / 3, district_type::water));
-	}
-	custom_distr_nodes.Empty();
+	// for (auto& cd : custom_distr_nodes)
+	// {
+	// 	custom_districts.Add(
+	// 		TTuple<FVector, district_type>(
+	// 			(cd.node1->get_FVector() + cd.node2->get_FVector() + cd.node3->
+	// 			                                                        get_FVector()) / 3, district_type::water));
+	// }
+	// custom_distr_nodes.Empty();
 	// for (auto bridge : bridges)
 	// {
 	// 	FVector center_bridge = (bridge.Key->get_FVector() + bridge.Value->get_FVector()) / 2;
@@ -446,6 +451,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	process_streets(road_nodes, streets_array, {}, false);
 
 	segments_array = process_segments(streets_array);
+	// shrink_roads();
 	get_closed_figures(road_nodes, shapes_array, 200);
 
 	double EndTime9 = FPlatformTime::Seconds();
@@ -1681,21 +1687,21 @@ void TerrainGen::get_river_figure()
 		item->set_type(district_type::water);
 		river_figures.Add(item);
 	}
-	river_figures.RemoveAll(
-		[&](TSharedPtr<District>& A)
-		{
-			bool is_in = false;
-			for (auto point : custom_districts)
-			{
-				if (point.Value == district_type::water && A->
-					is_point_in_figure(point.Key))
-				{
-					is_in = true;
-					break;
-				}
-			}
-			return !is_in;
-		});
+	// river_figures.RemoveAll(
+	// 	[&](TSharedPtr<District>& A)
+	// 	{
+	// 		bool is_in = false;
+	// 		for (auto point : custom_districts)
+	// 		{
+	// 			if (point.Value == district_type::water && A->
+	// 				is_point_in_figure(point.Key))
+	// 			{
+	// 				is_in = true;
+	// 				break;
+	// 			}
+	// 		}
+	// 		return !is_in;
+	// 	});
 }
 
 void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
@@ -1706,13 +1712,19 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			return Item1->area > Item2->area;
 		});
 	double royal_area = 0;
+	
+	
 	bool royal_found = false;
-
 	for (auto& c : custom_districts)
 	{
+		if (c.Value == district_type::tower)
+		{
+			debug2_points_array.Add(c.Key);
+		}
 		for (auto& d : districts)
 		{
-			if (d->is_point_in_self_figure(c.Key))
+			if (c.Value != district_type::unknown) continue;
+			if (d->is_point_in_figure(c.Key))
 			{
 				if (c.Value == district_type::royal)
 				{
@@ -1723,7 +1735,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			}
 		}
 	}
-
+	
 	// bool dock_found = false;
 	for (auto& b : districts)
 	{
@@ -1911,7 +1923,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 				int koeff = (dock_count * (-4) + royal_count * 6 + luxury_count
 					* 3 + slums_count * (-8) +
 					residential_count * 2) / districts_near;
-
+	
 				if (koeff <= -7 && luxury_count == 0 && royal_count == 0)
 				{
 					b->set_type(district_type::slums);
@@ -1946,7 +1958,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 	}
 	while (named_districts < districts_count && old_named_districts !=
 		named_districts);
-
+	
 	districts.RemoveAll([this](TSharedPtr<District>& district)
 	{
 		district->self_figure = district->shrink_figure_with_roads(
@@ -2135,10 +2147,10 @@ void TerrainGen::create_special_district(TArray<FVector>& figure,
 
 void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& nodes, point_type type, FVector point)
 {
-	for (auto& f : nodes)
-	{
-		// debug2_points_array.Add(f->get_FVector());
-	}
+	// for (auto& f : nodes)
+	// {
+	// 	debug2_points_array.Add(f->get_FVector());
+	// }
 
 	// FVector center_point(0, 0, 0);
 	// for (auto f : nodes)
@@ -2158,7 +2170,10 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 		auto new_inner_point = f->get_FVector();
 		inner_figure.Add(new_inner_point);
 	}
-
+	if (*nodes.begin() != *nodes.end())
+	{
+		inner_figure.Add(nodes[0]->get_FVector());
+	}
 	// that's fucked up. 
 	FVector Center = FVector::ZeroVector;
 	for (const FVector& Point : inner_figure)
@@ -2170,7 +2185,6 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 	{
 		Point = Center + (Point - Center) * 0.9999;
 	}
-
 
 	road_nodes.RemoveAll(
 		[&, point](const TSharedPtr<Node>& node)
