@@ -639,7 +639,7 @@ void AMainTerrain::DivideDistricts()
 			MeshComponent->Material = drawing_districts[i].mesh->Material;
 			// MeshComponent->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
 			auto District1 = MakeShared<District>();
-			District1->set_type(drawing_districts[i].district->get_type());
+			District1->set_district_type(drawing_districts[i].district->get_district_type());
 
 			AProceduralBlockMeshActor* MeshComponent2 =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
@@ -652,7 +652,7 @@ void AMainTerrain::DivideDistricts()
 			MeshComponent2->Material = drawing_districts[i].mesh->Material;
 			// MeshComponent2->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
 			auto District2 = MakeShared<District>();
-			District2->set_type(drawing_districts[i].district->get_type());
+			District2->set_district_type(drawing_districts[i].district->get_district_type());
 
 			DrawingDistrict dd1(District1, MeshComponent,
 			                    drawing_districts[i].start_height);
@@ -904,7 +904,7 @@ void AMainTerrain::draw_all()
 		MeshComponent2->SetSelectedObject(selected_objects);
 		MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
 		MeshComponent2->Material = BaseMaterial;
-		if (r->get_type() == district_type::water)
+		if (r->get_district_type() == district_type::water)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictWater_%d"), ++ActorCounter);
@@ -914,7 +914,7 @@ void AMainTerrain::draw_all()
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 			// create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
 		}
-		else if (r->get_type() == district_type::luxury)
+		else if (r->get_district_type() == district_type::luxury)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictLuxury_%d"), ++ActorCounter);
@@ -923,7 +923,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = LuxuryMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_type() == district_type::dock)
+		else if (r->get_district_type() == district_type::dock)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictDocks_%d"), ++ActorCounter);
@@ -932,7 +932,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = DocsMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_type() == district_type::royal)
+		else if (r->get_district_type() == district_type::royal)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictRoyal_%d"), ++ActorCounter);
@@ -940,7 +940,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = RoyalMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_type() == district_type::slums)
+		else if (r->get_district_type() == district_type::slums)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictSlums_%d"), ++ActorCounter);
@@ -949,7 +949,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = SlumsMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_type() == district_type::residential)
+		else if (r->get_district_type() == district_type::residential)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictResidence_%d"), ++ActorCounter);
@@ -958,7 +958,7 @@ void AMainTerrain::draw_all()
 			MeshComponent2->Material = ResidentialMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_type() == district_type::tower)
+		else if (r->get_district_type() == district_type::tower)
 		{
 			ActorName = FString::Printf(TEXT("Tower_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);

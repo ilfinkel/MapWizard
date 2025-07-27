@@ -435,8 +435,13 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	for (int i = 0; i < 15; i++)
 	{
 		FVector point(FMath::RandRange(0.0, x_size), FMath::RandRange(0.0, y_size), 0);
+		if (is_point_in_river(point))
+		{
+			i--;
+			continue;
+		}
 		create_circle_by_existing_nodes(point, 75, 75, district_type::tower,
-		                                point_type::main_road, 8, true, true);
+		                                point_type::road, 8, true, true);
 	}
 
 	for (auto t : towers)
@@ -1684,7 +1689,7 @@ void TerrainGen::get_river_figure()
 	// });
 	for (auto item : river_fig_array)
 	{
-		item->set_type(district_type::water);
+		item->set_district_type(district_type::water);
 		river_figures.Add(item);
 	}
 	// river_figures.RemoveAll(
@@ -1717,20 +1722,22 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 	bool royal_found = false;
 	for (auto& c : custom_districts)
 	{
-		if (c.Value == district_type::tower)
-		{
+		// if (c.Value == district_type::tower)
+		// {
 			debug2_points_array.Add(c.Key);
-		}
+		// }
+		
+		if (is_point_in_river(c.Key) && c.Value != district_type::water) continue;
 		for (auto& d : districts)
 		{
-			if (c.Value != district_type::unknown) continue;
+			if (d->get_district_type() != district_type::unknown) continue;
 			if (d->is_point_in_figure(c.Key))
 			{
 				if (c.Value == district_type::royal)
 				{
 					royal_found = true;
 				}
-				d->set_type(c.Value);
+				d->set_district_type(c.Value);
 				break;
 			}
 		}
@@ -1742,7 +1749,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 		FVector center_of_dist;
 		bool is_river = false;
 		bool in_river = false;
-		if (b->get_type() == district_type::unknown)
+		if (b->get_district_type() == district_type::unknown)
 		{
 			int fig_size = b->figure.Num();
 			for (int i = 2; i < fig_size + 2; i++)
@@ -1759,11 +1766,11 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			}
 			if (in_river)
 			{
-				b->set_type(district_type::water);
+				b->set_district_type(district_type::water);
 				continue;
 			}
 		}
-		if (b->get_type() == district_type::unknown && !royal_found &&
+		if (b->get_district_type() == district_type::unknown && !royal_found &&
 			royal_area == 0)
 		{
 			bool point1 = false;
@@ -1785,13 +1792,13 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 				}
 				if (point1 && is_in_main >= 3)
 				{
-					b->set_type(district_type::royal);
+					b->set_district_type(district_type::royal);
 					royal_area += b->area;
 					break;
 				}
 			}
 		}
-		if (b->get_type() == district_type::unknown && royal_area > 0 && !
+		if (b->get_district_type() == district_type::unknown && royal_area > 0 && !
 			royal_found)
 		{
 			for (auto p : b->figure)
@@ -1800,22 +1807,22 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 				{
 					if (district_near == district_type::royal)
 					{
-						b->set_type(district_type::royal);
+						b->set_district_type(district_type::royal);
 						royal_area += b->area;
 						break;
 					}
 				}
-				if (b->get_type() == district_type::royal)
+				if (b->get_district_type() == district_type::royal)
 				{
 					break;
 				}
 			}
 		}
-		if (b->get_type() == district_type::royal && royal_area > 1000)
+		if (b->get_district_type() == district_type::royal && royal_area > 1000)
 		{
 			royal_found = true;
 		}
-		if (b->get_type() == district_type::unknown)
+		if (b->get_district_type() == district_type::unknown)
 		{
 			bool is_near_royal = false;
 			bool is_near_dock = false;
@@ -1834,11 +1841,11 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			}
 			if (!is_near_royal && is_near_dock)
 			{
-				b->set_type(district_type::dock);
+				b->set_district_type(district_type::dock);
 			}
 			if (is_near_royal && !is_near_dock && b->area > 6000)
 			{
-				b->set_type(district_type::luxury);
+				b->set_district_type(district_type::luxury);
 			}
 		}
 	}
@@ -1851,7 +1858,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 		named_districts = 0;
 		for (auto& b : districts)
 		{
-			if (b->get_type() != district_type::unknown)
+			if (b->get_district_type() != district_type::unknown)
 			{
 				named_districts++;
 			}
@@ -1926,15 +1933,15 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 	
 				if (koeff <= -7 && luxury_count == 0 && royal_count == 0)
 				{
-					b->set_type(district_type::slums);
+					b->set_district_type(district_type::slums);
 				}
 				else if (koeff >= 0 && koeff < 4)
 				{
-					b->set_type(district_type::residential);
+					b->set_district_type(district_type::residential);
 				}
 				else if (koeff >= 4 && slums_count != 0 && dock_count != 0)
 				{
-					b->set_type(district_type::luxury);
+					b->set_district_type(district_type::luxury);
 				}
 				else
 				{
@@ -1942,15 +1949,15 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 					rand_val = FMath::FRand() * 100;
 					if (rand_val > 85 && slums_count != 0 && dock_count != 0)
 					{
-						b->set_type(district_type::luxury);
+						b->set_district_type(district_type::luxury);
 					}
 					else if (rand_val > 50)
 					{
-						b->set_type(district_type::residential);
+						b->set_district_type(district_type::residential);
 					}
 					else if (luxury_count == 0 && royal_count == 0)
 					{
-						b->set_type(district_type::slums);
+						b->set_district_type(district_type::slums);
 					}
 				}
 			}
@@ -1969,7 +1976,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 
 void TerrainGen::process_houses(TSharedPtr<District> district)
 {
-	if (district->get_type() == district_type::water)
+	if (district->get_district_type() == district_type::water)
 	{
 		return;
 	}
@@ -1987,7 +1994,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 		up_point = p.point.Y > up_point ? p.point.Y : up_point;
 	}
 	district_center /= district->self_figure.Num();
-	if (district->get_type() == district_type::luxury)
+	if (district->get_district_type() == district_type::luxury)
 	{
 		if (!district->is_point_in_self_figure(district_center))
 		{
@@ -2017,7 +2024,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 			}
 		}
 	}
-	else if (district->get_type() == district_type::residential)
+	else if (district->get_district_type() == district_type::residential)
 	{
 		int self_figure_count = district->self_figure.Num();
 		int count_without_end = district->self_figure[0] == district->self_figure[self_figure_count - 1]
@@ -2105,7 +2112,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 			}
 		}
 	}
-	else if (district->get_type() == district_type::slums)
+	else if (district->get_district_type() == district_type::slums)
 	{
 		for (int i = 1; i <= 100; i++)
 		{

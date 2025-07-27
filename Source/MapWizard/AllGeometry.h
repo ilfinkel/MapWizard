@@ -337,8 +337,8 @@ struct District : public SelectableObject
 	double area;
 	int main_roads;
 	bool is_river_in;
-	void set_type(district_type type_);
-	district_type get_type() { return type; }
+	void set_district_type(district_type type_);
+	district_type get_district_type() { return type; }
 	bool is_point_in_self_figure(FVector point_);
 	bool is_point_in_figure(FVector point_);
 	void get_self_figure();

@@ -51,7 +51,7 @@ District::District(TArray<TSharedPtr<Node>> figure_)
 	get_self_figure();
 }
 
-void District::set_type(district_type type_)
+void District::set_district_type(district_type type_)
 {
 	type = type_;
 	for (int i = 0; i < figure.Num() - 2; i++)
