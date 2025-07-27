@@ -148,6 +148,8 @@ struct FResidentialHousesParams
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MinHouseZ = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SizeStep = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MinHouseSidesRatio = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxHouseSidesRatio = 10;

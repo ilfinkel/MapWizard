@@ -1717,16 +1717,16 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			return Item1->area > Item2->area;
 		});
 	double royal_area = 0;
-	
-	
+
+
 	bool royal_found = false;
 	for (auto& c : custom_districts)
 	{
 		// if (c.Value == district_type::tower)
 		// {
-			debug2_points_array.Add(c.Key);
+		debug2_points_array.Add(c.Key);
 		// }
-		
+
 		if (is_point_in_river(c.Key) && c.Value != district_type::water) continue;
 		for (auto& d : districts)
 		{
@@ -1742,7 +1742,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			}
 		}
 	}
-	
+
 	// bool dock_found = false;
 	for (auto& b : districts)
 	{
@@ -1930,7 +1930,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 				int koeff = (dock_count * (-4) + royal_count * 6 + luxury_count
 					* 3 + slums_count * (-8) +
 					residential_count * 2) / districts_near;
-	
+
 				if (koeff <= -7 && luxury_count == 0 && royal_count == 0)
 				{
 					b->set_district_type(district_type::slums);
@@ -1965,7 +1965,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 	}
 	while (named_districts < districts_count && old_named_districts !=
 		named_districts);
-	
+
 	districts.RemoveAll([this](TSharedPtr<District>& district)
 	{
 		district->self_figure = district->shrink_figure_with_roads(
@@ -2074,8 +2074,10 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 				{
 					if (FMath::FRand() * 100 <= rh_params.HouseChance)
 					{
-						double width = FMath::RandRange(rh_params.MinHouseY, rh_params.MaxHouseY);
-						double length = FMath::RandRange(rh_params.MinHouseX, rh_params.MaxHouseX);
+						int NumStepsX = (rh_params.MaxHouseX - rh_params.MinHouseX) / rh_params.SizeStep;
+						int NumStepsY = (rh_params.MaxHouseY - rh_params.MinHouseY) / rh_params.SizeStep;
+						double width = rh_params.MinHouseX + FMath::RandRange(0, NumStepsX) * rh_params.SizeStep;
+						double length = rh_params.MinHouseY + FMath::RandRange(0, NumStepsY) * rh_params.SizeStep;
 						if (width / length <= rh_params.MinHouseSidesRatio || width / length >= rh_params.
 							MaxHouseSidesRatio || length * width >= rh_params.MaxArea)
 						{
