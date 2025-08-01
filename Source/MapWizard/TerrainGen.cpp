@@ -2042,7 +2042,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 				                                                          FMath::DegreesToRadians(angle2 / 2)));
 
 			TArray<FVector> figure{point2_end, point1_end, point1, point2};
-			district->create_house(figure, 1, "Pavement");
+			district->create_house(figure, 1, "Pavement",true);
 		}
 		for (int i = 1; i <= self_figure_count; i++)
 		{
@@ -2075,24 +2075,31 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 						double height = FMath::RandRange(rh_params.MinHouseZ, rh_params.MaxHouseZ);
 						FVector point_beg = AllGeometry::create_segment_at_angle(point1, point2,
 							(point2 - point1) / dist * (general_width + (width / 2)) + point1, 90,
-							1 + rh_params.PavementWidth);
+							rh_params.PavementWidth + 1);
 						FVector point_end =
 							AllGeometry::create_segment_at_angle(
 								point1, point2, point_beg, 90, length);
-						TArray<FVector> figure{point_beg, point_end};
-						if (!district->create_house(figure, width, height, "House"))
+						FVector point_beg2 = AllGeometry::create_segment_at_angle(point_beg, point_end,
+							point_end, 90, width);
+						FVector point_beg3 = AllGeometry::create_segment_at_angle(point_end, point_beg2,
+							point_beg2, 90, length);
+
+						TArray<FVector> figure{point_beg3, point_beg, point_end, point_beg2};
+						if (!district->create_house(figure, height, "House", false))
 						{
 							continue;
 						}
-						general_width += (width + FMath::RandRange(rh_params.MinSpaceBetweenHouses, rh_params.
-						                                           MaxSpaceBetweenHouses));
+						general_width += width + FMath::RandRange(rh_params.MinSpaceBetweenHouses,
+						                                          rh_params.MaxSpaceBetweenHouses);
 						general_width_changed = true;
 						break;
 					}
 					else
 					{
 						general_width += FMath::RandRange(rh_params.MinSpaceBetweenHouses,
-						                                  rh_params.MaxSpaceBetweenHouses);
+						                                  rh_params.MaxSpaceBetweenHouses)
+							+ FMath::RandRange(rh_params.MinSpaceBetweenHouses,
+							                   rh_params.MaxSpaceBetweenHouses);
 						general_width_changed = true;
 					}
 				}

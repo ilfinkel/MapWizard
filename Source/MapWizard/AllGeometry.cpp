@@ -300,10 +300,8 @@ bool District::create_house(TArray<FVector> given_line, double width,
 	this_figure.Add(point2);
 	for (int i = given_line.Num() - 1; i > 0; i--)
 	{
-		FVector point =
-			AllGeometry::create_segment_at_angle(
-				given_line[i], given_line[i - 1], given_line[i - 1], -90,
-				width / 2);
+		FVector point = AllGeometry::create_segment_at_angle(given_line[i], given_line[i - 1], given_line[i - 1], -90,
+		                                                     width / 2);
 		if (!is_point_in_self_figure(point))
 		{
 			return false;
@@ -313,8 +311,7 @@ bool District::create_house(TArray<FVector> given_line, double width,
 	int fig_num = this_figure.Num();
 	for (int i = 1; i <= fig_num; i++)
 	{
-		if (is_line_intersect(this_figure[i - 1], this_figure[i % fig_num]).
-			IsSet())
+		if (is_line_intersect(this_figure[i - 1], this_figure[i % fig_num]).IsSet())
 		{
 			return false;
 		}
@@ -324,8 +321,20 @@ bool District::create_house(TArray<FVector> given_line, double width,
 	return true;
 }
 
-bool District::create_house(TArray<FVector> given_figure, double height, FString obj_type = "House")
+bool District::create_house(TArray<FVector> given_figure, double height, FString obj_type = "House", bool trustworthy = false)
 {
+	int fig_num = given_figure.Num();
+	if (!trustworthy)
+	{
+		for (int i = 1; i <= fig_num; i++)
+		{
+			if (is_line_intersect(given_figure[i - 1], given_figure[i % fig_num]).IsSet() ||
+				!is_point_in_self_figure(given_figure[i - 1]))
+			{
+				return false;
+			}
+		}
+	}
 	House house(given_figure, height, obj_type);
 	houses.Add(MakeShared<House>(house));
 	return true;
@@ -859,7 +868,7 @@ FVector AllGeometry::create_segment_at_angle(const FVector& line_begin,
 	FVector rotated_direction = line_direction.RotateAngleAxis(
 		angle_in_degrees, FVector(0.f, 0.f, 1.f));
 	FVector line_endPoint = line_beginPoint + rotated_direction * length;
-	
+
 	return line_endPoint;
 }
 
@@ -1100,7 +1109,6 @@ void AllGeometry::TriangulatePolygon(const TArray<FVector>& Vertices,
 
 bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 {
-	
 	FVector point = point_;
 	FVector point2 = point_;
 	point2.Y += 5000;
