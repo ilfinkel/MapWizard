@@ -27,8 +27,8 @@ public:
 	TArray<FVector> Vertices;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	TArray<int32> Triangles;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
-	UMaterialInterface* Material;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
+	// UMaterialInterface* Material;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual")
 	int roof_texture_turns = 0;

@@ -180,7 +180,7 @@ struct DrawingObject
 	{
 		name = mesh->GetActorLabel();
 		material_interface = mesh->ProceduralMesh->GetMaterial(0);
-		material = mesh->Material;
+		// material = mesh->Material;
 	}
 
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
@@ -220,7 +220,7 @@ struct DrawingDistrict : DrawingObject
 	{
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		mesh->Material = material;
+		// mesh->Material = material;
 		TArray<FVector> vertices;
 		for (auto BaseVertex : district->self_figure)
 		{
@@ -256,7 +256,7 @@ struct DrawingStreet : DrawingObject
 	{
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		mesh->Material = material;
+		// mesh->Material = material;
 		if (is_2d || !is_changing)
 		{
 			create_mesh_2d(mesh, street->street_vertexes, start_height);
@@ -271,7 +271,7 @@ struct DrawingStreet : DrawingObject
 	{
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		mesh->Material = material;
+		// mesh->Material = material;
 		TArray<FVector> vertices;
 		for (auto BaseVertex : street->street_vertices)
 		{
@@ -311,7 +311,7 @@ struct DrawingHouse : DrawingObject
 	{
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		mesh->Material = material;
+		// mesh->Material = material;
 		if (is_2d)
 		{
 			create_mesh_2d(mesh, house->house_figure, start_height);
@@ -400,19 +400,19 @@ protected:
 	void initialize_all();
 
 private:
-	UMaterialInterface* BaseMaterial;
-	UMaterialInterface* WaterMaterial;
-	UMaterialInterface* DocsMaterial;
-	UMaterialInterface* RoyalMaterial;
-	UMaterialInterface* ResidentialMaterial;
-	UMaterialInterface* LuxuryMaterial;
-	UMaterialInterface* SlumsMaterial;
-	UMaterialInterface* BuildingMaterial;
-	UMaterialInterface* RoadMaterial;
-	UMaterialInterface* MainRoadMaterial;
-	UMaterialInterface* WallMaterial;
-	UMaterialInterface* PavementMaterial;
-	UMaterialInterface* load_material(const FString& TexturePack, const FString& MaterialName);
+	// UMaterialInterface* BaseMaterial;
+	// UMaterialInterface* WaterMaterial;
+	// UMaterialInterface* DocsMaterial;
+	// UMaterialInterface* RoyalMaterial;
+	// UMaterialInterface* ResidentialMaterial;
+	// UMaterialInterface* LuxuryMaterial;
+	// UMaterialInterface* SlumsMaterial;
+	// UMaterialInterface* BuildingMaterial;
+	// UMaterialInterface* RoadMaterial;
+	// UMaterialInterface* MainRoadMaterial;
+	// UMaterialInterface* WallMaterial;
+	// UMaterialInterface* PavementMaterial;
+	// UMaterialInterface* load_material(const FString& TexturePack, const FString& MaterialName);
 	void draw_all();
 	void get_cursor_hit_location();
 	TArray<AProceduralBlockMeshActor*> get_all_houses_of_type_selected(FString type_name);

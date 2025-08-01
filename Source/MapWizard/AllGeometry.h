@@ -196,7 +196,7 @@ struct SelectableObject
 		return 0;
 	}
 
-	virtual FVector get_measure() { return FVector(); }
+	virtual FVector get_measure() { return FVector(0,0,0); }
 	FString get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
