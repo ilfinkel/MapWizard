@@ -2,7 +2,6 @@
 
 
 #include "AllGeometry.h"
-#include "AllGeometry.h"
 
 
 District::District(TArray<TSharedPtr<Node>> figure_)
@@ -860,7 +859,7 @@ FVector AllGeometry::create_segment_at_angle(const FVector& line_begin,
 	FVector rotated_direction = line_direction.RotateAngleAxis(
 		angle_in_degrees, FVector(0.f, 0.f, 1.f));
 	FVector line_endPoint = line_beginPoint + rotated_direction * length;
-
+	
 	return line_endPoint;
 }
 

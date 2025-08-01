@@ -79,59 +79,46 @@ public:
 	{
 	}
 
-	void create_terrain(TArray<TSharedPtr<Node>>& roads_,
-	                    TArray<TSharedPtr<District>>& figures_array_,
-	                    TArray<TSharedPtr<Street>>& streets_array_,
-	                    TArray<TSharedPtr<Street>>& segments_array_,
-	                    TArray<TSharedPtr<District>>& river_figure_,
-	                    TArray<TSharedPtr<Node>>& map_borders_array_,
-	                    TArray<FVector>& debug_points_array_,
-	                    TArray<FVector>& debug2_points_array_);
-	static void add_conn(const TSharedPtr<Node>& node1,
-	                     const TSharedPtr<Node>& node2);
+	void create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<TSharedPtr<District>>& figures_array_,
+	                    TArray<TSharedPtr<Street>>& streets_array_, TArray<TSharedPtr<Street>>& segments_array_,
+	                    TArray<TSharedPtr<District>>& river_figure_, TArray<TSharedPtr<Node>>& map_borders_array_,
+	                    TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_);
+	void create_weighted_points(TArray<WeightedPoint>& weighted_points);
+	void create_rivers(const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
+	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
 	static TSharedPtr<Node> insert_conn(const TSharedPtr<Node>& node1_to_insert,
-	                                    const TSharedPtr<Node>& node2_to_insert,
-	                                    FVector node3_point);
-	void move_river(const TSharedPtr<Node>& node1,
-	                const TSharedPtr<Node>& node2);
-	void move_road(const TSharedPtr<Node>& node);
-	void create_guiding_rivers();
-	void create_guiding_river_segment(const TSharedPtr<Node>& start_point,
-	                                  const TSharedPtr<Node>& end_point,
+	                                    const TSharedPtr<Node>& node2_to_insert, FVector node3_point);
+	void move_river(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2,
+	                const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
+	void move_road(const TSharedPtr<Node>& node, const TArray<WeightedPoint>& weighted_points,
+	               const TArray<TSharedPtr<Node>>& river);
+	void create_guiding_rivers(TArray<TSharedPtr<Node>>& river);
+	void create_guiding_river_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
 	                                  const TSharedPtr<Node>& start_point_left,
-	                                  const TSharedPtr<Node>&
-	                                  start_point_right);
+	                                  const TSharedPtr<Node>& start_point_right, TArray<TSharedPtr<Node>>& river);
 	bool is_point_in_river(FVector point);
-	void create_guiding_roads();
-	void create_usual_roads();
-	TOptional<TSharedPtr<Node>> create_segment(TArray<TSharedPtr<Node>>& array,
-	                                           TSharedPtr<Node> start_point,
-	                                           TSharedPtr<Node> end_point,
-	                                           bool to_exect_point,
-	                                           point_type type,
+	void create_guiding_roads(TArray<WeightedPoint>& weighted_points, const TArray<TSharedPtr<Node>>& river);
+	void create_usual_roads(const TArray<WeightedPoint>& weighted_points, const TArray<TSharedPtr<Node>>& river);
+	TOptional<TSharedPtr<Node>> create_segment(TArray<TSharedPtr<Node>>& array, TSharedPtr<Node> start_point,
+	                                           TSharedPtr<Node> end_point, bool to_exect_point, point_type type,
 	                                           double max_length);
-	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point,
-	                                 const TSharedPtr<Node>& end_point,
-	                                 bool is_through_river,
-	                                 point_type road_type);
+	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
+	                                 bool is_through_river, point_type road_type,
+	                                 const TArray<TSharedPtr<Node>>& river);
 	void shrink_roads();
-	void point_shift(FVector& point);
-	void get_closed_figures(TArray<TSharedPtr<Node>> nodes,
-	                        TArray<TSharedPtr<District>>& fig_array,
+	void point_shift(FVector& point, TArray<WeightedPoint> weighted_points_);
+	void get_closed_figures(TArray<TSharedPtr<Node>> nodes, TArray<TSharedPtr<District>>& fig_array,
 	                        int figure_threshold);
-	void get_river_figure();
+	void get_river_figure(const TArray<TSharedPtr<Node>>& river);
 	void process_districts(TArray<TSharedPtr<District>>& districts);
 	void process_houses(TSharedPtr<District> block);
-	void create_special_district(TArray<FVector>& figure, point_type type,
-	                             FVector point);
-	void create_special_district_by_nodes(TArray<TSharedPtr<Node>>& figure, point_type type,
-	                                      FVector point);
+	void create_special_district(TArray<FVector>& figure, point_type type, FVector point);
+	void create_special_district_by_nodes(TArray<TSharedPtr<Node>>& figure, point_type type, FVector point);
 	void create_circle(FVector point, double radius, district_type type,
 	                   point_type road_type, int vertex_count);
 	void create_circle_by_existing_nodes(FVector central_point, double radius, double interval, district_type type,
 	                                     point_type road_type, int vertex_count, bool sticky_river, bool sticky_walls);
-	void process_streets(TArray<TSharedPtr<Node>> nodes,
-	                     TArray<TSharedPtr<Street>>& fig_array, point_type type,
+	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<TSharedPtr<Street>>& fig_array, point_type type,
 	                     bool is_persistent);
 	TArray<TSharedPtr<Street>> process_segments(
 		TArray<TSharedPtr<Street>>& fig_array);
@@ -139,7 +126,7 @@ public:
 	                                    TSharedPtr<Node> second_point,
 	                                    point_type type, bool is_persistent);
 
-	void empty_all()
+	void empty_all(TArray<TSharedPtr<Node>>& river)
 	{
 		for (auto& node : river)
 		{
@@ -180,7 +167,7 @@ public:
 	}
 
 	TArray<TSharedPtr<District>> shapes_array;
-	TArray<TSharedPtr<Node>> river{};
+	// TArray<TSharedPtr<Node>> river{};
 	TArray<TSharedPtr<Node>> guiding_river{};
 	TArray<TTuple<TSharedPtr<Node>, TSharedPtr<Node>>> bridges{};
 	TArray<TSharedPtr<Node>> road_centers{};
@@ -189,7 +176,7 @@ public:
 	TArray<TSharedPtr<Street>> streets_array{};
 	TArray<TSharedPtr<Street>> segments_array{};
 	TArray<TSharedPtr<Node>> guididng_roads_array{};
-	TArray<WeightedPoint> weighted_points{};
+	// TArray<WeightedPoint> weighted_points{};
 	TArray<TSharedPtr<Node>> road_nodes{};
 	TArray<FVector> soft_borders_array{};
 	TSharedPtr<Node> central_node;

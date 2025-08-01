@@ -503,7 +503,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 		gen.create_terrain(roads, figures_array, streets_array, segments_array,
 		                   river_figures, map_borders_array,
 		                   debug_points_array, debug2_points_array);
-		gen.empty_all();
+		// gen.empty_all(river);
 		draw_all();
 		AActor* ViewTarget = PlayerController->GetViewTarget();
 		if (ViewTarget)
@@ -807,7 +807,7 @@ inline void AMainTerrain::initialize_all()
 	TerrainGen gen(MapParams, ResidentialHousesParams);
 	gen.create_terrain(roads, figures_array, streets_array, segments_array,
 	                   river_figures, map_borders_array, debug_points_array, debug2_points_array);
-	gen.empty_all();
+	// gen.empty_all(river);
 	draw_all();
 	AActor* ViewTarget = PlayerController->GetViewTarget();
 	if (ViewTarget)
