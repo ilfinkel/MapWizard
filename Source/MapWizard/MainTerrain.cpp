@@ -853,18 +853,18 @@ void AMainTerrain::draw_all()
 		FVector Start = p;
 		FVector End = p;
 		Start.Z = -10;
-		End.Z = 100;
+		End.Z = 10;
 
-		DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 5.0f);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 15.0f);
 	}
 	for (auto& p : debug_points_array)
 	{
 		FVector Start = p;
 		FVector End = p;
 		Start.Z = -10;
-		End.Z = 100;
+		End.Z = 10;
 
-		DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 5.0f);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 15.0f);
 	}
 
 	int ind = 0;

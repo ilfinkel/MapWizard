@@ -84,7 +84,7 @@ public:
 	                    TArray<TSharedPtr<District>>& river_figure_, TArray<TSharedPtr<Node>>& map_borders_array_,
 	                    TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_);
 	void create_weighted_points(TArray<WeightedPoint>& weighted_points);
-	void create_rivers(const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
+	void create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
 	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
 	static TSharedPtr<Node> insert_conn(const TSharedPtr<Node>& node1_to_insert,
 	                                    const TSharedPtr<Node>& node2_to_insert, FVector node3_point);
@@ -92,6 +92,7 @@ public:
 	                const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
 	void move_road(const TSharedPtr<Node>& node, const TArray<WeightedPoint>& weighted_points,
 	               const TArray<TSharedPtr<Node>>& river);
+	void create_lake(TArray<TSharedPtr<Node>>& river);
 	void create_guiding_rivers(TArray<TSharedPtr<Node>>& river);
 	void create_guiding_river_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
 	                                  const TSharedPtr<Node>& start_point_left,
@@ -105,7 +106,7 @@ public:
 	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
 	                                 bool is_through_river, point_type road_type,
 	                                 const TArray<TSharedPtr<Node>>& river);
-	void shrink_roads();
+	void shrink_roads(TArray<TSharedPtr<Node>>& road_nodes);
 	void point_shift(FVector& point, TArray<WeightedPoint> weighted_points_);
 	void get_closed_figures(TArray<TSharedPtr<Node>> nodes, TArray<TSharedPtr<District>>& fig_array,
 	                        int figure_threshold);
@@ -165,7 +166,7 @@ public:
 		}
 		road_nodes.Reset();
 	}
-
+	double water_step = 100;
 	TArray<TSharedPtr<District>> shapes_array;
 	// TArray<TSharedPtr<Node>> river{};
 	TArray<TSharedPtr<Node>> guiding_river{};

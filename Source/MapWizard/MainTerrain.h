@@ -26,7 +26,8 @@ UENUM(BlueprintType)
 enum class EWaterType : uint8
 {
 	none UMETA(DisplayName = "none"),
-	river UMETA(DisplayName = "river")
+	river UMETA(DisplayName = "river"),
+	lake UMETA(DisplayName = "lake")
 };
 
 
