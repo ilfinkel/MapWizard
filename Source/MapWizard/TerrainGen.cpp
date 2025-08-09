@@ -480,7 +480,7 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 	TArray<FVector> figure_points;
 	if (water_type == EWaterType::river)
 	{
-		// create_guiding_rivers(river);
+		create_guiding_rivers(river);
 	}
 	else if (water_type == EWaterType::lake)
 	{
@@ -619,6 +619,7 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 	// river.Empty();
 	// TArray<TSharedPtr<District>>& fig_array
 
+	shrink_roads(river);
 	for (auto& r : river)
 	{
 		for (int i = 0; i < 50; i++)
@@ -627,7 +628,6 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 		}
 	}
 
-	shrink_roads(river);
 	get_closed_figures(river, shapes_array, 40);
 	// Algo::Sort(river,
 	// 		   [](const TTuple<double, TSharedPtr<Node>>& A,
