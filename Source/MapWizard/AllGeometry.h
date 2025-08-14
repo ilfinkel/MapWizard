@@ -200,6 +200,13 @@ struct SelectableObject
 		return {};
 	}
 
+	virtual TArray<TArray<FVector>> slice_house(float north, float east, float south, float west)
+	{
+		TArray<TArray<FVector>> house_slices;
+		house_slices.Reserve(9);
+		return house_slices;
+	}
+
 	virtual FVector get_measure() { return FVector(0, 0, 0); }
 	FString get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
@@ -302,6 +309,8 @@ struct House : public SelectableObject
 	{
 		return house_figure;
 	}
+
+	TArray<TArray<FVector>> slice_house(float north, float east, float south, float west);
 
 	TArray<FVector> house_figure;
 	double height;

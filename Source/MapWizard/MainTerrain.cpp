@@ -209,17 +209,17 @@ void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh,
 
 AMainTerrain::AMainTerrain() : MapParams()
                                , BaseComponent(nullptr)
-                               // , BaseMaterial(nullptr)
-                               // , WaterMaterial(nullptr)
-                               // , DocsMaterial(nullptr)
-                               // , RoyalMaterial(nullptr)
-                               // , ResidentialMaterial(nullptr)
-                               // , LuxuryMaterial(nullptr)
-                               // , SlumsMaterial(nullptr)
-                               // , BuildingMaterial(nullptr)
-                               // , RoadMaterial(nullptr)
-                               // , MainRoadMaterial(nullptr)
-                               // , WallMaterial(nullptr), PavementMaterial(nullptr)
+// , BaseMaterial(nullptr)
+// , WaterMaterial(nullptr)
+// , DocsMaterial(nullptr)
+// , RoyalMaterial(nullptr)
+// , ResidentialMaterial(nullptr)
+// , LuxuryMaterial(nullptr)
+// , SlumsMaterial(nullptr)
+// , BuildingMaterial(nullptr)
+// , RoadMaterial(nullptr)
+// , MainRoadMaterial(nullptr)
+// , WallMaterial(nullptr), PavementMaterial(nullptr)
 {
 	TArray<unsigned int> empty_arr{};
 	selected_objects = MakeShared<TArray<unsigned int>>(empty_arr);
@@ -419,28 +419,29 @@ AProceduralBlockMeshActor* AMainTerrain::GetLastSelected()
 	}
 	return nullptr;
 }
+
 AProceduralBlockMeshActor* AMainTerrain::GetPrevSelected()
 {
 	// TArray<AProceduralBlockMeshActor*> selected;
 	// return selected_objects->Last();
 
 	TArray<unsigned int> Result;
-		for (const unsigned int& Element : selected_objects)
+	for (const unsigned int& Element : *selected_objects)
+	{
+		if (!prev_selected_objects->Contains(Element))
 		{
-			if (!prev_selected_objects->Contains(Element))
-			{
-				Result.Add(Element);
-			}
+			Result.Add(Element);
 		}
+	}
 
-		for (const unsigned int& Element : prev_selected_objects)
+	for (const unsigned int& Element : *prev_selected_objects)
+	{
+		if (!selected_objects->Contains(Element))
 		{
-			if (!selected_objects->Contains(Element))
-			{
-				Result.Add(Element);
-			}
+			Result.Add(Element);
 		}
-	
+	}
+
 	for (auto distr : GetAllDistricts())
 	{
 		if (distr->object->get_id() == Result.Last())

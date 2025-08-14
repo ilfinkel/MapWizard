@@ -6,6 +6,14 @@
 #include "AllGeometry.h"
 
 #include "ProceduralObjectMeshActor.generated.h"
+USTRUCT(BlueprintType)
+struct FVectorArrayWrapper
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FVector> Points;
+};
 
 UCLASS(Blueprintable)
 class MAPWIZARD_API AProceduralBlockMeshActor : public AActor
@@ -65,6 +73,18 @@ public:
 	TArray<FVector> GetObjectVertexes()
 	{
 		return object->get_object_vertexes();
+	}
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<FVectorArrayWrapper> SliceHouse(float north, float east, float south, float west)
+	{
+		TArray<FVectorArrayWrapper> array;
+		for (auto& house_part:object->slice_house(north, east, south, west))
+		{
+			FVectorArrayWrapper wrap;
+			wrap.Points = house_part;
+			array.Add(wrap);
+		}
+		return array;
 	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Custom")
