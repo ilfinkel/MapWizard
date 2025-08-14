@@ -419,6 +419,45 @@ AProceduralBlockMeshActor* AMainTerrain::GetLastSelected()
 	}
 	return nullptr;
 }
+AProceduralBlockMeshActor* AMainTerrain::GetPrevSelected()
+{
+	// TArray<AProceduralBlockMeshActor*> selected;
+	// return selected_objects->Last();
+
+	TArray<unsigned int> Result;
+		for (const unsigned int& Element : selected_objects)
+		{
+			if (!prev_selected_objects->Contains(Element))
+			{
+				Result.Add(Element);
+			}
+		}
+
+		for (const unsigned int& Element : prev_selected_objects)
+		{
+			if (!selected_objects->Contains(Element))
+			{
+				Result.Add(Element);
+			}
+		}
+	
+	for (auto distr : GetAllDistricts())
+	{
+		if (distr->object->get_id() == Result.Last())
+			return distr;
+	}
+	for (auto street : GetAllStreets())
+	{
+		if (street->object->get_id() == Result.Last())
+			return street;
+	}
+	for (auto house : GetAllHouses())
+	{
+		if (house->object->get_id() == Result.Last())
+			return house;
+	}
+	return nullptr;
+}
 
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetLastTypeSelected()
 {
@@ -631,7 +670,7 @@ void AMainTerrain::DivideDistricts()
 			AProceduralBlockMeshActor* MeshComponent =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 					AProceduralBlockMeshActor::StaticClass());
-			MeshComponent->SetSelectedObject(selected_objects);
+			MeshComponent->SetSelectedObject(selected_objects, prev_selected_objects);
 			MeshComponent->SetActorLabel(
 				drawing_districts[i].mesh->GetActorLabel());
 			// MeshComponent->ProceduralMesh->SetMaterial(
@@ -644,7 +683,7 @@ void AMainTerrain::DivideDistricts()
 			AProceduralBlockMeshActor* MeshComponent2 =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 					AProceduralBlockMeshActor::StaticClass());
-			MeshComponent2->SetSelectedObject(selected_objects);
+			MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
 			MeshComponent2->SetActorLabel(
 				drawing_districts[i].mesh->GetActorLabel());
 			// MeshComponent2->ProceduralMesh->SetMaterial(
@@ -901,7 +940,7 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 				AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetSelectedObject(selected_objects);
+		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
 		// MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
 		// MeshComponent2->Material = BaseMaterial;
 		if (r->get_district_type() == district_type::water)
@@ -985,7 +1024,7 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 					AProceduralBlockMeshActor::StaticClass());
-			MeshComponent->SetSelectedObject(selected_objects);
+			MeshComponent->SetSelectedObject(selected_objects, prev_selected_objects);
 			MeshComponent->SetActorLabel(HouseName);
 
 			// if (p->get_object_type() == "House")
@@ -1007,7 +1046,7 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 				AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetSelectedObject(selected_objects);
+		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
 		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
 		// MeshComponent2->Material = RoadMaterial;
 		// MeshComponent2->DefaultMaterial = BaseMaterial;

@@ -86,11 +86,13 @@ public:
 	}
 
 	void SetSelectedObject(
-		TSharedPtr<TArray<unsigned int>> selected_object_)
+		TSharedPtr<TArray<unsigned int>> selected_object_, TSharedPtr<TArray<unsigned int>> prev_selected_object_)
 	{
 		selected_object = selected_object_;
+		prev_selected_object = prev_selected_object_;
 	}
 
 	TSharedPtr<SelectableObject> object;
 	TSharedPtr<TArray<unsigned int>> selected_object;
+	TSharedPtr<TArray<unsigned int>> prev_selected_object;
 };

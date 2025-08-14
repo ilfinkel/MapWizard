@@ -49,13 +49,14 @@ void AProceduralBlockMeshActor::Tick(float DeltaTime)
 void AProceduralBlockMeshActor::OnMeshClicked(
 	UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
 {
+	*prev_selected_object = *selected_object;
 	if (object.IsValid() && !object->is_selected())
 	{
 		object->select();
 		// selected_object->Add(object);
 		unsigned int object_id = object->get_id();
 		selected_object->Add(object_id);
-		UE_LOG(LogTemp, Warning, TEXT("mesh selected %p, %i"), object.Get(), object_id)
+		// UE_LOG(LogTemp, Warning, TEXT("mesh selected %p, %i"), object.Get(), object_id)
 		// TouchedComponent->SetMaterial(0, DefaultMaterial);
 	}
 	else if (object.IsValid() && object->is_selected())
