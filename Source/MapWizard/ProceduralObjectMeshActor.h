@@ -61,6 +61,11 @@ public:
 	{
 		return object->get_angle();
 	}
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<FVector> GetObjectVertexes()
+	{
+		return object->get_object_vertexes();
+	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	float GetID()
@@ -91,6 +96,8 @@ public:
 		selected_object = selected_object_;
 		prev_selected_object = prev_selected_object_;
 	}
+
+	
 
 	TSharedPtr<SelectableObject> object;
 	TSharedPtr<TArray<unsigned int>> selected_object;

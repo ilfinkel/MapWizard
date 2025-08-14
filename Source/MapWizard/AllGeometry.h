@@ -16,7 +16,7 @@ public:
 	                                       const FVector& line2_begin,
 	                                       const FVector& line2_end,
 	                                       bool is_opened);
-	
+
 
 	static TOptional<TTuple<FVector, TTuple<
 		                        TSharedPtr<Node>, TSharedPtr<Node>>>>
@@ -108,7 +108,7 @@ enum class district_type
 struct WeightedPoint
 {
 	WeightedPoint(const FVector& point_, const double weight_) : point(point_)
-		, weight(weight_)
+	                                                             , weight(weight_)
 	{
 	}
 
@@ -164,7 +164,6 @@ struct Point
 	{
 		return this->point_id == Other.point_id;
 	}
-
 };
 
 enum class object_type
@@ -196,7 +195,12 @@ struct SelectableObject
 		return 0;
 	}
 
-	virtual FVector get_measure() { return FVector(0,0,0); }
+	virtual TArray<FVector> get_object_vertexes()
+	{
+		return {};
+	}
+
+	virtual FVector get_measure() { return FVector(0, 0, 0); }
 	FString get_object_type() { return object_type; }
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
@@ -207,7 +211,6 @@ protected:
 	bool hovered = false;
 	FString object_type;
 	unsigned int object_id;
-	
 };
 
 struct Street : public SelectableObject
@@ -230,6 +233,11 @@ struct Street : public SelectableObject
 	FVector get_measure() override
 	{
 		return FVector();
+	}
+
+	TArray<FVector> get_object_vertexes() override
+	{
+		return street_vertexes;
 	}
 
 	// object_type get_object_type() override {return object_type;}
@@ -259,15 +267,17 @@ struct Street : public SelectableObject
 struct House : public SelectableObject
 {
 	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
-		, height(height_)
+	                                                 , height(height_)
 	{
 		object_type = "House";
 	}
+
 	House(TArray<FVector> figure_, double height_, FString obj_type) : house_figure(figure_)
-		, height(height_)
+	                                                                   , height(height_)
 	{
 		object_type = obj_type;
 	}
+
 	~House();
 
 	float get_angle() override
@@ -286,6 +296,11 @@ struct House : public SelectableObject
 		vec.Y = FVector::Distance(house_figure[1], house_figure[2]);
 		vec.Z = height;
 		return vec;
+	}
+
+	TArray<FVector> get_object_vertexes() override
+	{
+		return house_figure;
 	}
 
 	TArray<FVector> house_figure;
@@ -331,6 +346,16 @@ struct District : public SelectableObject
 		return FVector();
 	}
 
+	TArray<FVector> get_object_vertexes() override
+	{
+		TArray<FVector> vertexes;
+		for (auto vertex : self_figure)
+		{
+			vertexes.Add(vertex.point);
+		}
+		return vertexes;
+	}
+
 	TArray<TSharedPtr<Node>> figure;
 	TArray<Point> self_figure;
 	TArray<TSharedPtr<House>> houses;
@@ -361,7 +386,7 @@ struct Conn
 {
 	Conn(TSharedPtr<Node> node_,
 	     TSharedPtr<TArray<TSharedPtr<Node>>> figure_) : node(node_)
-		, figure(figure_)
+	                                                     , figure(figure_)
 	{
 		not_in_figure = false;
 		in_street = false;
