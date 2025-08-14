@@ -1143,13 +1143,20 @@ float AllGeometry::point_to_seg_distance(const FVector& SegmentStart,
 	float SegmentLengthSquared = SegmentVector.SizeSquared();
 	if (SegmentLengthSquared == 0.0f)
 	{
-		return FVector::Dist(SegmentStart, Point);
+		return FVector::Dist(Point, SegmentStart);
+	}
+	float t = FVector::DotProduct(PointVector, SegmentVector) / SegmentLengthSquared;
+	if (t < 0.0f)
+	{
+		return FVector::Dist(Point, SegmentStart);
+	}
+	else if (t > 1.0f)
+	{
+		return FVector::Dist(Point, SegmentEnd);
 	}
 
-	float t = FMath::Clamp(
-		FVector::DotProduct(PointVector, SegmentVector) / SegmentLengthSquared,
-		0.0f, 1.0f);
-	return FVector::Dist(SegmentStart + t * SegmentVector, Point);
+	FVector Projection = SegmentStart + t * SegmentVector;
+	return FVector::Dist(Point, Projection);
 }
 
 bool AllGeometry::is_point_near_figure(const TArray<FVector> given_line,

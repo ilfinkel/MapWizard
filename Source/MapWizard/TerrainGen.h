@@ -93,14 +93,13 @@ public:
 	void move_road(const TSharedPtr<Node>& node, const TArray<WeightedPoint>& weighted_points,
 	               const TArray<TSharedPtr<Node>>& river, double max_conn_length);
 	void create_guiding_rivers(TArray<TSharedPtr<Node>>& river);
-	void create_guiding_river_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
-	                                  const TSharedPtr<Node>& start_point_left,
-	                                  const TSharedPtr<Node>& start_point_right, TArray<TSharedPtr<Node>>& river);
+	void create_guiding_river_segment(TSharedPtr<Node>& start_point, TSharedPtr<Node>& end_point,
+	                                  TArray<TSharedPtr<Node>>& river);
 	bool is_point_in_river(FVector point);
 	void create_guiding_roads(TArray<WeightedPoint>& weighted_points, const TArray<TSharedPtr<Node>>& river);
 	void create_usual_roads(const TArray<WeightedPoint>& weighted_points, const TArray<TSharedPtr<Node>>& river);
 	bool create_segment_line(TArray<TSharedPtr<Node>>& array, TSharedPtr<Node> start_point,
-									 TSharedPtr<Node> end_point, point_type type, double max_length);
+	                         TSharedPtr<Node> end_point, bool to_exact_point, point_type type, double max_length);
 	TOptional<TSharedPtr<Node>> create_segment(TArray<TSharedPtr<Node>>& array, TSharedPtr<Node> start_point,
 	                                           TSharedPtr<Node> end_point, bool to_exect_point, point_type type,
 	                                           double max_length);
@@ -167,6 +166,7 @@ public:
 		}
 		road_nodes.Reset();
 	}
+
 	double water_step = 100;
 	TArray<TSharedPtr<District>> shapes_array;
 	// TArray<TSharedPtr<Node>> river{};
