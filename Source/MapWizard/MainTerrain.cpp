@@ -209,17 +209,17 @@ void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh,
 
 AMainTerrain::AMainTerrain() : MapParams()
                                , BaseComponent(nullptr)
-// , BaseMaterial(nullptr)
-// , WaterMaterial(nullptr)
-// , DocsMaterial(nullptr)
-// , RoyalMaterial(nullptr)
-// , ResidentialMaterial(nullptr)
-// , LuxuryMaterial(nullptr)
-// , SlumsMaterial(nullptr)
-// , BuildingMaterial(nullptr)
-// , RoadMaterial(nullptr)
-// , MainRoadMaterial(nullptr)
-// , WallMaterial(nullptr), PavementMaterial(nullptr)
+                               , BaseMaterial(nullptr)
+                               , WaterMaterial(nullptr)
+                               , DocsMaterial(nullptr)
+                               , RoyalMaterial(nullptr)
+                               , ResidentialMaterial(nullptr)
+                               , LuxuryMaterial(nullptr)
+                               , SlumsMaterial(nullptr)
+                               , BuildingMaterial(nullptr)
+                               , RoadMaterial(nullptr)
+                               , MainRoadMaterial(nullptr)
+                               , WallMaterial(nullptr), PavementMaterial(nullptr)
 {
 	TArray<unsigned int> empty_arr{};
 	selected_objects = MakeShared<TArray<unsigned int>>(empty_arr);
@@ -359,7 +359,7 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllOjectsOfType(FString type
 	}
 	else if (type_name == "House" || type_name == "Pavement")
 	{
-		return get_all_houses_of_type(type_name);
+		get_all_houses_of_type(type_name);
 	}
 	else if (type_name == "Street")
 	{
@@ -415,46 +415,6 @@ AProceduralBlockMeshActor* AMainTerrain::GetLastSelected()
 	for (auto house : GetAllHousesSelected())
 	{
 		if (house->object->get_id() == selected_objects->Last())
-			return house;
-	}
-	return nullptr;
-}
-
-AProceduralBlockMeshActor* AMainTerrain::GetPrevSelected()
-{
-	// TArray<AProceduralBlockMeshActor*> selected;
-	// return selected_objects->Last();
-
-	TArray<unsigned int> Result;
-	for (const unsigned int& Element : *selected_objects)
-	{
-		if (!prev_selected_objects->Contains(Element))
-		{
-			Result.Add(Element);
-		}
-	}
-
-	for (const unsigned int& Element : *prev_selected_objects)
-	{
-		if (!selected_objects->Contains(Element))
-		{
-			Result.Add(Element);
-		}
-	}
-
-	for (auto distr : GetAllDistricts())
-	{
-		if (distr->object->get_id() == Result.Last())
-			return distr;
-	}
-	for (auto street : GetAllStreets())
-	{
-		if (street->object->get_id() == Result.Last())
-			return street;
-	}
-	for (auto house : GetAllHouses())
-	{
-		if (house->object->get_id() == Result.Last())
 			return house;
 	}
 	return nullptr;
@@ -529,21 +489,21 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 
 	if (FoundActors.Num() > 0)
 	{
-		// AActor* OrthographicCamera = FoundActors[0];
+		AActor* OrthographicCamera = FoundActors[0];
 
-		// FVector NewLocation = FVector(MapParams.x_size / 2,
-		//                               MapParams.y_size / 2,
-		//                               (MapParams.x_size + MapParams.y_size) /
-		//                               2);
-		// OrthographicCamera->SetActorLocation(NewLocation);
-		// FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
-		// OrthographicCamera->SetActorRotation(DownwardRotation);
+		FVector NewLocation = FVector(MapParams.x_size / 2,
+		                              MapParams.y_size / 2,
+		                              (MapParams.x_size + MapParams.y_size) /
+		                              2);
+		OrthographicCamera->SetActorLocation(NewLocation);
+		FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
+		OrthographicCamera->SetActorRotation(DownwardRotation);
 
 		TerrainGen gen(MapParams, ResidentialHousesParams);
 		gen.create_terrain(roads, figures_array, streets_array, segments_array,
 		                   river_figures, map_borders_array,
 		                   debug_points_array, debug2_points_array);
-		// gen.empty_all(river);
+		gen.empty_all();
 		draw_all();
 		AActor* ViewTarget = PlayerController->GetViewTarget();
 		if (ViewTarget)
@@ -671,28 +631,28 @@ void AMainTerrain::DivideDistricts()
 			AProceduralBlockMeshActor* MeshComponent =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 					AProceduralBlockMeshActor::StaticClass());
-			MeshComponent->SetSelectedObject(selected_objects, prev_selected_objects);
+			MeshComponent->SetSelectedObject(selected_objects);
 			MeshComponent->SetActorLabel(
 				drawing_districts[i].mesh->GetActorLabel());
-			// MeshComponent->ProceduralMesh->SetMaterial(
-			// 	0, drawing_districts[i].mesh->Material);
-			// MeshComponent->Material = drawing_districts[i].mesh->Material;
+			MeshComponent->ProceduralMesh->SetMaterial(
+				0, drawing_districts[i].mesh->Material);
+			MeshComponent->Material = drawing_districts[i].mesh->Material;
 			// MeshComponent->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
 			auto District1 = MakeShared<District>();
-			District1->set_district_type(drawing_districts[i].district->get_district_type());
+			District1->set_type(drawing_districts[i].district->get_type());
 
 			AProceduralBlockMeshActor* MeshComponent2 =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 					AProceduralBlockMeshActor::StaticClass());
-			MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
+			MeshComponent2->SetSelectedObject(selected_objects);
 			MeshComponent2->SetActorLabel(
 				drawing_districts[i].mesh->GetActorLabel());
-			// MeshComponent2->ProceduralMesh->SetMaterial(
-			// 	0, drawing_districts[i].mesh->Material);
-			// MeshComponent2->Material = drawing_districts[i].mesh->Material;
+			MeshComponent2->ProceduralMesh->SetMaterial(
+				0, drawing_districts[i].mesh->Material);
+			MeshComponent2->Material = drawing_districts[i].mesh->Material;
 			// MeshComponent2->DefaultMaterial = drawing_districts[i].mesh->DefaultMaterial;
 			auto District2 = MakeShared<District>();
-			District2->set_district_type(drawing_districts[i].district->get_district_type());
+			District2->set_type(drawing_districts[i].district->get_type());
 
 			DrawingDistrict dd1(District1, MeshComponent,
 			                    drawing_districts[i].start_height);
@@ -786,60 +746,60 @@ inline void AMainTerrain::initialize_all()
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	MapParams.update_me();
-	// BaseMaterial = load_material("Pack1", "MaterialBase");
-	// WaterMaterial = load_material("Pack1", "MaterialWater");
-	// DocsMaterial = load_material("Pack1", "MaterialDocks");
-	// RoyalMaterial = load_material("Pack1", "MaterialRoyal");
-	// ResidentialMaterial = load_material("Pack1", "MaterialResidential");
-	// LuxuryMaterial = load_material("Pack1", "MaterialLuxury");
-	// SlumsMaterial = load_material("Pack1", "MaterialSlums");
-	// BuildingMaterial = load_material("Pack1", "MaterialBuilding");
-	// RoadMaterial = load_material("Pack1", "MaterialRoad");
-	// MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
-	// WallMaterial = load_material("Pack1", "MaterialWall");
-	// PavementMaterial = load_material("Pack1", "MaterialPavement");
-	// TArray<AActor*> FoundActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(),
-	//                                       AOrthographicCameraPawn::StaticClass(),
-	//                                       FoundActors);
-	// AOrthographicCameraPawn* OrthographicCamera;
-	// if (FoundActors.Num() > 0)
-	// {
-	// 	OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
-	// 	if (OrthographicCamera)
-	// 	{
-	// 		// Теперь OrthographicCamera доступна как объект вашего класса
-	// 		UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"),
-	// 		       *OrthographicCamera->GetName());
-	// 	}
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
-	// 	return;
-	// }
+	BaseMaterial = load_material("Pack1", "MaterialBase");
+	WaterMaterial = load_material("Pack1", "MaterialWater");
+	DocsMaterial = load_material("Pack1", "MaterialDocks");
+	RoyalMaterial = load_material("Pack1", "MaterialRoyal");
+	ResidentialMaterial = load_material("Pack1", "MaterialResidential");
+	LuxuryMaterial = load_material("Pack1", "MaterialLuxury");
+	SlumsMaterial = load_material("Pack1", "MaterialSlums");
+	BuildingMaterial = load_material("Pack1", "MaterialBuilding");
+	RoadMaterial = load_material("Pack1", "MaterialRoad");
+	MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
+	WallMaterial = load_material("Pack1", "MaterialWall");
+	PavementMaterial = load_material("Pack1", "MaterialPavement");
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(),
+	                                      AOrthographicCameraPawn::StaticClass(),
+	                                      FoundActors);
+	AOrthographicCameraPawn* OrthographicCamera;
+	if (FoundActors.Num() > 0)
+	{
+		OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
+		if (OrthographicCamera)
+		{
+			// Теперь OrthographicCamera доступна как объект вашего класса
+			UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"),
+			       *OrthographicCamera->GetName());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
+		return;
+	}
 	APlayerController* PlayerController =
 		UGameplayStatics::GetPlayerController(this, 0);
-	// if (PlayerController && OrthographicCamera)
-	// {
-	// 	PlayerController->Possess(OrthographicCamera);
-	// }
-	// // AActor* OrthographicCamera = FoundActors[0];
-	//
-	// FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2,
-	//                               (MapParams.x_size + MapParams.y_size) / 2);
-	// OrthographicCamera->SetActorLocation(NewLocation);
-	// FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
-	// OrthographicCamera->SetActorRotation(DownwardRotation);
-	// if (PlayerController)
-	// {
-	// 	PlayerController->bShowMouseCursor = true; // Показываем курсор
-	// 	PlayerController->bEnableClickEvents = true;
-	// 	// Включаем обработку событий кликов
-	// 	PlayerController->bEnableMouseOverEvents = true;
-	// 	// Включаем обработку событий наведения
-	// 	PlayerController->SetViewTargetWithBlend(OrthographicCamera);
-	// }
+	if (PlayerController && OrthographicCamera)
+	{
+		PlayerController->Possess(OrthographicCamera);
+	}
+	// AActor* OrthographicCamera = FoundActors[0];
+
+	FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2,
+	                              (MapParams.x_size + MapParams.y_size) / 2);
+	OrthographicCamera->SetActorLocation(NewLocation);
+	FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
+	OrthographicCamera->SetActorRotation(DownwardRotation);
+	if (PlayerController)
+	{
+		PlayerController->bShowMouseCursor = true; // Показываем курсор
+		PlayerController->bEnableClickEvents = true;
+		// Включаем обработку событий кликов
+		PlayerController->bEnableMouseOverEvents = true;
+		// Включаем обработку событий наведения
+		PlayerController->SetViewTargetWithBlend(OrthographicCamera);
+	}
 
 	// PrimaryActorTick.bCanEverTick = true;
 	// Super::BeginPlay();
@@ -847,7 +807,7 @@ inline void AMainTerrain::initialize_all()
 	TerrainGen gen(MapParams, ResidentialHousesParams);
 	gen.create_terrain(roads, figures_array, streets_array, segments_array,
 	                   river_figures, map_borders_array, debug_points_array, debug2_points_array);
-	// gen.empty_all(river);
+	gen.empty_all();
 	draw_all();
 	AActor* ViewTarget = PlayerController->GetViewTarget();
 	if (ViewTarget)
@@ -857,32 +817,27 @@ inline void AMainTerrain::initialize_all()
 	}
 }
 
-// UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack,
-//                                                 const FString& MaterialName)
-// {
-// 	FString MaterialPath = FString::Printf(
-// 		TEXT("Material Loading'/Game/Packs/%s/%s.%s'"), *TexturePack, *MaterialName,
-// 		*MaterialName);
-//
-// 	// Загружаем материал как UMaterialInterface
-// 	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(
-// 		StaticLoadObject(UMaterialInterface::StaticClass(), nullptr,
-// 		                 *MaterialPath));
-//
-// 	// Проверяем, удалось ли загрузить материал
-// 	if (!MaterialInterface)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"),
-// 		       *MaterialPath)
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Material loaded: %s"),
-// 			   *MaterialPath)
-// 	}
-//
-// 	return MaterialInterface;
-// }
+UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack,
+                                                const FString& MaterialName)
+{
+	FString MaterialPath = FString::Printf(
+		TEXT("Material'/Game/Packs/%s/%s.%s'"), *TexturePack, *MaterialName,
+		*MaterialName);
+
+	// Загружаем материал как UMaterialInterface
+	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(
+		StaticLoadObject(UMaterialInterface::StaticClass(), nullptr,
+		                 *MaterialPath));
+
+	// Проверяем, удалось ли загрузить материал
+	if (!MaterialInterface)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"),
+		       *MaterialPath)
+	}
+
+	return MaterialInterface;
+}
 
 void AMainTerrain::draw_all()
 {
@@ -941,69 +896,69 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 				AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
-		// MeshComponent2->Material = BaseMaterial;
-		if (r->get_district_type() == district_type::water)
+		MeshComponent2->SetSelectedObject(selected_objects);
+		MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
+		MeshComponent2->Material = BaseMaterial;
+		if (r->get_type() == district_type::water)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictWater_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-			// MeshComponent2->Material = WaterMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
+			MeshComponent2->Material = WaterMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 			// create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
 		}
-		else if (r->get_district_type() == district_type::luxury)
+		else if (r->get_type() == district_type::luxury)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictLuxury_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, LuxuryMaterial);
-			// MeshComponent2->Material = LuxuryMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, LuxuryMaterial);
+			MeshComponent2->Material = LuxuryMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_district_type() == district_type::dock)
+		else if (r->get_type() == district_type::dock)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictDocks_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, DocsMaterial);
-			// MeshComponent2->Material = DocsMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, DocsMaterial);
+			MeshComponent2->Material = DocsMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_district_type() == district_type::royal)
+		else if (r->get_type() == district_type::royal)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictRoyal_%d"), ++ActorCounter);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, RoyalMaterial);
-			// MeshComponent2->Material = RoyalMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, RoyalMaterial);
+			MeshComponent2->Material = RoyalMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_district_type() == district_type::slums)
+		else if (r->get_type() == district_type::slums)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictSlums_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, SlumsMaterial);
-			// MeshComponent2->Material = SlumsMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, SlumsMaterial);
+			MeshComponent2->Material = SlumsMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_district_type() == district_type::residential)
+		else if (r->get_type() == district_type::residential)
 		{
 			ActorName = FString::Printf(
 				TEXT("DistrictResidence_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, ResidentialMaterial);
-			// MeshComponent2->Material = ResidentialMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, ResidentialMaterial);
+			MeshComponent2->Material = ResidentialMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
-		else if (r->get_district_type() == district_type::tower)
+		else if (r->get_type() == district_type::tower)
 		{
 			ActorName = FString::Printf(TEXT("Tower_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
-			// MeshComponent2->Material = MainRoadMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
+			MeshComponent2->Material = MainRoadMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 		else
@@ -1011,8 +966,8 @@ void AMainTerrain::draw_all()
 			ActorName = FString::Printf(
 				TEXT("DistrictUnknown_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
-			// MeshComponent2->Material = BaseMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
+			MeshComponent2->Material = BaseMaterial;
 			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
 		}
 
@@ -1025,15 +980,15 @@ void AMainTerrain::draw_all()
 			AProceduralBlockMeshActor* MeshComponent =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 					AProceduralBlockMeshActor::StaticClass());
-			MeshComponent->SetSelectedObject(selected_objects, prev_selected_objects);
+			MeshComponent->SetSelectedObject(selected_objects);
 			MeshComponent->SetActorLabel(HouseName);
 
-			// if (p->get_object_type() == "House")
-			// 	MeshComponent->ProceduralMesh->SetMaterial(0, BuildingMaterial);
-			// else if (p->get_object_type() == "Pavement")
-			// 	MeshComponent->ProceduralMesh->SetMaterial(0, PavementMaterial);
-			// else
-			// 	MeshComponent->ProceduralMesh->SetMaterial(0, BaseMaterial);
+			if (p->get_object_type() == "House")
+				MeshComponent->ProceduralMesh->SetMaterial(0, BuildingMaterial);
+			else if (p->get_object_type() == "Pavement")
+				MeshComponent->ProceduralMesh->SetMaterial(0, PavementMaterial);
+			else
+				MeshComponent->ProceduralMesh->SetMaterial(0, BaseMaterial);
 
 			// MeshComponent->DefaultMaterial = BaseMaterial;
 			MeshComponent->SetDynamicObject(p);
@@ -1047,9 +1002,9 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 				AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
-		// MeshComponent2->Material = RoadMaterial;
+		MeshComponent2->SetSelectedObject(selected_objects);
+		MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
+		MeshComponent2->Material = RoadMaterial;
 		// MeshComponent2->DefaultMaterial = BaseMaterial;
 		MeshComponent2->SetDynamicObject(street);
 		if (street->type == point_type::road)
@@ -1057,8 +1012,8 @@ void AMainTerrain::draw_all()
 			FString ActorName = FString::Printf(
 				TEXT("Street_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
-			// MeshComponent2->Material = RoadMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
+			MeshComponent2->Material = RoadMaterial;
 			drawing_streets.Add(
 				DrawingStreet(street, MeshComponent2, 0.03, is_2d));
 			// create_mesh_2d(MeshComponent2, street->street_vertexes, 0.19);
@@ -1068,8 +1023,8 @@ void AMainTerrain::draw_all()
 			FString ActorName = FString::Printf(
 				TEXT("StreetMain_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
-			// MeshComponent2->Material = MainRoadMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
+			MeshComponent2->Material = MainRoadMaterial;
 			drawing_streets.Add(
 				DrawingStreet(street, MeshComponent2, 0.031, is_2d));
 			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
@@ -1079,8 +1034,8 @@ void AMainTerrain::draw_all()
 			FString ActorName = FString::Printf(
 				TEXT("StreetMain_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-			// MeshComponent2->Material = WaterMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
+			MeshComponent2->Material = WaterMaterial;
 			drawing_streets.Add(
 				DrawingStreet(street, MeshComponent2, 0.032, is_2d));
 			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
@@ -1090,8 +1045,8 @@ void AMainTerrain::draw_all()
 			FString ActorName = FString::Printf(
 				TEXT("StreetWall_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, WallMaterial);
-			// MeshComponent2->Material = WallMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, WallMaterial);
+			MeshComponent2->Material = WallMaterial;
 			drawing_streets.Add(
 				DrawingStreet(street, MeshComponent2, 0.033, is_2d));
 		}
@@ -1100,8 +1055,8 @@ void AMainTerrain::draw_all()
 			FString ActorName = FString::Printf(
 				TEXT("StreetUndefined_%d"), ++ActorCounter);
 			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, BuildingMaterial);
-			// MeshComponent2->Material = BuildingMaterial;
+			MeshComponent2->ProceduralMesh->SetMaterial(0, BuildingMaterial);
+			MeshComponent2->Material = BuildingMaterial;
 			drawing_streets.Add(
 				DrawingStreet(street, MeshComponent2, 0.034, is_2d));
 		}
