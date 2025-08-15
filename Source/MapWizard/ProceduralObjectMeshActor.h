@@ -6,6 +6,14 @@
 #include "AllGeometry.h"
 
 #include "ProceduralObjectMeshActor.generated.h"
+USTRUCT(BlueprintType)
+struct FVectorArrayWrapper
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FVector> Points;
+};
 
 UCLASS(Blueprintable)
 class MAPWIZARD_API AProceduralBlockMeshActor : public AActor
@@ -61,6 +69,23 @@ public:
 	{
 		return object->get_angle();
 	}
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<FVector> GetObjectVertexes()
+	{
+		return object->get_object_vertexes();
+	}
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<FVectorArrayWrapper> SliceHouse(float north, float east, float south, float west)
+	{
+		TArray<FVectorArrayWrapper> array;
+		for (auto& house_part:object->slice_house(north, east, south, west))
+		{
+			FVectorArrayWrapper wrap;
+			wrap.Points = house_part;
+			array.Add(wrap);
+		}
+		return array;
+	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	float GetID()
@@ -86,11 +111,15 @@ public:
 	}
 
 	void SetSelectedObject(
-		TSharedPtr<TArray<unsigned int>> selected_object_)
+		TSharedPtr<TArray<unsigned int>> selected_object_, TSharedPtr<TArray<unsigned int>> prev_selected_object_)
 	{
 		selected_object = selected_object_;
+		prev_selected_object = prev_selected_object_;
 	}
+
+	
 
 	TSharedPtr<SelectableObject> object;
 	TSharedPtr<TArray<unsigned int>> selected_object;
+	TSharedPtr<TArray<unsigned int>> prev_selected_object;
 };

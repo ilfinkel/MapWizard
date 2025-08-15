@@ -359,6 +359,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	AProceduralBlockMeshActor* GetLastSelected();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	AProceduralBlockMeshActor* GetPrevSelected();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllStreets();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllHouses();
@@ -431,4 +433,5 @@ private:
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
 	TSharedPtr<TArray<unsigned int>> selected_objects;
+	TSharedPtr<TArray<unsigned int>> prev_selected_objects;
 };
