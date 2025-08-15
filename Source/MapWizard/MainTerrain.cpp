@@ -529,15 +529,15 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 
 	if (FoundActors.Num() > 0)
 	{
-		// AActor* OrthographicCamera = FoundActors[0];
+		AActor* OrthographicCamera = FoundActors[0];
 
-		// FVector NewLocation = FVector(MapParams.x_size / 2,
-		//                               MapParams.y_size / 2,
-		//                               (MapParams.x_size + MapParams.y_size) /
-		//                               2);
-		// OrthographicCamera->SetActorLocation(NewLocation);
-		// FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
-		// OrthographicCamera->SetActorRotation(DownwardRotation);
+		FVector NewLocation = FVector(MapParams.x_size / 2,
+		                              MapParams.y_size / 2,
+		                              (MapParams.x_size + MapParams.y_size) /
+		                              2);
+		OrthographicCamera->SetActorLocation(NewLocation);
+		FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
+		OrthographicCamera->SetActorRotation(DownwardRotation);
 
 		TerrainGen gen(MapParams, ResidentialHousesParams);
 		gen.create_terrain(roads, figures_array, streets_array, segments_array,
@@ -798,48 +798,48 @@ inline void AMainTerrain::initialize_all()
 	// MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
 	// WallMaterial = load_material("Pack1", "MaterialWall");
 	// PavementMaterial = load_material("Pack1", "MaterialPavement");
-	// TArray<AActor*> FoundActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(),
-	//                                       AOrthographicCameraPawn::StaticClass(),
-	//                                       FoundActors);
-	// AOrthographicCameraPawn* OrthographicCamera;
-	// if (FoundActors.Num() > 0)
-	// {
-	// 	OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
-	// 	if (OrthographicCamera)
-	// 	{
-	// 		// Теперь OrthographicCamera доступна как объект вашего класса
-	// 		UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"),
-	// 		       *OrthographicCamera->GetName());
-	// 	}
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
-	// 	return;
-	// }
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(),
+	                                       AOrthographicCameraPawn::StaticClass(),
+	                                       FoundActors);
+	 AOrthographicCameraPawn* OrthographicCamera;
+	if (FoundActors.Num() > 0)
+	{
+	 	OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
+		if (OrthographicCamera)
+		{
+	 		// Теперь OrthographicCamera доступна как объект вашего класса
+		UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"),
+	 		       *OrthographicCamera->GetName());
+	 	}
+	 }
+	 else
+	 {
+		UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
+		return;
+	 }
 	APlayerController* PlayerController =
 		UGameplayStatics::GetPlayerController(this, 0);
-	// if (PlayerController && OrthographicCamera)
-	// {
-	// 	PlayerController->Possess(OrthographicCamera);
-	// }
-	// // AActor* OrthographicCamera = FoundActors[0];
-	//
-	// FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2,
-	//                               (MapParams.x_size + MapParams.y_size) / 2);
-	// OrthographicCamera->SetActorLocation(NewLocation);
-	// FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
-	// OrthographicCamera->SetActorRotation(DownwardRotation);
-	// if (PlayerController)
-	// {
-	// 	PlayerController->bShowMouseCursor = true; // Показываем курсор
-	// 	PlayerController->bEnableClickEvents = true;
-	// 	// Включаем обработку событий кликов
-	// 	PlayerController->bEnableMouseOverEvents = true;
-	// 	// Включаем обработку событий наведения
-	// 	PlayerController->SetViewTargetWithBlend(OrthographicCamera);
-	// }
+	if (PlayerController && OrthographicCamera)
+	{
+		PlayerController->Possess(OrthographicCamera);
+	}
+	// AActor* OrthographicCamera = FoundActors[0];
+
+	FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2,
+	                              (MapParams.x_size + MapParams.y_size) / 2);
+	OrthographicCamera->SetActorLocation(NewLocation);
+	FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
+	OrthographicCamera->SetActorRotation(DownwardRotation);
+	if (PlayerController)
+	{
+		PlayerController->bShowMouseCursor = true; // Показываем курсор
+		PlayerController->bEnableClickEvents = true;
+		// Включаем обработку событий кликов
+		PlayerController->bEnableMouseOverEvents = true;
+		// Включаем обработку событий наведения
+		PlayerController->SetViewTargetWithBlend(OrthographicCamera);
+	}
 
 	// PrimaryActorTick.bCanEverTick = true;
 	// Super::BeginPlay();

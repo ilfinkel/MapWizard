@@ -387,7 +387,6 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	process_streets(road_nodes, streets_array, {}, false);
 
 	segments_array = process_segments(streets_array);
-	// shrink_roads();
 	get_closed_figures(road_nodes, shapes_array, 200);
 
 	double EndTime9 = FPlatformTime::Seconds();
@@ -1681,21 +1680,21 @@ void TerrainGen::get_river_figure(const TArray<TSharedPtr<Node>>& river)
 		item->set_district_type(district_type::water);
 		river_figures.Add(item);
 	}
-	// river_figures.RemoveAll(
-	// 	[&](TSharedPtr<District>& A)
-	// 	{
-	// 		bool is_in = false;
-	// 		for (auto point : custom_districts)
-	// 		{
-	// 			if (point.Value == district_type::water && A->
-	// 				is_point_in_figure(point.Key))
-	// 			{
-	// 				is_in = true;
-	// 				break;
-	// 			}
-	// 		}
-	// 		return !is_in;
-	// 	});
+	river_figures.RemoveAll(
+		[&](TSharedPtr<District>& A)
+		{
+			bool is_in = false;
+			for (auto point : custom_districts)
+			{
+				if (point.Value == district_type::water && A->
+					is_point_in_figure(point.Key))
+				{
+					is_in = true;
+					break;
+				}
+			}
+			return !is_in;
+		});
 }
 
 void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
@@ -1709,6 +1708,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 
 
 	bool royal_found = false;
+
 	for (auto& c : custom_districts)
 	{
 		// if (c.Value == district_type::tower)
@@ -2152,10 +2152,10 @@ void TerrainGen::create_special_district(TArray<FVector>& figure,
 
 void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& nodes, point_type type, FVector point)
 {
-	// for (auto& f : nodes)
-	// {
-	// 	debug2_points_array.Add(f->get_FVector());
-	// }
+	for (auto& f : nodes)
+	{
+		// debug2_points_array.Add(f->get_FVector());
+	}
 
 	// FVector center_point(0, 0, 0);
 	// for (auto f : nodes)
@@ -2175,10 +2175,7 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 		auto new_inner_point = f->get_FVector();
 		inner_figure.Add(new_inner_point);
 	}
-	if (*nodes.begin() != *nodes.end())
-	{
-		inner_figure.Add(nodes[0]->get_FVector());
-	}
+
 	// that's fucked up. 
 	FVector Center = FVector::ZeroVector;
 	for (const FVector& Point : inner_figure)
@@ -2190,6 +2187,7 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 	{
 		Point = Center + (Point - Center) * 0.9999;
 	}
+
 
 	road_nodes.RemoveAll(
 		[&, point](const TSharedPtr<Node>& node)
