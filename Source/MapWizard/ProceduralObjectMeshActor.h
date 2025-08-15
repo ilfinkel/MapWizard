@@ -6,6 +6,7 @@
 #include "AllGeometry.h"
 
 #include "ProceduralObjectMeshActor.generated.h"
+
 USTRUCT(BlueprintType)
 struct FVectorArrayWrapper
 {
@@ -41,8 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual")
 	int roof_texture_turns = 0;
 	UFUNCTION(BlueprintCallable, Category = "Custom")
-	void clickMesh(UPrimitiveComponent* TouchedComponent,
-	                   FKey ButtonPressed);
+	void clickMesh();
 	UFUNCTION()
 	void OnMouseOver(UPrimitiveComponent* Component);
 	UFUNCTION()
@@ -52,11 +52,13 @@ public:
 	{
 		return object->is_hovered();
 	}
+
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	bool IsSelected()
 	{
 		return object->is_selected();
 	}
+
 	FString MeshComponentName;
 
 	void SetMeshComponentName(const FString& NewName)
@@ -69,16 +71,18 @@ public:
 	{
 		return object->get_angle();
 	}
+
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<FVector> GetObjectVertexes()
 	{
 		return object->get_object_vertexes();
 	}
+
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<FVectorArrayWrapper> SliceHouse(float north, float east, float south, float west)
 	{
 		TArray<FVectorArrayWrapper> array;
-		for (auto& house_part:object->slice_house(north, east, south, west))
+		for (auto& house_part : object->slice_house(north, east, south, west))
 		{
 			FVectorArrayWrapper wrap;
 			wrap.Points = house_part;
@@ -86,25 +90,25 @@ public:
 		}
 		return array;
 	}
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	float GetID()
 	{
 		return object->get_id();
 	}
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	FVector GetMeasure()
 	{
 		return object->get_measure();
 	}
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	FString GetObjectType()
 	{
 		return object->get_object_type();
 	}
-	
+
 	void SetDynamicObject(TSharedPtr<SelectableObject> distr)
 	{
 		object = distr;
@@ -117,7 +121,6 @@ public:
 		prev_selected_object = prev_selected_object_;
 	}
 
-	
 
 	TSharedPtr<SelectableObject> object;
 	TSharedPtr<TArray<unsigned int>> selected_object;

@@ -33,8 +33,8 @@ void AProceduralBlockMeshActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ProceduralMesh->OnClicked.AddDynamic(
-		this, &AProceduralBlockMeshActor::OnMeshClicked);
+	// ProceduralMesh->OnClicked.AddDynamic(
+	// 	this, &AProceduralBlockMeshActor::clickMesh);
 	ProceduralMesh->OnBeginCursorOver.AddDynamic(
 		this, &AProceduralBlockMeshActor::OnMouseOver);
 	ProceduralMesh->OnEndCursorOver.AddDynamic(
