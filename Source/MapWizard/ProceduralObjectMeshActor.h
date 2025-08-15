@@ -40,8 +40,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visual")
 	int roof_texture_turns = 0;
-	UFUNCTION()
-	void OnMeshClicked(UPrimitiveComponent* TouchedComponent,
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	void clickMesh(UPrimitiveComponent* TouchedComponent,
 	                   FKey ButtonPressed);
 	UFUNCTION()
 	void OnMouseOver(UPrimitiveComponent* Component);

@@ -46,8 +46,7 @@ void AProceduralBlockMeshActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AProceduralBlockMeshActor::OnMeshClicked(
-	UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
+void AProceduralBlockMeshActor::clickMesh()
 {
 	*prev_selected_object = *selected_object;
 	if (object.IsValid() && !object->is_selected())
