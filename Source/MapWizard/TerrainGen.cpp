@@ -48,65 +48,9 @@ TSharedPtr<Node> TerrainGen::insert_conn(
 	return new_node;
 }
 
-void TerrainGen::move_river(const TSharedPtr<Node>& node1,
-                            const TSharedPtr<Node>& node2, const TArray<WeightedPoint>& weighted_points,
-                            TArray<TSharedPtr<Node>>& river)
-{
-	if (node1->is_used() || node2->is_used())
-	{
-		return;
-	}
-
-	FVector point1 = node1->get_FVector();
-	FVector backup_point1 = node1->get_FVector();
-	point_shift(point1, weighted_points);
-	FVector point2 = node2->get_FVector();
-	FVector backup_point2 = node2->get_FVector();
-	point_shift(point2, weighted_points);
-
-	for (auto conn : node1->conn)
-	{
-		double dist = FVector::Distance(conn->node->get_FVector(), point1);
-		if (dist > max_river_length / 3 * 2 || dist < av_river_length / 3 * 2)
-		{
-			return;
-		}
-	}
-	for (auto conn : node2->conn)
-	{
-		double dist = FVector::Distance(conn->node->get_FVector(), point2);
-		if (dist > max_river_length || dist < av_river_length / 3 * 2)
-		{
-			return;
-		}
-	}
-	if (
-		// FVector::Distance(point1, point2) > max_river_length / 3 * 2 ||
-		FVector::Distance(point1, point2) < av_river_length / 3 * 2)
-	{
-		return;
-	}
-
-	if (!AllGeometry::is_intersect_array(backup_point1, point1, river, false).
-		IsSet() &&
-		!AllGeometry::is_intersect_array(backup_point1, point1,
-		                                 map_borders_array, true).IsSet())
-	{
-		node1->set_FVector(point1);
-		// return;
-	}
-	if (!AllGeometry::is_intersect_array(backup_point2, point2, river, false).
-		IsSet() &&
-		!AllGeometry::is_intersect_array(backup_point2, point2,
-		                                 map_borders_array, true).IsSet())
-	{
-		node2->set_FVector(point2);
-		// return;
-	}
-}
 
 void TerrainGen::move_road(const TSharedPtr<Node>& node, const TArray<WeightedPoint>& weighted_points,
-                           const TArray<TSharedPtr<Node>>& river, double max_conn_length)
+                           TArray<TArray<TSharedPtr<Node>>> node_arrays_to_check, double max_conn_length)
 {
 	if (node->is_used() || node->is_unmovable())
 	{
@@ -117,44 +61,32 @@ void TerrainGen::move_road(const TSharedPtr<Node>& node, const TArray<WeightedPo
 	FVector backup_point = node->get_FVector();
 	if (node->conn.Num() == 2)
 	{
-		if (!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
-		                                     node->conn[1]->node->get_FVector(),
-		                                     river, true).IsSet() &&
-			!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
-			                                 node->conn[1]->node->get_FVector(),
-			                                 map_borders_array, true).IsSet() &&
-			!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
-			                                 node->conn[1]->node->get_FVector(),
-			                                 road_nodes, false).IsSet())
-		{
-			node->set_FVector(
-				(node->conn[0]->node->get_FVector() + node->conn[1]->node->
-				                                                     get_FVector()) / 2);
-			// return;
-		}
+		point = (node->conn[0]->node->get_FVector() + node->conn[1]->node->get_FVector()) / 2;
 	}
-	else
-	{
-		point_shift(point, weighted_points);
-	}
+	point_shift(point, weighted_points);
+
 	for (auto conn : node->conn)
 	{
-		if (FVector::Distance(conn->node->get_FVector(), point) >
-			max_conn_length)
+		if (FVector::Distance(conn->node->get_FVector(), point) > max_conn_length)
 		{
 			return;
 		}
 	}
 
-	if (!AllGeometry::is_intersect_array(backup_point, point, river, true).
-		IsSet() &&
-		!AllGeometry::is_intersect_array(backup_point, point, map_borders_array,
-		                                 true).IsSet() &&
-		!AllGeometry::is_intersect_array(backup_point, point, road_nodes, false).
-		IsSet())
+
+	bool is_broken = false;
+	for (auto item : node_arrays_to_check)
+	{
+		auto aa = AllGeometry::is_intersect_array(point, backup_point, item, false);
+		if (aa.IsSet())
+		{
+			is_broken = true;
+			break;
+		}
+	}
+	if (!is_broken)
 	{
 		node->set_FVector(point);
-		return;
 	}
 }
 
@@ -225,18 +157,18 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	{
 		create_guiding_roads(weighted_points, river);
 	}
-	for (int iter = 0; iter < 10; iter++)
-	{
-		for (auto& r : road_nodes)
-		{
-			r->set_used(false);
-		}
-
-		for (auto& r : road_nodes)
-		{
-			move_road(r, weighted_points, river, max_road_length);
-		}
-	}
+	// for (int iter = 0; iter < 10; iter++)
+	// {
+	// 	for (auto& r : road_nodes)
+	// 	{
+	// 		r->set_used(false);
+	// 	}
+	//
+	// 	for (auto& r : road_nodes)
+	// 	{
+	// 		move_road(r, weighted_points, {river, map_borders_array}, max_road_length);
+	// 	}
+	// }
 	int old_nodes = 0;
 
 	if (draw_stage >= EDrawStage::create_usual_roads)
@@ -263,7 +195,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 			// }
 			for (auto& r : road_nodes)
 			{
-				move_road(r, weighted_points, river, max_road_length);
+				move_road(r, weighted_points, {river, map_borders_array}, max_road_length);
 			}
 		}
 		river.Empty();
@@ -458,7 +390,7 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 		{
 			for (auto& g : guiding_river)
 			{
-				move_road(g, weighted_points, {}, water_step * 2.5);
+				move_road(g, weighted_points, {map_borders_array}, water_step * 2.5);
 			}
 		}
 		for (auto& g : guiding_river)
@@ -482,15 +414,15 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 			}
 			if (smallest_dist > water_step * 3.5)
 			{
-				w.weight += 100;
+				w.weight += 50;
 			}
-			else if (smallest_dist < water_step)
-			{
-				w.weight = 25;
-			}
+			// else if (smallest_dist < water_step * 2)
+			// {
+			// 	w.weight = 25;
+			// }
 			else
 			{
-				w.weight = 75;
+				w.weight = 25;
 			}
 		}
 	}
@@ -530,7 +462,6 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 		// 	}
 		// }
 	}
-
 	else if (water_type == EWaterType::island)
 	{
 		double max_dist = (x_size + y_size) / 2 / 2 - water_step * 2;
@@ -567,7 +498,6 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 		// 	}
 		// }
 	}
-
 
 	for (int i = water_step; i <= x_size - water_step; i += water_step)
 	{
@@ -606,7 +536,7 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 	{
 		for (int i = 0; i < 50; i++)
 		{
-			move_road(r, weighted_points, {}, water_step * 2.5);
+			move_road(r, weighted_points, {map_borders_array, river}, water_step * 2.5);
 		}
 	}
 
@@ -1416,7 +1346,7 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 		{
 			for (int count = 0; count < 3; count++)
 			{
-				move_road(road_nodes[i], weighted_points, river, max_road_length);
+				move_road(road_nodes[i], weighted_points, {river, map_borders_array}, max_road_length);
 			}
 		}
 	}

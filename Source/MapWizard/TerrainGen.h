@@ -88,10 +88,8 @@ public:
 	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
 	static TSharedPtr<Node> insert_conn(const TSharedPtr<Node>& node1_to_insert,
 	                                    const TSharedPtr<Node>& node2_to_insert, FVector node3_point);
-	void move_river(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2,
-	                const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
 	void move_road(const TSharedPtr<Node>& node, const TArray<WeightedPoint>& weighted_points,
-	               const TArray<TSharedPtr<Node>>& river, double max_conn_length);
+	               TArray<TArray<TSharedPtr<Node>>> node_arrays_to_check, double max_conn_length);
 	void create_guiding_rivers(TArray<TSharedPtr<Node>>& river);
 	void create_guiding_river_segment(TSharedPtr<Node>& start_point, TSharedPtr<Node>& end_point,
 	                                  TArray<TSharedPtr<Node>>& river);

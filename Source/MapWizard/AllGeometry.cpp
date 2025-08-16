@@ -770,19 +770,11 @@ TOptional<FVector> AllGeometry::is_intersect(const FVector& line1_begin,
 	{
 		FVector intersectionPoint(line1_begin.X + t1 * dx1,
 		                          line1_begin.Y + t1 * dy1, 0);
-		if (is_opened)
-		{
-			return intersectionPoint;
-		}
-		if (!is_opened &&
-			(FVector::Distance(intersectionPoint, line2_begin) > TNumericLimits<
-					double>::Min() &&
-				FVector::Distance(intersectionPoint, line2_end) > TNumericLimits
-				<double>::Min() &&
-				FVector::Distance(intersectionPoint, line1_begin) >
-				TNumericLimits<double>::Min() &&
-				FVector::Distance(intersectionPoint, line1_end) > TNumericLimits
-				<double>::Min()))
+		if (is_opened || (!is_opened &&
+			(FVector::Distance(intersectionPoint, line2_begin) > TNumericLimits<double>::Min() &&
+				FVector::Distance(intersectionPoint, line2_end) > TNumericLimits<double>::Min() &&
+				FVector::Distance(intersectionPoint, line1_begin) > TNumericLimits<double>::Min() &&
+				FVector::Distance(intersectionPoint, line1_end) > TNumericLimits<double>::Min())))
 		{
 			return intersectionPoint;
 		}
@@ -851,9 +843,8 @@ AllGeometry::is_intersect_array(
 		for (auto& conn : line->conn)
 		{
 			if (!conn.IsValid())continue;
-			TOptional<FVector> int_point =
-				is_intersect(line_begin, line_end, line->get_FVector(),
-				             conn->node->get_FVector(), is_opened);
+			TOptional<FVector> int_point = is_intersect(line_begin, line_end, line->get_FVector(),
+			                                            conn->node->get_FVector(), is_opened);
 			if (int_point.IsSet())
 			{
 				double dist_to_line = FVector::Distance(
