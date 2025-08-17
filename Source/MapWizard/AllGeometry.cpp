@@ -644,7 +644,7 @@ House::~House()
 TArray<TArray<FVector>> House::slice_house(float north, float east, float south, float west)
 {
 	TArray<TArray<FVector>> house_slices;
-	house_slices.Reserve(9);
+	house_slices.SetNum(9);
 
 	if (object_type == "House")
 	{
@@ -675,70 +675,70 @@ TArray<TArray<FVector>> House::slice_house(float north, float east, float south,
 		{
 			e1 = AllGeometry::create_segment_at_angle(p1, p2, p1, 0, east);
 			e2 = AllGeometry::create_segment_at_angle(p4, p3, p4, 0, east);
-			sw = s2;
-			se = s1;
+			se = e1;
+			ne = e2;
 		}
 		if (north != 0)
 		{
 			n1 = AllGeometry::create_segment_at_angle(p1, p4, p1, 0, north);
 			n2 = AllGeometry::create_segment_at_angle(p2, p3, p2, 0, north);
 			nw = n2;
-			sw = n1;
+			ne = n1;
 			if (west != 0)
 			{
 				if (west != 0)
 				{
 					nw = AllGeometry::create_segment_at_angle(p2, p3, n2, 0, west);
-					house_slices[3] = TArray{w1, p2, n2, nw};
+					house_slices[2] = TArray{w1, p2, n2, nw};
 				}
 
 				if (east != 0)
 				{
 					ne = AllGeometry::create_segment_at_angle(p1, p2, n1, 0, east);
-					house_slices[1] = TArray{p1, e1, ne, n1};
+					house_slices[0] = TArray{p1, e1, ne, n1};
 				}
 			}
 		}
 		if (south != 0)
 		{
-			n1 = AllGeometry::create_segment_at_angle(p4, p1, p4, 0, south);
-			n2 = AllGeometry::create_segment_at_angle(p3, p2, p3, 0, south);
-			ne = e1;
-			se = e2;
+			s1 = AllGeometry::create_segment_at_angle(p4, p1, p4, 0, south);
+			s2 = AllGeometry::create_segment_at_angle(p3, p2, p3, 0, south);
+			se = e1;
+			sw = e2;
 
 			if (west != 0)
 			{
 				sw = AllGeometry::create_segment_at_angle(p3, p4, s2, 0, west);
-				house_slices[9] = TArray{sw, s2, p3, w2};
+				house_slices[8] = TArray{sw, s2, p3, w2};
 			}
 
 			if (east != 0)
 			{
 				se = AllGeometry::create_segment_at_angle(p4, p3, s1, 0, east);
-				house_slices[7] = TArray{s1, se, e2, p4};
+				house_slices[6] = TArray{s1, se, e2, p4};
 			}
 		}
-		house_slices[2] = TArray{
+		house_slices[1] = TArray{
 			AllGeometry::create_segment_at_angle(p4, p1, ne, 0, north),
 			AllGeometry::create_segment_at_angle(p4, p1, nw, 0, north),
 			nw, ne
 		};
-		house_slices[6] = TArray{
+		house_slices[5] = TArray{
 			nw, AllGeometry::create_segment_at_angle(p1, p2, nw, 0, west),
 			AllGeometry::create_segment_at_angle(p1, p2, sw, 0, west),
 			sw
 		};
-		house_slices[8] = TArray{
+		house_slices[7] = TArray{
 			se, sw,
 			AllGeometry::create_segment_at_angle(p2, p3, se, 0, south),
 			AllGeometry::create_segment_at_angle(p2, p3, sw, 0, south)
 		};
-		house_slices[4] = TArray{
+		house_slices[3] = TArray{
 			ne, se,
 			AllGeometry::create_segment_at_angle(p2, p1, ne, 0, east),
 			AllGeometry::create_segment_at_angle(p2, p1, se, 0, east)
 		};
-		house_slices[5] = TArray{ne, nw, se, sw};
+		house_slices[4] = TArray{ne, nw, se, sw};
 	}
 	return house_slices;
 }
