@@ -652,93 +652,53 @@ TArray<TArray<FVector>> House::slice_house(float north, float east, float south,
 		FVector p2 = house_figure[1];
 		FVector p3 = house_figure[2];
 		FVector p4 = house_figure[3];
-		FVector w1(0, 0, 0);
-		FVector w2(0, 0, 0);
-		FVector n1(0, 0, 0);
-		FVector n2(0, 0, 0);
-		FVector e1(0, 0, 0);
-		FVector e2(0, 0, 0);
-		FVector s1(0, 0, 0);
-		FVector s2(0, 0, 0);
-		FVector nw = p2;
-		FVector sw = p3;
-		FVector se = p4;
-		FVector ne = p1;
-		if (west != 0)
-		{
-			w1 = AllGeometry::create_segment_at_angle(p2, p1, p2, 0, west);
-			w2 = AllGeometry::create_segment_at_angle(p3, p4, p3, 0, west);
-			nw = w1;
-			sw = w2;
-		}
-		if (east != 0)
-		{
-			e1 = AllGeometry::create_segment_at_angle(p1, p2, p1, 0, east);
-			e2 = AllGeometry::create_segment_at_angle(p4, p3, p4, 0, east);
-			se = e1;
-			ne = e2;
-		}
-		if (north != 0)
-		{
-			n1 = AllGeometry::create_segment_at_angle(p1, p4, p1, 0, north);
-			n2 = AllGeometry::create_segment_at_angle(p2, p3, p2, 0, north);
-			nw = n2;
-			ne = n1;
-			if (west != 0)
-			{
-				if (west != 0)
-				{
-					nw = AllGeometry::create_segment_at_angle(p2, p3, n2, 0, west);
-					house_slices[2] = TArray{w1, p2, n2, nw};
-				}
+		FVector w1 = AllGeometry::create_segment_at_angle(p2, p1, p2, 0, west);
+		FVector w2 = AllGeometry::create_segment_at_angle(p3, p4, p3, 0, west);
+		FVector e1 = AllGeometry::create_segment_at_angle(p1, p2, p1, 0, east);
+		FVector e2 = AllGeometry::create_segment_at_angle(p4, p3, p4, 0, east);
+		FVector n1 = AllGeometry::create_segment_at_angle(p1, p4, p1, 0, north);
+		FVector n2 = AllGeometry::create_segment_at_angle(p2, p3, p2, 0, north);
+		FVector s1 = AllGeometry::create_segment_at_angle(p4, p1, p4, 0, south);
+		FVector s2 = AllGeometry::create_segment_at_angle(p3, p2, p3, 0, south);
 
-				if (east != 0)
-				{
-					ne = AllGeometry::create_segment_at_angle(p1, p2, n1, 0, east);
-					house_slices[0] = TArray{p1, e1, ne, n1};
-				}
-			}
-		}
-		if (south != 0)
+		FVector nw = AllGeometry::create_segment_at_angle(p2, p3, w1, 0, north);
+		FVector sw = AllGeometry::create_segment_at_angle(p3, p2, w2, 0, south);
+		FVector ne = AllGeometry::create_segment_at_angle(p2, p3, e1, 0, north);
+		FVector se = AllGeometry::create_segment_at_angle(p3, p2, e2, 0, south);
+
+		if (e1 != p1 && p1 != n1)
 		{
-			s1 = AllGeometry::create_segment_at_angle(p4, p1, p4, 0, south);
-			s2 = AllGeometry::create_segment_at_angle(p3, p2, p3, 0, south);
-			se = e1;
-			sw = e2;
-
-			if (west != 0)
-			{
-				sw = AllGeometry::create_segment_at_angle(p3, p4, s2, 0, west);
-				house_slices[8] = TArray{sw, s2, p3, w2};
-			}
-
-			if (east != 0)
-			{
-				se = AllGeometry::create_segment_at_angle(p4, p3, s1, 0, east);
-				house_slices[6] = TArray{s1, se, e2, p4};
-			}
+			house_slices[0] = {p1, e1, ne, n1};
 		}
-		house_slices[1] = TArray{
-			AllGeometry::create_segment_at_angle(p4, p1, ne, 0, north),
-			AllGeometry::create_segment_at_angle(p4, p1, nw, 0, north),
-			nw, ne
-		};
-		house_slices[5] = TArray{
-			nw, AllGeometry::create_segment_at_angle(p1, p2, nw, 0, west),
-			AllGeometry::create_segment_at_angle(p1, p2, sw, 0, west),
-			sw
-		};
-		house_slices[7] = TArray{
-			se, sw,
-			AllGeometry::create_segment_at_angle(p2, p3, se, 0, south),
-			AllGeometry::create_segment_at_angle(p2, p3, sw, 0, south)
-		};
-		house_slices[3] = TArray{
-			ne, se,
-			AllGeometry::create_segment_at_angle(p2, p1, ne, 0, east),
-			AllGeometry::create_segment_at_angle(p2, p1, se, 0, east)
-		};
-		house_slices[4] = TArray{ne, nw, se, sw};
+		if (e1 != w1 && w1 != ne)
+		{
+			house_slices[1] = {e1, w1, nw, ne};
+		}
+		if (p2 != w1 && p2 != n2)
+		{
+			house_slices[2] = {w1, p2, n2, nw};
+		}
+		if (n1 != ne && ne != se)
+		{
+			house_slices[3] = {n1, ne, se, s1};
+		}
+		house_slices[4] = {ne, nw, sw, se};
+		if (nw != n2 && n2 != s2)
+		{
+			house_slices[5] = {nw, n2, s2, sw};
+		}
+		if (s1 != se && se != e2)
+		{
+			house_slices[6] = {s1, se, e2, p4};
+		}
+		if (se != sw && sw != w2)
+		{
+			house_slices[7] = {se, sw, w2, e2};
+		}
+		if (sw != s2 && s2 != p4)
+		{
+			house_slices[8] = {sw, s2, p4, w2};
+		}
 	}
 	return house_slices;
 }
