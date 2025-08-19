@@ -33,8 +33,8 @@ void AProceduralBlockMeshActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ProceduralMesh->OnClicked.AddDynamic(
-		this, &AProceduralBlockMeshActor::OnMeshClicked);
+	// ProceduralMesh->OnClicked.AddDynamic(
+	// 	this, &AProceduralBlockMeshActor::clickMesh);
 	ProceduralMesh->OnBeginCursorOver.AddDynamic(
 		this, &AProceduralBlockMeshActor::OnMouseOver);
 	ProceduralMesh->OnEndCursorOver.AddDynamic(
@@ -46,8 +46,7 @@ void AProceduralBlockMeshActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AProceduralBlockMeshActor::OnMeshClicked(
-	UPrimitiveComponent* TouchedComponent, FKey ButtonPressed)
+void AProceduralBlockMeshActor::clickMesh()
 {
 	*prev_selected_object = *selected_object;
 	if (object.IsValid() && !object->is_selected())
@@ -56,7 +55,7 @@ void AProceduralBlockMeshActor::OnMeshClicked(
 		// selected_object->Add(object);
 		unsigned int object_id = object->get_id();
 		selected_object->Add(object_id);
-		// UE_LOG(LogTemp, Warning, TEXT("mesh selected %p, %i"), object.Get(), object_id)
+		UE_LOG(LogTemp, Warning, TEXT("mesh selected %p, %i"), object.Get(), object_id)
 		// TouchedComponent->SetMaterial(0, DefaultMaterial);
 	}
 	else if (object.IsValid() && object->is_selected())
@@ -68,6 +67,14 @@ void AProceduralBlockMeshActor::OnMeshClicked(
 			return obj == object_id;
 		});
 		UE_LOG(LogTemp, Warning, TEXT("mesh unselected %p, %i"), object.Get(), object->get_id())
+	}
+	for (auto& sel: *selected_object)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("selected object %i"),  sel)
+	}
+	for (auto& sel: *prev_selected_object)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("prev selected object %i"),  sel)
 	}
 }
 
