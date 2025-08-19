@@ -695,9 +695,9 @@ TArray<TArray<FVector>> House::slice_house(float north, float east, float south,
 		{
 			house_slices[7] = {se, sw, w2, e2};
 		}
-		if (sw != s2 && s2 != p4)
+		if (sw != s2 && s2 != p3)
 		{
-			house_slices[8] = {sw, s2, p4, w2};
+			house_slices[8] = {sw, s2, p3, w2};
 		}
 	}
 	return house_slices;
