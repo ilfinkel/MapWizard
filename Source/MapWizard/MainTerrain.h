@@ -27,6 +27,7 @@ enum class EWaterType : uint8
 {
 	none UMETA(DisplayName = "none"),
 	river UMETA(DisplayName = "river")
+	
 };
 
 
