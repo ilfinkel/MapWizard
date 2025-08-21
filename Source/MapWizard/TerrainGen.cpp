@@ -73,12 +73,11 @@ void TerrainGen::move_road(const TSharedPtr<Node>& node, const TArray<WeightedPo
 		}
 	}
 
-
 	bool is_broken = false;
 	for (auto item : node_arrays_to_check)
 	{
-		auto aa = AllGeometry::is_intersect_array(point, backup_point, item, false);
-		if (aa.IsSet())
+		auto intersection = AllGeometry::is_intersect_array(point, backup_point, item, false);
+		if (intersection.IsSet())
 		{
 			is_broken = true;
 			break;
@@ -815,12 +814,9 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 		TSharedPtr<Node> closest_center;
 		float closest_dist = TNumericLimits<float>::Max();
 		TArray<FVector> river_points;
-		for (auto river_district : river_figures)
+		for (auto river_node : river)
 		{
-			for (auto river_node : river_district->figure)
-			{
-				river_points.Add(river_node->get_FVector());
-			}
+			river_points.Add(river_node->get_FVector());
 		}
 		for (auto r : road_centers)
 		{
