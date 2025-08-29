@@ -397,26 +397,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void initialize_all();
 
 private:
-	// UMaterialInterface* BaseMaterial;
-	// UMaterialInterface* WaterMaterial;
-	// UMaterialInterface* DocsMaterial;
-	// UMaterialInterface* RoyalMaterial;
-	// UMaterialInterface* ResidentialMaterial;
-	// UMaterialInterface* LuxuryMaterial;
-	// UMaterialInterface* SlumsMaterial;
-	// UMaterialInterface* BuildingMaterial;
-	// UMaterialInterface* RoadMaterial;
-	// UMaterialInterface* MainRoadMaterial;
-	// UMaterialInterface* WallMaterial;
-	// UMaterialInterface* PavementMaterial;
-	// UMaterialInterface* load_material(const FString& TexturePack, const FString& MaterialName);
 	void draw_all();
 	void get_cursor_hit_location();
 	TArray<AProceduralBlockMeshActor*> get_all_houses_of_type_selected(FString type_name);

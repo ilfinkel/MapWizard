@@ -917,7 +917,6 @@ void AMainTerrain::draw_all()
 		GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 			AProceduralBlockMeshActor::StaticClass());
 
-	// Создаем физическое тело для коллизии
 	DrawingObject obj;
 	obj.create_mesh_2d(Base, map_borders_array, 0.01);
 

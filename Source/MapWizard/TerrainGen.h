@@ -3,19 +3,6 @@
 #include <MapWizard/AllGeometry.h>
 #include <MapWizard/MainTerrain.h>
 
-struct CustomDistrNodes
-{
-	CustomDistrNodes(TSharedPtr<Node> node1_, TSharedPtr<Node> node2_,
-	                 TSharedPtr<Node> node3_): node1(node1_)
-	                                           , node2(node2_)
-	                                           , node3(node3_)
-	{
-	};
-	TSharedPtr<Node> node1;
-	TSharedPtr<Node> node2;
-	TSharedPtr<Node> node3;
-};
-
 class TerrainGen
 {
 public:
@@ -165,7 +152,7 @@ public:
 		road_nodes.Reset();
 	}
 
-	double water_step = 100;
+	double water_step = 125;
 	TArray<TSharedPtr<District>> shapes_array;
 	// TArray<TSharedPtr<Node>> river{};
 	TArray<TSharedPtr<Node>> guiding_river{};
@@ -181,7 +168,6 @@ public:
 	TArray<FVector> soft_borders_array{};
 	TSharedPtr<Node> central_node;
 	TArray<TTuple<FVector, district_type>> custom_districts;
-	TArray<CustomDistrNodes> custom_distr_nodes;
 	TArray<FVector> debug_points_array;
 	TArray<FVector> debug2_points_array;
 };

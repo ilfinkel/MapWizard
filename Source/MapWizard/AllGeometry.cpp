@@ -1227,6 +1227,22 @@ bool AllGeometry::is_point_near_figure(const TArray<FVector> given_line,
 	return false;
 }
 
+bool AllGeometry::is_point_near_nodes_array(const TArray<TSharedPtr<Node>> node_array,
+                                            const FVector& Point, double distance)
+{
+	for (auto& node : node_array)
+	{
+		for (auto& nconn : node->conn)
+		{
+			if (point_to_seg_distance(node->get_FVector(), nconn->node->get_FVector(), Point) < distance)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 TArray<FVector> AllGeometry::line_to_polygon(const TArray<FVector> given_line,
                                              double width)
 {
