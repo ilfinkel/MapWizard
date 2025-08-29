@@ -47,6 +47,8 @@ struct FMapParams
 {
 	GENERATED_BODY()
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int seed = -1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double av_river_length = 80;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double max_river_length = 150;
@@ -348,6 +350,8 @@ public:
 	// TArray<FVector> VerticesRemembered;
 
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	int GetSeed();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllDistrictsSelected();
@@ -403,19 +407,6 @@ protected:
 	void initialize_all();
 
 private:
-	// UMaterialInterface* BaseMaterial;
-	// UMaterialInterface* WaterMaterial;
-	// UMaterialInterface* DocsMaterial;
-	// UMaterialInterface* RoyalMaterial;
-	// UMaterialInterface* ResidentialMaterial;
-	// UMaterialInterface* LuxuryMaterial;
-	// UMaterialInterface* SlumsMaterial;
-	// UMaterialInterface* BuildingMaterial;
-	// UMaterialInterface* RoadMaterial;
-	// UMaterialInterface* MainRoadMaterial;
-	// UMaterialInterface* WallMaterial;
-	// UMaterialInterface* PavementMaterial;
-	// UMaterialInterface* load_material(const FString& TexturePack, const FString& MaterialName);
 	void draw_all();
 	void get_cursor_hit_location();
 	TArray<AProceduralBlockMeshActor*> get_all_houses_of_type_selected(FString type_name);
@@ -433,4 +424,6 @@ private:
 	TArray<DrawingHouse> drawing_houses;
 	TSharedPtr<TArray<unsigned int>> selected_objects;
 	TSharedPtr<TArray<unsigned int>> prev_selected_objects;
+
+	int seed = -1;
 };

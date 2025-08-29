@@ -226,6 +226,11 @@ AMainTerrain::AMainTerrain() : MapParams()
 	// PrimaryActorTick.bCanEverTick = false;
 }
 
+int AMainTerrain::GetSeed()
+{
+	return seed;
+}
+
 void AMainTerrain::RedrawAll(bool is_2d_)
 {
 	is_2d = is_2d_;
@@ -771,6 +776,7 @@ void AMainTerrain::clear_all()
 
 void AMainTerrain::BeginPlay()
 {
+
 	Super::BeginPlay();
 	initialize_all();
 }
@@ -843,7 +849,10 @@ inline void AMainTerrain::initialize_all()
 
 	// PrimaryActorTick.bCanEverTick = true;
 	// Super::BeginPlay();
+	seed = MapParams.seed == -1 ? FMath::RandRange(1, 999999) : MapParams.seed;
 
+	UE_LOG(LogTemp, Warning, TEXT("SEED: %i"), seed);
+	FMath::RandInit(seed);
 	TerrainGen gen(MapParams, ResidentialHousesParams);
 	gen.create_terrain(roads, figures_array, streets_array, segments_array,
 	                   river_figures, map_borders_array, debug_points_array, debug2_points_array);
