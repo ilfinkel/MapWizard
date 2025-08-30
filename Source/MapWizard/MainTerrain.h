@@ -48,6 +48,8 @@ struct FMapParams
 {
 	GENERATED_BODY()
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int seed = -1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double av_river_length = 80;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double max_river_length = 150;
@@ -349,6 +351,8 @@ public:
 	// TArray<FVector> VerticesRemembered;
 
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	int GetSeed();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllDistrictsSelected();
@@ -420,4 +424,6 @@ private:
 	TArray<DrawingHouse> drawing_houses;
 	TSharedPtr<TArray<unsigned int>> selected_objects;
 	TSharedPtr<TArray<unsigned int>> prev_selected_objects;
+
+	int seed = -1;
 };
