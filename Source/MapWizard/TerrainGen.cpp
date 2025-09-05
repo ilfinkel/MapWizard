@@ -1,5 +1,8 @@
 ﻿#include "TerrainGen.h"
 
+#include "PropertyAccess.h"
+#include "Algo/Partition.h"
+
 void TerrainGen::add_conn(const TSharedPtr<Node>& node1,
                           const TSharedPtr<Node>& node2)
 {
@@ -52,6 +55,8 @@ TSharedPtr<Node> TerrainGen::insert_conn(
 void TerrainGen::move_road(const TSharedPtr<Node>& node, const TArray<WeightedPoint>& weighted_points,
                            TArray<TArray<TSharedPtr<Node>>> node_arrays_to_check, double max_conn_length)
 {
+
+	return; 
 	if (node->is_used() || node->is_unmovable())
 	{
 		return;
@@ -138,9 +143,13 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 
 
 	TArray<WeightedPoint> weighted_points{};
+	
 	create_weighted_points(weighted_points);
-	// if (draw_stage >= EDrawStage::river)
-	// {
+	double weight_width = water_type != EWaterType::island? 115:25;
+	for (auto& r:river)
+	{
+		weighted_points.Add({r->get_FVector(), weight_width});
+	}
 
 	create_rivers(weighted_points, river);
 
@@ -156,18 +165,18 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	{
 		create_guiding_roads(weighted_points, river);
 	}
-	// for (int iter = 0; iter < 10; iter++)
-	// {
-	// 	for (auto& r : road_nodes)
-	// 	{
-	// 		r->set_used(false);
-	// 	}
-	//
-	// 	for (auto& r : road_nodes)
-	// 	{
-	// 		move_road(r, weighted_points, {river, map_borders_array}, max_road_length);
-	// 	}
-	// }
+	for (int iter = 0; iter < 10; iter++)
+	{
+		for (auto& r : road_nodes)
+		{
+			r->set_used(false);
+		}
+
+		for (auto& r : road_nodes)
+		{
+			move_road(r, weighted_points, {river, map_borders_array}, max_road_length);
+		}
+	}
 	int old_nodes = 0;
 
 	if (draw_stage >= EDrawStage::create_usual_roads)
@@ -187,14 +196,9 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 			{
 				r->set_used(false);
 			}
-			//
-			// for (auto& road_center : road_centers)
-			// {
-			// 	road_center->set_used(true);
-			// }
 			for (auto& r : road_nodes)
 			{
-				// move_road(r, weighted_points, {river, map_borders_array}, max_road_length);
+				move_road(r, weighted_points, {river, map_borders_array}, max_road_length);
 			}
 		}
 		river.Empty();
@@ -413,17 +417,24 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 					}
 				}
 			}
-			if (smallest_dist > water_step * 3.5)
+			if (smallest_dist > water_step * 4)
 			{
 				w.weight += 50;
 			}
-			// else if (smallest_dist < water_step * 2)
-			// {
-			// 	w.weight = 25;
-			// }
-			else
+			else if (smallest_dist < water_step * 2)
 			{
 				w.weight = 25;
+			}
+			else
+			{
+				float y1 = 25;
+				float y2 = 115;
+				float x1 = water_step * 2;
+				float x2 = water_step * 3.5;
+				float x0 = (x1 + x2) / 2;
+				// this is hiperbole with middle inflex
+				w.weight = ((y2 - y1) * (pow(smallest_dist - x0, 3) - pow(x1 - x0, 3))) / (pow(x2 - x0, 3) -
+					pow(x1 - x0, 3)) + y1;
 			}
 		}
 	}
@@ -520,9 +531,9 @@ void TerrainGen::create_rivers(TArray<WeightedPoint>& weighted_points, TArray<TS
 	shrink_roads(river);
 	for (auto& r : river)
 	{
-		for (int i = 0; i < 50; i++)
+		for (int i = 0; i < 45; i++)
 		{
-			// move_road(r, weighted_points, {map_borders_array, river}, water_step * 2.5);
+			move_road(r, weighted_points, {map_borders_array, river}, water_step * 2);
 		}
 	}
 
@@ -547,8 +558,7 @@ void TerrainGen::create_guiding_rivers(TArray<TSharedPtr<Node>>& river)
 {
 	FVector start_river_point(0, 0, 0);
 	FVector end_river_point(0, y_size, 0);
-	TSharedPtr<Node> start_point = MakeShared<Node>(
-		(start_river_point + end_river_point) / 2);
+	TSharedPtr<Node> start_point = MakeShared<Node>((start_river_point + end_river_point) / 2);
 	start_point->set_type(point_type::river);
 
 	FVector end_river =
@@ -1325,7 +1335,7 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 		{
 			for (int count = 0; count < 3; count++)
 			{
-				// move_road(road_nodes[i], weighted_points, {river, map_borders_array}, max_road_length);
+				move_road(road_nodes[i], weighted_points, {river, map_borders_array}, max_road_length);
 			}
 		}
 	}
@@ -1477,20 +1487,80 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(
 
 void TerrainGen::point_shift(FVector& point, TArray<WeightedPoint> weighted_points)
 {
-	FVector bias(0, 0, 0);
-	double biggest_weight = 0;
-	for (int j = 0; j < weighted_points.Num(); j++)
+	// FVector bias(0, 0, 0);
+	// double biggest_weight = 0;
+	// for (int j = 0; j < weighted_points.Num(); j++)
+	// {
+	// 	double length = FVector::Distance(point, weighted_points[j].point);
+	// 	if (length < abs(weighted_points[j].weight) && biggest_weight <
+	// 		weighted_points[j].weight - length)
+	// 	{
+	// 		biggest_weight = weighted_points[j].weight - length;
+	// 		bias = ((point - weighted_points[j].point) / length) * (
+	// 			weighted_points[j].weight - length) / 50;
+	// 	}
+	// }
+	// point += bias;
+
+	weighted_points.Sort([&point](const WeightedPoint& A, const WeightedPoint& B)
 	{
-		double length = FVector::Distance(point, weighted_points[j].point);
-		if (length < abs(weighted_points[j].weight) && biggest_weight <
-			weighted_points[j].weight - length)
+		return FVector::DistSquared(point, A.point) < FVector::DistSquared(point, B.point);
+	});
+
+	int Index = 0;
+	for (int i = 0; i < weighted_points.Num(); i++)
+	{
+		if (FVector::Dist(point, weighted_points[i].point)>400)
 		{
-			biggest_weight = weighted_points[j].weight - length;
-			bias = ((point - weighted_points[j].point) / length) * (
-				weighted_points[j].weight - length) / 50;
+			Index = i-1;
+			break;
 		}
 	}
-	point += bias;
+
+	TArray<WeightedPoint> nearest_weighted_points;
+	FVector backup = point;
+	FVector result = weighted_points[0].point;
+	// int N = weighted_points.Num();
+	bool is_found = false;
+	for (int32 i = 0; i < Index; i++)
+	{
+		for (int32 j = i + 1; j < Index; j++)
+		{
+			for (int32 k = j + 1; k < Index; k++)
+			{
+				if (AllGeometry::is_point_in_figure(point, {
+					                                    weighted_points[i].point,
+					                                    weighted_points[j].point,
+					                                    weighted_points[k].point
+				                                    }))
+				{
+					nearest_weighted_points.Add(weighted_points[i]);
+					nearest_weighted_points.Add(weighted_points[j]);
+					nearest_weighted_points.Add(weighted_points[k]);
+					is_found = true;
+					break;
+				}
+			}
+			if (is_found) break;
+		}
+		if (is_found) break;
+	}
+	if (!is_found) return;
+	FVector direction = ((point - result) * weighted_points[0].weight).GetSafeNormal();
+	result = weighted_points[1].point;
+	direction += ((point - result) * weighted_points[1].weight).GetSafeNormal();
+	result = weighted_points[2].point;
+	direction += ((point - result) * weighted_points[2].weight).GetSafeNormal();
+
+	backup += direction;
+	if (FVector::Distance(backup, point) > 2)
+	{
+		point += ((backup - point)).GetSafeNormal() * 2;
+	}
+	else
+	{
+		point += direction;
+	}
 }
 
 void TerrainGen::get_closed_figures(TArray<TSharedPtr<Node>> nodes,
