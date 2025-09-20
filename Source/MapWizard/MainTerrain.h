@@ -66,6 +66,8 @@ struct FMapParams
 	double main_road_width = 6;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double road_width = 3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double main_road_lights_dist = 25;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "City Plan")
 	ECityPlan city_plan = ECityPlan::radial_circle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drawing Stage")
