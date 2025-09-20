@@ -788,67 +788,13 @@ void AMainTerrain::Tick(float DeltaTime)
 
 inline void AMainTerrain::initialize_all()
 {
-	// Vulkan.WaitForIdleOnSubmit=1;
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	MapParams.update_me();
-	// BaseMaterial = load_material("Pack1", "MaterialBase");
-	// WaterMaterial = load_material("Pack1", "MaterialWater");
-	// DocsMaterial = load_material("Pack1", "MaterialDocks");
-	// RoyalMaterial = load_material("Pack1", "MaterialRoyal");
-	// ResidentialMaterial = load_material("Pack1", "MaterialResidential");
-	// LuxuryMaterial = load_material("Pack1", "MaterialLuxury");
-	// SlumsMaterial = load_material("Pack1", "MaterialSlums");
-	// BuildingMaterial = load_material("Pack1", "MaterialBuilding");
-	// RoadMaterial = load_material("Pack1", "MaterialRoad");
-	// MainRoadMaterial = load_material("Pack1", "MaterialMainRoad");
-	// WallMaterial = load_material("Pack1", "MaterialWall");
-	// PavementMaterial = load_material("Pack1", "MaterialPavement");
-	// TArray<AActor*> FoundActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(),
-	//                                       AOrthographicCameraPawn::StaticClass(),
-	//                                       FoundActors);
-	// AOrthographicCameraPawn* OrthographicCamera;
-	// if (FoundActors.Num() > 0)
-	// {
-	// 	OrthographicCamera = Cast<AOrthographicCameraPawn>(FoundActors[0]);
-	// 	if (OrthographicCamera)
-	// 	{
-	// 		// Теперь OrthographicCamera доступна как объект вашего класса
-	// 		UE_LOG(LogTemp, Warning, TEXT("Orthographic camera found: %s"),
-	// 		       *OrthographicCamera->GetName());
-	// 	}
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("No orthographic cameras found!"));
-	// 	return;
-	// }
+
 	APlayerController* PlayerController =
 		UGameplayStatics::GetPlayerController(this, 0);
-	// if (PlayerController && OrthographicCamera)
-	// {
-	// 	PlayerController->Possess(OrthographicCamera);
-	// }
-	// // AActor* OrthographicCamera = FoundActors[0];
-	//
-	// FVector NewLocation = FVector(MapParams.x_size / 2, MapParams.y_size / 2,
-	//                               (MapParams.x_size + MapParams.y_size) / 2);
-	// OrthographicCamera->SetActorLocation(NewLocation);
-	// FRotator DownwardRotation = FRotator(-90.00, 0.0, 0.0);
-	// OrthographicCamera->SetActorRotation(DownwardRotation);
-	// if (PlayerController)
-	// {
-	// 	PlayerController->bShowMouseCursor = true; // Показываем курсор
-	// 	PlayerController->bEnableClickEvents = true;
-	// 	// Включаем обработку событий кликов
-	// 	PlayerController->bEnableMouseOverEvents = true;
-	// 	// Включаем обработку событий наведения
-	// 	PlayerController->SetViewTargetWithBlend(OrthographicCamera);
-	// }
 
-	// PrimaryActorTick.bCanEverTick = true;
-	// Super::BeginPlay();
 	seed = MapParams.seed == -1 ? FMath::RandRange(1, 999999) : MapParams.seed;
 
 	UE_LOG(LogTemp, Warning, TEXT("SEED: %i"), seed);
@@ -866,33 +812,6 @@ inline void AMainTerrain::initialize_all()
 	}
 }
 
-// UMaterialInterface* AMainTerrain::load_material(const FString& TexturePack,
-//                                                 const FString& MaterialName)
-// {
-// 	FString MaterialPath = FString::Printf(
-// 		TEXT("Material Loading'/Game/Packs/%s/%s.%s'"), *TexturePack, *MaterialName,
-// 		*MaterialName);
-//
-// 	// Загружаем материал как UMaterialInterface
-// 	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(
-// 		StaticLoadObject(UMaterialInterface::StaticClass(), nullptr,
-// 		                 *MaterialPath));
-//
-// 	// Проверяем, удалось ли загрузить материал
-// 	if (!MaterialInterface)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Failed to load material: %s"),
-// 		       *MaterialPath)
-// 	}
-// 	else
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("Material loaded: %s"),
-// 			   *MaterialPath)
-// 	}
-//
-// 	return MaterialInterface;
-// }
-
 void AMainTerrain::draw_all()
 {
 	clear_all();
@@ -904,7 +823,7 @@ void AMainTerrain::draw_all()
 		Start.Z = -10;
 		End.Z = 100;
 
-		DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 5.0f);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 2.0f);
 	}
 	for (auto& p : debug_points_array)
 	{
@@ -913,7 +832,7 @@ void AMainTerrain::draw_all()
 		Start.Z = -10;
 		End.Z = 100;
 
-		DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 5.0f);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 2.0f);
 	}
 
 	int ind = 0;

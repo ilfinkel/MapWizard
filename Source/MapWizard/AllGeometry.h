@@ -74,6 +74,9 @@ public:
 	static float point_to_seg_distance(const FVector& SegmentStart,
 	                                   const FVector& SegmentEnd,
 	                                   const FVector& Point);
+	static FVector point_to_seg_distance_get_closest(const FVector& SegmentStart,
+	                                                 const FVector& SegmentEnd,
+	                                                 const FVector& Point);
 	static bool is_point_near_figure(const TArray<FVector> given_line,
 	                                 const FVector& Point, double distance);
 	static TArray<FVector> line_to_polygon(const TArray<FVector> given_line,
@@ -190,9 +193,14 @@ struct SelectableObject
 	void hover() { hovered = true; }
 	void unhover() { hovered = false; }
 
+	void set_angle(float angle_)
+	{
+		angle = angle_;
+	}
+
 	virtual float get_angle()
 	{
-		return 0;
+		return angle;
 	}
 
 	virtual TArray<FVector> get_object_vertexes()
@@ -218,6 +226,22 @@ protected:
 	bool hovered = false;
 	FString object_type;
 	unsigned int object_id;
+	float angle = 0;
+};
+
+struct Lighter : public SelectableObject
+{
+	Lighter(FVector position_, double intensity_)
+	{
+		object_type = "Lighter";
+		position = position_;
+		intensity = intensity_;
+	};
+	bool operator==(Lighter& other) const { return FVector::DistSquared(this->position, other.position) < 0.1; }
+
+	FVector position;
+private:
+	double intensity;
 };
 
 struct Street : public SelectableObject
@@ -232,10 +256,10 @@ struct Street : public SelectableObject
 		object_type = "Street";
 	}
 
-	float get_angle() override
-	{
-		return 0;
-	}
+	// float get_angle() override
+	// {
+	// 	return angle;
+	// }
 
 	FVector get_measure() override
 	{
@@ -245,6 +269,11 @@ struct Street : public SelectableObject
 	TArray<FVector> get_object_vertexes() override
 	{
 		return street_vertexes;
+	}
+
+	TArray<TSharedPtr<Node>> get_street_vertices()
+	{
+		return street_vertices;
 	}
 
 	// object_type get_object_type() override {return object_type;}
@@ -293,7 +322,9 @@ struct House : public SelectableObject
 		FVector f2 = house_figure[1];
 		FVector f3 = house_figure[1];
 		f3.X += 1000;
-		return AllGeometry::calculate_angle_clock(f1, f2, f3);
+		angle = AllGeometry::calculate_angle_clock(f1, f2, f3);
+		set_angle(angle);
+		return angle;
 	}
 
 	FVector get_measure() override
@@ -345,10 +376,10 @@ struct District : public SelectableObject
 		self_figure.Empty();
 	}
 
-	float get_angle() override
-	{
-		return 0;
-	}
+	// float get_angle() override
+	// {
+	// 	return angle;
+	// }
 
 	FVector get_measure() override
 	{
@@ -404,24 +435,20 @@ struct Conn
 	Conn(TSharedPtr<Node> node_) : node(node_)
 	{
 		figure = MakeShared<TArray<TSharedPtr<Node>>>();
-		// street = MakeShared<TArray<TSharedPtr<Point>>>();
 		not_in_figure = false;
 		in_street = false;
-		// street_type = point_type::road;
 	}
 
 	~Conn();
 	void set_street(TSharedPtr<Street> street_) { street = street_; }
 	void set_segment(TSharedPtr<Street> segment_) { segment = segment_; }
 	TSharedPtr<Street> get_street() { return segment; }
-	TSharedPtr<Node> node;
+	TSharedPtr<Node> node = nullptr;
+
 	// point_type street_type = point_type::road;
 	TSharedPtr<TArray<TSharedPtr<Node>>> figure{};
 	// TSharedPtr<TArray<TSharedPtr<Point>>> street{};
-	point_type street_type()
-	{
-		return segment.IsValid() ? segment->type : point_type::road;
-	}
+	point_type street_type() { return segment.IsValid() ? segment->type : point_type::road; }
 
 	bool not_in_figure;
 	bool in_street;
