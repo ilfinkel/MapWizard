@@ -239,9 +239,14 @@ struct Lighter : public SelectableObject
 	};
 	bool operator==(Lighter& other) const { return FVector::DistSquared(this->position, other.position) < 0.1; }
 
+	TArray<FVector> get_object_vertexes() override
+	{
+		return {position};
+	}
+
 	FVector position;
-private:
 	double intensity;
+	// private:
 };
 
 struct Street : public SelectableObject
@@ -276,29 +281,11 @@ struct Street : public SelectableObject
 		return street_vertices;
 	}
 
-	// object_type get_object_type() override {return object_type;}
 	TArray<FVector> street_vertexes;
 	TArray<TSharedPtr<Node>> street_vertices;
 	point_type type = point_type::unidentified;
 	FString name;
 };
-
-// struct Way
-// {
-// 	Way(): type()
-// 	{
-// 	}
-//
-// 	Way(TArray<TSharedPtr<Point>> points_) : points(points_)
-// 	                                       , type()
-// 	{
-// 	}
-// 	~Way() { points.Empty(); }
-// 	TArray<TSharedPtr<Point>> points;
-// 	point_type type;
-// 	FString name;
-// };
-
 
 struct House : public SelectableObject
 {

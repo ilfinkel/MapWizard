@@ -1925,10 +1925,6 @@ void TerrainGen::process_lights()
 		}
 	}
 
-	// for (auto& r : road_lantern_anchors)
-	// {
-	// 	debug2_points_array.Add(r);
-	// }
 	for (auto& d : shapes_array)
 	{
 		if (d->get_district_type() == district_type::residential || d->get_district_type() == district_type::luxury
@@ -1941,6 +1937,16 @@ void TerrainGen::process_lights()
 			float closest_dist = 100000;
 			for (auto& a : road_lantern_anchors)
 			{
+				bool is_near = false;
+				for (auto& point : d->self_figure)
+				{
+					if (FVector::Distance(point.point, a) < map_params.max_road_length)
+					{
+						is_near = true;
+						break;
+					}
+				}
+				if (!is_near) continue;
 				is_found = false;
 				closest_dist = 100000;
 				for (int i = 1; i < d->self_figure.Num(); i++)
@@ -1952,7 +1958,7 @@ void TerrainGen::process_lights()
 					FVector closest = AllGeometry::point_to_seg_distance_get_closest(
 						d->self_figure[i].point, d->self_figure[i - 1].point, a);
 					auto dist = FVector::Dist(closest, a);
-					if (dist < closest_dist && dist < map_params.main_road_width * 2)
+					if (dist < closest_dist && dist < map_params.main_road_width)
 					{
 						closest_dist = dist;
 						closest_point = closest;
@@ -1964,6 +1970,13 @@ void TerrainGen::process_lights()
 				if (is_found)
 				{
 					Lighter l(closest_point, map_params.main_road_lights_dist / 2);
+					FVector f2 = closest_point;
+					FVector f3 = closest_point;
+					f3.X += 1000;
+					auto angle = AllGeometry::calculate_angle_clock(closest_anchor, f2, f3);
+					angle=FMath::Fmod(angle + 270.0f, 360.0f);
+					
+					l.set_angle(angle);
 					lantern_array.Add(l);
 				}
 			}
