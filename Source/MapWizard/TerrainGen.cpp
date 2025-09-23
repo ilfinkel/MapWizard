@@ -1,20 +1,5 @@
 ﻿#include "TerrainGen.h"
 
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
-
 void TerrainGen::add_conn(const TSharedPtr<Node>& node1,
                           const TSharedPtr<Node>& node2)
 {
@@ -407,7 +392,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	map_borders_array_ = map_borders_array;
 	roads_ = road_nodes;
 	point_objects_array_ = point_objects_array;
-	
+
 	debug2_points_array_ = debug2_points_array;
 	debug_points_array_ = debug_points_array;
 }
@@ -1986,8 +1971,8 @@ void TerrainGen::process_lights()
 					FVector f3 = closest_point;
 					f3.X += 1000;
 					auto angle = AllGeometry::calculate_angle_clock(closest_anchor, f2, f3);
-					angle=FMath::Fmod(angle + 270.0f, 360.0f);
-					
+					angle = FMath::Fmod(angle + 270.0f, 360.0f);
+
 					l.set_angle(angle);
 					point_objects_array.Add(MakeShared<PointObject>(l));
 				}
@@ -2023,31 +2008,24 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 	district_center /= district->self_figure.Num();
 	if (district->get_district_type() == district_type::luxury)
 	{
-		if (!district->is_point_in_self_figure(district_center))
+		for (int i = 1; i <= 100; i++)
 		{
-			return;
-		}
-		auto figure_num = district->self_figure.Num();
-		for (int i = 1; i <= figure_num; i++)
-		{
-			if (district->self_figure[i - 1].districts_nearby.Contains(
-					district_type::royal) &&
-				district->self_figure[i % figure_num].districts_nearby.Contains(
-					district_type::royal))
+			double angle = FMath::FRand() * 180;
+			double point_x = FMath::FRand() * (right_point - left_point) + left_point;
+			double point_y = FMath::FRand() * (up_point - down_point) + down_point;
+			FVector center_point(point_x, point_y, 0);
+			FVector left_center_point(0, point_y, 0);
+			double width = FMath::FRandRange(lh_params.MinHouseX, lh_params.MaxHouseX);
+			double length = FMath::FRandRange(lh_params.MinHouseY, lh_params.MaxHouseY);
+			double height = FMath::FRandRange(lh_params.MinHouseZ, lh_params.MaxHouseZ);
+			FVector point_beg = AllGeometry::create_segment_at_angle(left_center_point, center_point, center_point,
+			                                                         angle, length / 2);
+			FVector point_end = AllGeometry::create_segment_at_angle(left_center_point, center_point, center_point,
+			                                                         angle + 180, length / 2);
+			TArray<FVector> figure{point_beg, point_end};
+			if (district->create_house(figure, width, height, "House"))
 			{
-				FVector point1 = AllGeometry::create_segment_at_angle(
-					district->self_figure[i - 1].point,
-					district->self_figure[i % figure_num].point,
-					district_center, 0, 30);
-				FVector point2 = AllGeometry::create_segment_at_angle(
-					district->self_figure[i - 1].point,
-					district->self_figure[i % figure_num].point,
-					district_center, 180, 30);
-				TArray<FVector> figure{point1, point2};
-				if (district->create_house(figure, 40, 30, "House"))
-				{
-					break;
-				}
+				break;
 			}
 		}
 	}
@@ -2157,9 +2135,9 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 			double point_y = FMath::FRand() * (up_point - down_point) + down_point;
 			FVector center_point(point_x, point_y, 0);
 			FVector left_center_point(0, point_y, 0);
-			double width = FMath::FRand() * 3 + 2;
-			double length = FMath::FRand() * 5 + 3;
-			double height = (FMath::FRand() * 2 + 1) * 4;
+			double width = FMath::FRandRange(sh_params.MinHouseX, sh_params.MaxHouseX);
+			double length = FMath::FRandRange(sh_params.MinHouseY, sh_params.MaxHouseY);
+			double height = FMath::FRandRange(sh_params.MinHouseZ, sh_params.MaxHouseZ);
 			FVector point_beg = AllGeometry::create_segment_at_angle(left_center_point, center_point, center_point,
 			                                                         angle,
 			                                                         length / 2);

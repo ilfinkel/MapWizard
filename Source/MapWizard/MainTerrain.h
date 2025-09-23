@@ -170,6 +170,59 @@ struct FResidentialHousesParams
 	float PavementWidth = 10;
 };
 
+USTRUCT(BlueprintType)
+struct FLuxuryHousesParams
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseY = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseY = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseX = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseX = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseZ = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseZ = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SizeStep = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseSidesRatio = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseSidesRatio = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxArea = 90;
+};
+
+
+USTRUCT(BlueprintType)
+struct FSlumsHousesParams
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseY = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseY = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseX = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseX = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseZ = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseZ = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float SizeStep = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MinHouseSidesRatio = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHouseSidesRatio = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxArea = 90;
+};
+
 struct DrawingObject
 {
 	// ~DrawingObject()
@@ -378,6 +431,10 @@ public:
 	FDebugParams DebugParams;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FResidentialHousesParams ResidentialHousesParams;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FLuxuryHousesParams LuxuryHousesParams;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSlumsHousesParams SlumsHousesParams;
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vertices", meta = (AllowPrivateAccess = "true"))
 	// TArray<FVector> VerticesRemembered;
 

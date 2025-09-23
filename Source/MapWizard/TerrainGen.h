@@ -21,14 +21,19 @@ class TerrainGen
 public:
 	FMapParams map_params;
 	FResidentialHousesParams rh_params;
+	FLuxuryHousesParams lh_params;
+	FSlumsHousesParams sh_params;
 	bool did_river_multiplied = false;
 
 	TArray<TSharedPtr<District>> river_figures;
 
 	TerrainGen(FMapParams& map_params_,
-	           FResidentialHousesParams& residential_houses_params_) :
+	           FResidentialHousesParams& residential_houses_params_, FLuxuryHousesParams& luxury_houses_params_, 
+	           FSlumsHousesParams& slums_houses_params_) :
 		map_params(map_params_),
-		rh_params(residential_houses_params_)
+	rh_params(residential_houses_params_),
+	lh_params(luxury_houses_params_),
+	sh_params(slums_houses_params_)
 	{
 	}
 

@@ -559,7 +559,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 		// FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
 		// OrthographicCamera->SetActorRotation(DownwardRotation);
 
-		TerrainGen gen(MapParams, ResidentialHousesParams);
+		TerrainGen gen(MapParams, ResidentialHousesParams, LuxuryHousesParams, SlumsHousesParams);
 		gen.create_terrain(roads, figures_array, streets_array, segments_array,
 		                   river_figures, map_borders_array,
 		                   point_objects_array, debug_points_array, debug2_points_array);
@@ -814,7 +814,7 @@ inline void AMainTerrain::initialize_all()
 
 	UE_LOG(LogTemp, Warning, TEXT("SEED: %i"), seed);
 	FMath::RandInit(seed);
-	TerrainGen gen(MapParams, ResidentialHousesParams);
+	TerrainGen gen(MapParams, ResidentialHousesParams, LuxuryHousesParams, SlumsHousesParams);
 	gen.create_terrain(roads, figures_array, streets_array, segments_array,
 	                   river_figures, map_borders_array, point_objects_array, debug_points_array, debug2_points_array);
 	// gen.empty_all(river);
