@@ -229,15 +229,14 @@ protected:
 	float angle = 0;
 };
 
-struct Lighter : public SelectableObject
+struct PointObject : public SelectableObject
 {
-	Lighter(FVector position_, double intensity_)
+	PointObject(FVector position_)
 	{
 		object_type = "Lighter";
 		position = position_;
-		intensity = intensity_;
 	};
-	bool operator==(Lighter& other) const { return FVector::DistSquared(this->position, other.position) < 0.1; }
+	bool operator==(PointObject& other) const { return FVector::DistSquared(this->position, other.position) < 0.1; }
 
 	TArray<FVector> get_object_vertexes() override
 	{
@@ -245,8 +244,6 @@ struct Lighter : public SelectableObject
 	}
 
 	FVector position;
-	double intensity;
-	// private:
 };
 
 struct Street : public SelectableObject

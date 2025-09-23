@@ -337,6 +337,17 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreets()
 	return streets_to_get;
 }
 
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllPointObjects()
+{
+	TArray<AProceduralBlockMeshActor*> objects_to_get{};
+	for (int i = 0; i < drawing_point_objects.Num(); i++)
+	{
+		objects_to_get.Add(drawing_point_objects[i].mesh);
+	}
+	return objects_to_get;
+}
+
 TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHouses()
 {
 	return get_all_houses_of_type("House");
@@ -369,6 +380,10 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllOjectsOfType(FString type
 	else if (type_name == "Street")
 	{
 		return GetAllStreets();
+	}
+	else if (type_name == "Lantern")
+	{
+		return GetAllPointObjects();
 	}
 	return {};
 }
@@ -547,7 +562,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 		TerrainGen gen(MapParams, ResidentialHousesParams);
 		gen.create_terrain(roads, figures_array, streets_array, segments_array,
 		                   river_figures, map_borders_array,
-		                   debug_points_array, debug2_points_array);
+		                   point_objects_array, debug_points_array, debug2_points_array);
 		// gen.empty_all(river);
 		draw_all();
 		AActor* ViewTarget = PlayerController->GetViewTarget();
@@ -801,7 +816,7 @@ inline void AMainTerrain::initialize_all()
 	FMath::RandInit(seed);
 	TerrainGen gen(MapParams, ResidentialHousesParams);
 	gen.create_terrain(roads, figures_array, streets_array, segments_array,
-	                   river_figures, map_borders_array, debug_points_array, debug2_points_array);
+	                   river_figures, map_borders_array, point_objects_array, debug_points_array, debug2_points_array);
 	// gen.empty_all(river);
 	draw_all();
 	AActor* ViewTarget = PlayerController->GetViewTarget();
@@ -1033,6 +1048,20 @@ void AMainTerrain::draw_all()
 			drawing_streets.Add(
 				DrawingStreet(street, MeshComponent2, 0.034, is_2d));
 		}
+	}
+	for (auto point_object : point_objects_array)
+	{
+		AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
+				AProceduralBlockMeshActor::StaticClass());
+		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
+		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
+		// MeshComponent2->Material = RoadMaterial;
+		// MeshComponent2->DefaultMaterial = BaseMaterial;
+		MeshComponent2->SetDynamicObject(point_object);
+		
+			drawing_point_objects.Add(
+				DrawingPointObject(point_object, 0.031));
 	}
 	for (auto a : drawing_streets)
 	{

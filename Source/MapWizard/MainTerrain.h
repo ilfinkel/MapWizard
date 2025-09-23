@@ -202,6 +202,36 @@ struct DrawingObject
 	UMaterialInterface* material_interface;
 	UMaterialInterface* material;
 };
+struct DrawingPointObject : DrawingObject
+{
+	DrawingPointObject(TSharedPtr<PointObject> object_,
+					double start_height_): object(object_)
+										   , start_height(start_height_)
+	{
+		define_mesh();
+	}
+
+	void delete_mesh()
+	{
+		object.Reset();
+		mesh->Destroy();
+	}
+
+	void draw_me()
+	{
+		mesh->SetActorLabel(name);
+		TArray<FVector> vertices;
+		for (auto BaseVertex : object->get_object_vertexes())
+		{
+			vertices.Add(BaseVertex);
+		}
+		create_mesh_2d(mesh, vertices, start_height);
+		mesh->SetDynamicObject(object);
+	}
+
+	TSharedPtr<PointObject> object;
+	double start_height;
+};
 
 struct DrawingDistrict : DrawingObject
 {
@@ -229,8 +259,8 @@ struct DrawingDistrict : DrawingObject
 		TArray<FVector> vertices;
 		for (auto BaseVertex : district->self_figure)
 		{
-			FVector aa = BaseVertex.point;
-			vertices.Add(aa);
+			FVector item = BaseVertex.point;
+			vertices.Add(item);
 		}
 		create_mesh_2d(mesh, vertices, start_height);
 		mesh->SetDynamicObject(district);
@@ -368,6 +398,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllStreets();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
+	TArray<AProceduralBlockMeshActor*> GetAllPointObjects();
+	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllHouses();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllOjectsOfTypeSelected(FString type_name);
@@ -417,6 +449,7 @@ private:
 	TArray<TSharedPtr<District>> figures_array{};
 	TArray<TSharedPtr<Street>> streets_array{};
 	TArray<TSharedPtr<Street>> segments_array{};
+	TArray<TSharedPtr<PointObject>> point_objects_array{};
 	TArray<FVector> debug_points_array{};
 	TArray<FVector> debug2_points_array{};
 	TArray<TSharedPtr<Node>> roads{};
@@ -424,6 +457,7 @@ private:
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
+	TArray<DrawingPointObject> drawing_point_objects;
 	TSharedPtr<TArray<unsigned int>> selected_objects;
 	TSharedPtr<TArray<unsigned int>> prev_selected_objects;
 

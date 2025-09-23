@@ -1,5 +1,20 @@
 ﻿#include "TerrainGen.h"
 
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+#include "Editor/Experimental/EditorInteractiveToolsFramework/Public/Behaviors/2DViewportBehaviorTargets.h"
+
 void TerrainGen::add_conn(const TSharedPtr<Node>& node1,
                           const TSharedPtr<Node>& node2)
 {
@@ -162,8 +177,8 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
                                 TArray<TSharedPtr<Street>>& segments_array_,
                                 TArray<TSharedPtr<District>>& river_figure_,
                                 TArray<TSharedPtr<Node>>& map_borders_array_,
-                                TArray<FVector>& debug_points_array_,
-                                TArray<FVector>& debug2_points_array_)
+                                TArray<TSharedPtr<PointObject>> point_objects_array_,
+                                TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_)
 {
 	// river.Empty();
 	road_nodes.Empty();
@@ -391,6 +406,8 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	river_figure_ = river_figures;
 	map_borders_array_ = map_borders_array;
 	roads_ = road_nodes;
+	point_objects_array_ = point_objects_array;
+	
 	debug2_points_array_ = debug2_points_array;
 	debug_points_array_ = debug_points_array;
 }
@@ -1951,10 +1968,6 @@ void TerrainGen::process_lights()
 				closest_dist = 100000;
 				for (int i = 1; i < d->self_figure.Num(); i++)
 				{
-					// if (d->self_figure[i].type == point_type::main_road || d->self_figure[i - 1].type ==
-					// 	point_type::main_road)
-					// {
-
 					FVector closest = AllGeometry::point_to_seg_distance_get_closest(
 						d->self_figure[i].point, d->self_figure[i - 1].point, a);
 					auto dist = FVector::Dist(closest, a);
@@ -1966,10 +1979,9 @@ void TerrainGen::process_lights()
 						is_found = true;
 					}
 				}
-				// }
 				if (is_found)
 				{
-					Lighter l(closest_point, map_params.main_road_lights_dist / 2);
+					PointObject l(closest_point);
 					FVector f2 = closest_point;
 					FVector f3 = closest_point;
 					f3.X += 1000;
@@ -1977,14 +1989,14 @@ void TerrainGen::process_lights()
 					angle=FMath::Fmod(angle + 270.0f, 360.0f);
 					
 					l.set_angle(angle);
-					lantern_array.Add(l);
+					point_objects_array.Add(MakeShared<PointObject>(l));
 				}
 			}
 		}
 	}
-	for (auto& l : lantern_array)
+	for (auto& l : point_objects_array)
 	{
-		debug_points_array.Add(l.position);
+		debug_points_array.Add(l->position);
 	}
 }
 

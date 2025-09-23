@@ -35,7 +35,7 @@ public:
 	void create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<TSharedPtr<District>>& figures_array_,
 	                    TArray<TSharedPtr<Street>>& streets_array_, TArray<TSharedPtr<Street>>& segments_array_,
 	                    TArray<TSharedPtr<District>>& river_figure_, TArray<TSharedPtr<Node>>& map_borders_array_,
-	                    TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_);
+	                    TArray<TSharedPtr<PointObject>> point_objects_array, TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_);
 	void create_weighted_points(TArray<WeightedPoint>& weighted_points);
 	void create_rivers(const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
 	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
@@ -138,5 +138,5 @@ public:
 	TArray<CustomDistrNodes> custom_distr_nodes;
 	TArray<FVector> debug_points_array;
 	TArray<FVector> debug2_points_array;
-	TArray<Lighter> lantern_array;
+	TArray<TSharedPtr<PointObject>> point_objects_array;
 };
