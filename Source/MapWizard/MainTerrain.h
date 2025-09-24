@@ -232,7 +232,10 @@ struct FPointDrawingObject
 	// {
 	// }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector point;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float angle;
 };
 
