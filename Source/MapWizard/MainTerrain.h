@@ -238,7 +238,6 @@ struct DrawingObject
 	{
 		name = mesh->GetActorLabel();
 		material_interface = mesh->ProceduralMesh->GetMaterial(0);
-		// material = mesh->Material;
 	}
 
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
@@ -255,13 +254,14 @@ struct DrawingObject
 	UMaterialInterface* material_interface;
 	UMaterialInterface* material;
 };
+
 struct DrawingPointObject : DrawingObject
 {
 	DrawingPointObject(TSharedPtr<PointObject> object_,
-					double start_height_): object(object_)
-										   , start_height(start_height_)
+	                   double start_height_): object(object_)
+	                                          , start_height(start_height_)
 	{
-		define_mesh();
+		// define_mesh();
 	}
 
 	void delete_mesh()

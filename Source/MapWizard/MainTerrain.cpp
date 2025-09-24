@@ -1049,19 +1049,22 @@ void AMainTerrain::draw_all()
 				DrawingStreet(street, MeshComponent2, 0.034, is_2d));
 		}
 	}
-	for (auto point_object : point_objects_array)
+	for (auto& point_object : point_objects_array)
 	{
+		FString ActorName;
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
 				AProceduralBlockMeshActor::StaticClass());
 		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
-		// MeshComponent2->Material = RoadMaterial;
-		// MeshComponent2->DefaultMaterial = BaseMaterial;
-		MeshComponent2->SetDynamicObject(point_object);
-		
-			drawing_point_objects.Add(
-				DrawingPointObject(point_object, 0.031));
+		// MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
+		// MeshComponent2->Material = BaseMaterial;
+		ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
+		MeshComponent2->SetActorLabel(ActorName);
+		// MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
+		// MeshComponent2->Material = WaterMaterial;
+		// MeshComponent2->mesh_exists = false;
+
+		drawing_point_objects.Add(DrawingPointObject(point_object, 0.031));
 	}
 	for (auto a : drawing_streets)
 	{

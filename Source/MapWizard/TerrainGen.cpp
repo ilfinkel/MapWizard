@@ -162,7 +162,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
                                 TArray<TSharedPtr<Street>>& segments_array_,
                                 TArray<TSharedPtr<District>>& river_figure_,
                                 TArray<TSharedPtr<Node>>& map_borders_array_,
-                                TArray<TSharedPtr<PointObject>> point_objects_array_,
+                                TArray<TSharedPtr<PointObject>>& point_objects_array_,
                                 TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_)
 {
 	// river.Empty();
