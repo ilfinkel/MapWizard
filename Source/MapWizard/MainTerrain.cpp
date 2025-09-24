@@ -338,12 +338,16 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreets()
 }
 
 
-TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllPointObjects()
+TArray<FPointDrawingObject> AMainTerrain::GetAllPointObjects()
 {
-	TArray<AProceduralBlockMeshActor*> objects_to_get{};
-	for (int i = 0; i < drawing_point_objects.Num(); i++)
+	// TArray<AProceduralBlockMeshActor*> objects_to_get{};
+	TArray<FPointDrawingObject> objects_to_get;
+	for (int i = 0; i < point_objects_array.Num(); i++)
 	{
-		objects_to_get.Add(drawing_point_objects[i].mesh);
+		FPointDrawingObject point;
+		point.angle = point_objects_array[i]->get_angle();
+		point.point = point_objects_array[i]->get_object_vertexes()[0];
+		objects_to_get.Add(point);
 	}
 	return objects_to_get;
 }
@@ -381,10 +385,10 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllOjectsOfType(FString type
 	{
 		return GetAllStreets();
 	}
-	else if (type_name == "Lantern")
-	{
-		return GetAllPointObjects();
-	}
+	// else if (type_name == "Lantern")
+	// {
+	// 	return GetAllPointObjects();
+	// }
 	return {};
 }
 
@@ -1026,26 +1030,26 @@ void AMainTerrain::draw_all()
 			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.034, is_2d));
 		}
 	}
-	for (auto& point_object : point_objects_array)
-	{
-		AProceduralBlockMeshActor* MeshComponent2 =
-			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-		FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
-		// AProceduralBlockMeshActor* MeshComponent2 = GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
-		// 	AProceduralBlockMeshActor::StaticClass());
-		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
-		// MeshComponent2->Material = BaseMaterial;
-		ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
-		MeshComponent2->SetActorLabel(ActorName);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-		// MeshComponent2->Material = WaterMaterial;
-		// MeshComponent2->mesh_exists = false;
-
-		drawing_point_objects.Add(DrawingPointObject(point_object,
-			// MeshComponent2,
-			0.031));
-	}
+	// for (auto& point_object : point_objects_array)
+	// {
+		// AProceduralBlockMeshActor* MeshComponent2 =
+		// 	GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+		// FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
+		// // AProceduralBlockMeshActor* MeshComponent2 = GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
+		// // 	AProceduralBlockMeshActor::StaticClass());
+		// MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
+		// // MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
+		// // MeshComponent2->Material = BaseMaterial;
+		// ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
+		// MeshComponent2->SetActorLabel(ActorName);
+		// // MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
+		// // MeshComponent2->Material = WaterMaterial;
+		// // MeshComponent2->mesh_exists = false;
+		//
+		// drawing_point_objects.Add(DrawingPointObject(point_object,
+		// 	// MeshComponent2,
+		// 	0.031));
+	// }
 	for (auto a : drawing_streets)
 	{
 		a.draw_me();
@@ -1058,10 +1062,10 @@ void AMainTerrain::draw_all()
 	{
 		a.draw_me();
 	}
-	for (auto a : drawing_point_objects)
-	{
-		a.draw_me();
-	}
+	// for (auto a : drawing_point_objects)
+	// {
+	// 	a.draw_me();
+	// }
 }
 
 void AMainTerrain::get_cursor_hit_location()

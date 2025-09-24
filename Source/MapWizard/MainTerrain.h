@@ -27,7 +27,6 @@ enum class EWaterType : uint8
 {
 	none UMETA(DisplayName = "none"),
 	river UMETA(DisplayName = "river")
-	
 };
 
 
@@ -225,6 +224,18 @@ struct FSlumsHousesParams
 	float MaxArea = 90;
 };
 
+USTRUCT(BlueprintType)
+struct FPointDrawingObject
+{
+	GENERATED_BODY()
+	// FPointDrawingObject(FVector point_, float angle_): point(point_), angle(angle_)
+	// {
+	// }
+
+	FVector point;
+	float angle;
+};
+
 struct DrawingObject
 {
 	// ~DrawingObject()
@@ -255,38 +266,6 @@ struct DrawingObject
 	FString name;
 	UMaterialInterface* material_interface;
 	UMaterialInterface* material;
-};
-
-struct DrawingPointObject : DrawingObject
-{
-	DrawingPointObject(TSharedPtr<PointObject> object_,
-					// AProceduralBlockMeshActor* mesh_,
-					double start_height_): object(object_)
-										   , start_height(start_height_)
-	{
-		// define_mesh();
-	}
-
-	void delete_mesh()
-	{
-		object.Reset();
-		mesh->Destroy();
-	}
-
-	void draw_me()
-	{
-		mesh->SetActorLabel(name);
-		TArray<FVector> vertices;
-		for (auto BaseVertex : object->get_object_vertexes())
-		{
-			vertices.Add(BaseVertex);
-		}
-		// create_mesh_2d(mesh, vertices, start_height);
-		mesh->SetDynamicObject(object);
-	}
-
-	TSharedPtr<PointObject> object;
-	double start_height;
 };
 
 struct DrawingDistrict : DrawingObject
@@ -458,7 +437,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllStreets();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
-	TArray<AProceduralBlockMeshActor*> GetAllPointObjects();
+	TArray<FPointDrawingObject> GetAllPointObjects();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllHouses();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
@@ -517,7 +496,7 @@ private:
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
-	TArray<DrawingPointObject> drawing_point_objects;
+	// TArray<DrawingPointObject> drawing_point_objects;
 	TSharedPtr<TArray<unsigned int>> selected_objects;
 	TSharedPtr<TArray<unsigned int>> prev_selected_objects;
 
