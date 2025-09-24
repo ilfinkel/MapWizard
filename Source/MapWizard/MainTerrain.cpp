@@ -834,24 +834,24 @@ void AMainTerrain::draw_all()
 {
 	clear_all();
 
-	for (auto& p : debug2_points_array)
-	{
-		FVector Start = p;
-		FVector End = p;
-		Start.Z = -10;
-		End.Z = 100;
+	// for (auto& p : debug2_points_array)
+	// {
+	// 	FVector Start = p;
+	// 	FVector End = p;
+	// 	Start.Z = -10;
+	// 	End.Z = 100;
 
-		DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 2.0f);
-	}
-	for (auto& p : debug_points_array)
-	{
-		FVector Start = p;
-		FVector End = p;
-		Start.Z = -10;
-		End.Z = 100;
+	// 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 2.0f);
+	// }
+	// for (auto& p : debug_points_array)
+	// {
+	// 	FVector Start = p;
+	// 	FVector End = p;
+	// 	Start.Z = -10;
+	// 	End.Z = 100;
 
-		DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 2.0f);
-	}
+	// 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 2.0f);
+	// }
 
 	int ind = 0;
 	for (auto b : roads)
