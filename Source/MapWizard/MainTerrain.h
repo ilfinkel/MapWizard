@@ -260,8 +260,9 @@ struct DrawingObject
 struct DrawingPointObject : DrawingObject
 {
 	DrawingPointObject(TSharedPtr<PointObject> object_,
-	                   double start_height_): object(object_)
-	                                          , start_height(start_height_)
+					// AProceduralBlockMeshActor* mesh_,
+					double start_height_): object(object_)
+										   , start_height(start_height_)
 	{
 		// define_mesh();
 	}
@@ -280,7 +281,7 @@ struct DrawingPointObject : DrawingObject
 		{
 			vertices.Add(BaseVertex);
 		}
-		create_mesh_2d(mesh, vertices, start_height);
+		// create_mesh_2d(mesh, vertices, start_height);
 		mesh->SetDynamicObject(object);
 	}
 
