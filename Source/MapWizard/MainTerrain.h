@@ -167,7 +167,9 @@ struct FResidentialHousesParams
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float HouseChance = 90;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PavementWidth = 10;
+	float InnerSidewalkWidth = 3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float OuterSidewalkWidth = 3;
 };
 
 USTRUCT(BlueprintType)

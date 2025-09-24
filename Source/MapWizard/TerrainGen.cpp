@@ -1893,13 +1893,12 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			}
 		}
 	}
-	while (named_districts < districts_count && old_named_districts !=
-		named_districts);
+	while (named_districts < districts_count && old_named_districts != named_districts);
 
 	districts.RemoveAll([this](TSharedPtr<District>& district)
 	{
-		district->self_figure = district->shrink_figure_with_roads(
-			district->figure, map_params.road_width, map_params.main_road_width);
+		district->self_figure = district->shrink_figure_with_roads(district->figure, map_params.road_width,
+		                                                           map_params.main_road_width);
 		return district->self_figure.IsEmpty();
 	});
 }
@@ -1929,8 +1928,8 @@ void TerrainGen::process_lights()
 
 	for (auto& d : shapes_array)
 	{
-		if (d->get_district_type() == district_type::residential || d->get_district_type() == district_type::luxury
-			|| d->get_district_type() == district_type::royal)
+		if (d->get_district_type() == district_type::residential || d->get_district_type() == district_type::luxury ||
+			d->get_district_type() == district_type::royal)
 		{
 			bool is_found = false;
 
@@ -2049,15 +2048,24 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 
 			auto angle1 = AllGeometry::calculate_angle_clock(point0, point1, point2);
 			auto angle2 = AllGeometry::calculate_angle_clock(point1, point2, point3);
+			// auto angle3 = AllGeometry::calculate_angle_counterclock(point0, point1, point2);
+			// auto angle4 = AllGeometry::calculate_angle_counterclock(point1, point2, point3);
 
-			FVector point1_end = AllGeometry::create_segment_at_angle(point0, point1, point1, angle1 / 2,
-			                                                          rh_params.PavementWidth / FMath::Sin(
-				                                                          FMath::DegreesToRadians(angle1 / 2)));
-			FVector point2_end = AllGeometry::create_segment_at_angle(point1, point2, point2, angle2 / 2,
-			                                                          rh_params.PavementWidth / FMath::Sin(
-				                                                          FMath::DegreesToRadians(angle2 / 2)));
 
-			TArray<FVector> figure{point2_end, point1_end, point1, point2};
+			FVector point1_inner_end = AllGeometry::create_segment_at_angle(point0, point1, point1, angle1 / 2,
+			                                                                rh_params.InnerSidewalkWidth / FMath::Sin(
+				                                                                FMath::DegreesToRadians(angle1 / 2)));
+			FVector point2_inner_end = AllGeometry::create_segment_at_angle(point1, point2, point2, angle2 / 2,
+			                                                                rh_params.InnerSidewalkWidth / FMath::Sin(
+				                                                                FMath::DegreesToRadians(angle2 / 2)));
+			FVector point1_outer_end = AllGeometry::create_segment_at_angle(point0, point1, point1, angle1 / 2 - 180,
+			                                                                rh_params.OuterSidewalkWidth / FMath::Sin(
+				                                                                FMath::DegreesToRadians(angle1 / 2)));
+			FVector point2_outer_end = AllGeometry::create_segment_at_angle(point1, point2, point2, angle2 / 2 - 180,
+			                                                                rh_params.OuterSidewalkWidth / FMath::Sin(
+				                                                                FMath::DegreesToRadians(angle2 / 2)));
+
+			TArray<FVector> figure{point2_inner_end, point1_inner_end, point1_outer_end, point2_outer_end};
 			district->create_house(figure, 1, "Pavement", true);
 		}
 		for (int i = 1; i <= self_figure_count; i++)
@@ -2091,7 +2099,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 						double height = FMath::RandRange(rh_params.MinHouseZ, rh_params.MaxHouseZ);
 						FVector point_beg = AllGeometry::create_segment_at_angle(point1, point2,
 							(point2 - point1) / dist * (general_width + (width / 2)) + point1, 90,
-							rh_params.PavementWidth + 1);
+							rh_params.InnerSidewalkWidth + 1);
 						FVector point_end =
 							AllGeometry::create_segment_at_angle(
 								point1, point2, point_beg, 90, length);
