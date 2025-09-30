@@ -74,10 +74,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "Bridge",
-			"Enabled": false
-		},
-		{
 			"Name": "MetaHumanSDK",
 			"Enabled": false
 		},
@@ -135,10 +131,6 @@
 		},
 		{
 			"Name": "Dataflow",
-			"Enabled": false
-		},
-		{
-			"Name": "Fab",
 			"Enabled": false
 		},
 		{
@@ -285,6 +277,14 @@
 		{
 			"Name": "LevelSequenceEditor",
 			"Enabled": false
+		},
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true
+		},
+		{
+			"Name": "GeometryScripting",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
