@@ -8,23 +8,22 @@ AProceduralBlockMeshActor::AProceduralBlockMeshActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	MeshComponentName = TEXT("ProceduralMesh");
-
 	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(
 		*MeshComponentName);
-	RootComponent = ProceduralMesh;
-	ProceduralMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	// Включаем коллизии
-	ProceduralMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	// Устанавливаем тип объекта
-	ProceduralMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
-	// Игнорируем все каналы
-	ProceduralMesh->SetCollisionResponseToChannel(ECC_Visibility,
-	                                              ECR_Block);
-	// Разрешаем пересечение с каналом видимости
-
-	ProceduralMesh->bUseAsyncCooking = true;
-	// Включаем асинхронное создание коллизий
-	ProceduralMesh->SetGenerateOverlapEvents(true);
+	// RootComponent = ProceduralMesh;
+	// ProceduralMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// // Включаем коллизии
+	// ProceduralMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	// // Устанавливаем тип объекта
+	// ProceduralMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+	// // Игнорируем все каналы
+	// ProceduralMesh->SetCollisionResponseToChannel(ECC_Visibility,
+	//                                               ECR_Block);
+	// // Разрешаем пересечение с каналом видимости
+	//
+	// ProceduralMesh->bUseAsyncCooking = true;
+	// // Включаем асинхронное создание коллизий
+	// ProceduralMesh->SetGenerateOverlapEvents(true);
 	// Включаем события перекрытия
 	ProceduralMesh->bSelectable = true; // Делаем компонент интерактивным
 }
@@ -35,10 +34,10 @@ void AProceduralBlockMeshActor::BeginPlay()
 
 	// ProceduralMesh->OnClicked.AddDynamic(
 	// 	this, &AProceduralBlockMeshActor::clickMesh);
-	ProceduralMesh->OnBeginCursorOver.AddDynamic(
-		this, &AProceduralBlockMeshActor::OnMouseOver);
-	ProceduralMesh->OnEndCursorOver.AddDynamic(
-		this, &AProceduralBlockMeshActor::OnMouseOut);
+	// ProceduralMesh->OnBeginCursorOver.AddDynamic(
+	// 	this, &AProceduralBlockMeshActor::OnMouseOver);
+	// ProceduralMesh->OnEndCursorOver.AddDynamic(
+	// 	this, &AProceduralBlockMeshActor::OnMouseOut);
 }
 
 void AProceduralBlockMeshActor::Tick(float DeltaTime)
@@ -61,20 +60,20 @@ void AProceduralBlockMeshActor::clickMesh()
 	else if (object.IsValid() && object->is_selected())
 	{
 		object->unselect();
-		selected_object->RemoveAll([this]( unsigned int obj)
+		selected_object->RemoveAll([this](unsigned int obj)
 		{
 			unsigned int object_id = object->get_id();
 			return obj == object_id;
 		});
 		UE_LOG(LogTemp, Warning, TEXT("mesh unselected %p, %i"), object.Get(), object->get_id())
 	}
-	for (auto& sel: *selected_object)
+	for (auto& sel : *selected_object)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("selected object %i"),  sel)
+		UE_LOG(LogTemp, Warning, TEXT("selected object %i"), sel)
 	}
-	for (auto& sel: *prev_selected_object)
+	for (auto& sel : *prev_selected_object)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("prev selected object %i"),  sel)
+		UE_LOG(LogTemp, Warning, TEXT("prev selected object %i"), sel)
 	}
 }
 

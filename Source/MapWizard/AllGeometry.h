@@ -207,6 +207,23 @@ struct SelectableObject
 	{
 		return {};
 	}
+	
+	virtual FVector get_center()
+	{
+		auto vertexes = get_object_vertexes();
+		int num = vertexes.Num();
+		if (vertexes[0] == vertexes[num-1])
+		{
+			num-=1;
+		}
+		FVector sum_of_points;
+		for (int i = 0; i < num; i++)
+		{
+			sum_of_points += vertexes[i];
+		}
+		sum_of_points/=num;
+		return sum_of_points;
+	}
 
 	virtual TArray<TArray<FVector>> slice_house(float north, float east, float south, float west)
 	{

@@ -234,7 +234,7 @@ struct FPointDrawingObject
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector point;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float angle;
 };
@@ -250,10 +250,10 @@ struct DrawingObject
 		mesh->Destroy();
 	}
 
-	void define_mesh()
+	void define_mesh(bool is_mesh_exists)
 	{
 		name = mesh->GetActorLabel();
-		material_interface = mesh->ProceduralMesh->GetMaterial(0);
+		if (is_mesh_exists) material_interface = mesh->ProceduralMesh->GetMaterial(0);
 	}
 
 	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
@@ -279,7 +279,7 @@ struct DrawingDistrict : DrawingObject
 	                                       , start_height(start_height_)
 	{
 		mesh = mesh_;
-		define_mesh();
+		define_mesh(true);
 	}
 
 	void delete_mesh()
@@ -322,7 +322,7 @@ struct DrawingStreet : DrawingObject
 			is_changing = true;
 		}
 		mesh = mesh_;
-		define_mesh();
+		define_mesh(true);
 	}
 
 	void draw_me()
@@ -377,22 +377,25 @@ struct DrawingHouse : DrawingObject
 	                           , start_height(start_height_)
 	{
 		mesh = mesh_;
-		define_mesh();
+		bool is_mesh_exists = true;
+		if (house->get_object_type() == "House") is_mesh_exists = false;
+		define_mesh(is_mesh_exists);
 	}
 
 	void draw_me()
 	{
 		mesh->SetActorLabel(name);
-		mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		// mesh->Material = material;
-		if (is_2d)
+		// mesh->ProceduralMesh->SetMaterial(0, material_interface);
+		// // mesh->Material = material;
+		// if (is_2d)
+		if (house->get_object_type() != "House")
 		{
 			create_mesh_2d(mesh, house->house_figure, start_height);
 		}
-		else
-		{
-			create_mesh_3d(mesh, house->house_figure, start_height, house->height);
-		}
+		// else
+		// {
+		// 	create_mesh_3d(mesh, house->house_figure, start_height, house->height);
+		// }
 	}
 
 	TSharedPtr<House> house;

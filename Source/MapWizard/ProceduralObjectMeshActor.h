@@ -16,7 +16,7 @@ struct FVectorArrayWrapper
 	TArray<FVector> Points;
 };
 
-UCLASS(Blueprintable)
+UCLASS(BlueprintType, Blueprintable, Placeable)
 class MAPWIZARD_API AProceduralBlockMeshActor : public AActor
 {
 	GENERATED_BODY()
@@ -59,8 +59,6 @@ public:
 		return object->is_selected();
 	}
 
-	FString MeshComponentName;
-
 	void SetMeshComponentName(const FString& NewName)
 	{
 		MeshComponentName = NewName;
@@ -76,6 +74,12 @@ public:
 	TArray<FVector> GetObjectVertexes()
 	{
 		return object->get_object_vertexes();
+	}
+	
+	UFUNCTION(BlueprintCallable, Category = "Custom")
+	FVector GetCenter()
+	{
+		return object->get_center();
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Custom")
@@ -122,6 +126,7 @@ public:
 	}
 
 
+	FString MeshComponentName;
 	TSharedPtr<SelectableObject> object;
 	TSharedPtr<TArray<unsigned int>> selected_object;
 	TSharedPtr<TArray<unsigned int>> prev_selected_object;

@@ -1935,7 +1935,7 @@ void TerrainGen::process_lights()
 
 			FVector closest_point(0, 0, 0);
 			FVector closest_anchor(0, 0, 0);
-			float closest_dist = 100000;
+			float closest_dist = TNumericLimits<float>::Max();
 			for (auto& a : road_lantern_anchors)
 			{
 				bool is_near = false;
@@ -1949,7 +1949,7 @@ void TerrainGen::process_lights()
 				}
 				if (!is_near) continue;
 				is_found = false;
-				closest_dist = 100000;
+				closest_dist = TNumericLimits<float>::Max();
 				for (int i = 1; i < d->self_figure.Num(); i++)
 				{
 					FVector closest = AllGeometry::point_to_seg_distance_get_closest(

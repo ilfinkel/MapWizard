@@ -1032,23 +1032,23 @@ void AMainTerrain::draw_all()
 	}
 	// for (auto& point_object : point_objects_array)
 	// {
-		// AProceduralBlockMeshActor* MeshComponent2 =
-		// 	GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-		// FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
-		// // AProceduralBlockMeshActor* MeshComponent2 = GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
-		// // 	AProceduralBlockMeshActor::StaticClass());
-		// MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// // MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
-		// // MeshComponent2->Material = BaseMaterial;
-		// ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
-		// MeshComponent2->SetActorLabel(ActorName);
-		// // MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-		// // MeshComponent2->Material = WaterMaterial;
-		// // MeshComponent2->mesh_exists = false;
-		//
-		// drawing_point_objects.Add(DrawingPointObject(point_object,
-		// 	// MeshComponent2,
-		// 	0.031));
+	// AProceduralBlockMeshActor* MeshComponent2 =
+	// 	GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+	// FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
+	// // AProceduralBlockMeshActor* MeshComponent2 = GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
+	// // 	AProceduralBlockMeshActor::StaticClass());
+	// MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
+	// // MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
+	// // MeshComponent2->Material = BaseMaterial;
+	// ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
+	// MeshComponent2->SetActorLabel(ActorName);
+	// // MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
+	// // MeshComponent2->Material = WaterMaterial;
+	// // MeshComponent2->mesh_exists = false;
+	//
+	// drawing_point_objects.Add(DrawingPointObject(point_object,
+	// 	// MeshComponent2,
+	// 	0.031));
 	// }
 	for (auto a : drawing_streets)
 	{
