@@ -8,9 +8,8 @@ AProceduralBlockMeshActor::AProceduralBlockMeshActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	MeshComponentName = TEXT("ProceduralMesh");
-	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(
-		*MeshComponentName);
-	// RootComponent = ProceduralMesh;
+	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(*MeshComponentName);
+	RootComponent = ProceduralMesh;
 	// ProceduralMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	// // Включаем коллизии
 	// ProceduralMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);

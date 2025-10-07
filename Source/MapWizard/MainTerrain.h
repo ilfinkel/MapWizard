@@ -271,6 +271,29 @@ struct DrawingObject
 	UMaterialInterface* material;
 };
 
+struct DrawingPoint : DrawingObject
+{
+	DrawingPoint(TSharedPtr<PointObject> point_,
+				 AProceduralBlockMeshActor* mesh_,
+				 double start_height_,
+				 bool is_2d_): point(point_)
+							   , is_2d(is_2d_)
+							   , start_height(start_height_)
+	{
+		mesh = mesh_;
+		define_mesh(false);
+	}
+
+	void draw_me()
+	{
+		mesh->SetActorLabel(name);
+	}
+
+	TSharedPtr<PointObject> point;
+	bool is_2d;
+	double start_height;
+};
+
 struct DrawingDistrict : DrawingObject
 {
 	DrawingDistrict(TSharedPtr<District> district_,
@@ -443,7 +466,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllStreets();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
-	TArray<FPointDrawingObject> GetAllPointObjects();
+	TArray<AProceduralBlockMeshActor*> GetAllPointObjects();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<AProceduralBlockMeshActor*> GetAllHouses();
 	UFUNCTION(BlueprintCallable, Category = "Custom")
@@ -499,6 +522,7 @@ private:
 	TArray<FVector> debug2_points_array{};
 	TArray<TSharedPtr<Node>> roads{};
 	TArray<TSharedPtr<District>> river_figures;
+	TArray<DrawingPoint> drawing_points;
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
