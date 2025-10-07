@@ -338,16 +338,23 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllStreets()
 }
 
 
-TArray<FPointDrawingObject> AMainTerrain::GetAllPointObjects()
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllPointObjects()
 {
 	// TArray<AProceduralBlockMeshActor*> objects_to_get{};
-	TArray<FPointDrawingObject> objects_to_get;
-	for (int i = 0; i < point_objects_array.Num(); i++)
+	// TArray<FPointDrawingObject> objects_to_get;
+	// for (int i = 0; i < point_objects_array.Num(); i++)
+	// {
+	// 	FPointDrawingObject point;
+	// 	point.angle = point_objects_array[i]->get_angle();
+	// 	point.point = point_objects_array[i]->get_object_vertexes()[0];
+	// 	objects_to_get.Add(point);
+	// }
+	// return objects_to_get;
+
+	TArray<AProceduralBlockMeshActor*> objects_to_get{};
+	for (int i = 0; i < drawing_points.Num(); i++)
 	{
-		FPointDrawingObject point;
-		point.angle = point_objects_array[i]->get_angle();
-		point.point = point_objects_array[i]->get_object_vertexes()[0];
-		objects_to_get.Add(point);
+			objects_to_get.Add(drawing_points[i].mesh);
 	}
 	return objects_to_get;
 }
@@ -975,6 +982,22 @@ void AMainTerrain::draw_all()
 
 			drawing_houses.Add(DrawingHouse(p, MeshComponent, 0.04, is_2d));
 		}
+	}
+	for (auto point_object : point_objects_array)
+	{
+		AProceduralBlockMeshActor* MeshComponent2 =
+			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
+		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
+		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
+		// MeshComponent2->Material = RoadMaterial;
+		// MeshComponent2->DefaultMaterial = BaseMaterial;
+		MeshComponent2->SetDynamicObject(point_object);
+		FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
+		MeshComponent2->SetActorLabel(ActorName);
+		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
+		// MeshComponent2->Material = RoadMaterial;
+		drawing_points.Add(DrawingPoint(point_object, MeshComponent2, 0.05, is_2d));
+		// create_mesh_2d(MeshComponent2, street->street_vertexes, 0.19);
 	}
 
 	for (auto street : segments_array)
