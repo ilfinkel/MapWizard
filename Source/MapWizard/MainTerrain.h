@@ -255,13 +255,8 @@ struct DrawingObject
 		name = mesh->GetActorLabel();
 		if (is_mesh_exists) material_interface = mesh->ProceduralMesh->GetMaterial(0);
 	}
+	virtual void draw_me(){};
 
-	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight,
-	                    float ExtrusionHeight);
-	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight,
-	                    float ExtrusionHeight);
-	void create_mesh_3d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight,
-	                    float ExtrusionHeight);
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<FVector> BaseVertices, float StarterHeight);
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Node>> BaseVertices, float StarterHeight);
 	void create_mesh_2d(AProceduralBlockMeshActor* Mesh, TArray<TSharedPtr<Point>> BaseVertices, float StarterHeight);
@@ -274,23 +269,20 @@ struct DrawingObject
 struct DrawingPoint : DrawingObject
 {
 	DrawingPoint(TSharedPtr<PointObject> point_,
-				 AProceduralBlockMeshActor* mesh_,
-				 double start_height_,
-				 bool is_2d_): point(point_)
-							   , is_2d(is_2d_)
-							   , start_height(start_height_)
+	             AProceduralBlockMeshActor* mesh_,
+	             double start_height_): point(point_)
+	                           , start_height(start_height_)
 	{
 		mesh = mesh_;
 		define_mesh(false);
 	}
 
-	void draw_me()
+	void draw_me() override
 	{
 		mesh->SetActorLabel(name);
 	}
 
 	TSharedPtr<PointObject> point;
-	bool is_2d;
 	double start_height;
 };
 
@@ -312,7 +304,7 @@ struct DrawingDistrict : DrawingObject
 		mesh->Destroy();
 	}
 
-	void draw_me()
+	void draw_me() override
 	{
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
@@ -335,58 +327,23 @@ struct DrawingStreet : DrawingObject
 {
 	DrawingStreet(TSharedPtr<Street> street_,
 	              AProceduralBlockMeshActor* mesh_,
-	              double start_height_,
-	              bool is_2d_): street(street_)
-	                            , is_2d(is_2d_)
+	              double start_height_): street(street_)
 	                            , start_height(start_height_)
 	{
-		if (street->type == point_type::wall)
-		{
-			is_changing = true;
-		}
 		mesh = mesh_;
 		define_mesh(true);
 	}
 
-	void draw_me()
+	void draw_me() override
 	{
 		mesh->SetActorLabel(name);
 		mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		// mesh->Material = material;
-		if (is_2d || !is_changing)
-		{
-			create_mesh_2d(mesh, street->street_vertexes, start_height);
-		}
-		else
-		{
-			create_mesh_3d(mesh, street->street_vertexes, start_height, 10);
-		}
-	}
-
-	void redraw_me(double width)
-	{
-		mesh->SetActorLabel(name);
-		mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		// mesh->Material = material;
-		TArray<FVector> vertices;
-		for (auto BaseVertex : street->street_vertices)
-		{
-			vertices.Add(BaseVertex->get_FVector());
-		}
-		street->street_vertexes = AllGeometry::line_to_polygon(vertices, width);
-		if (is_2d || !is_changing)
-		{
-			create_mesh_2d(mesh, street->street_vertexes, start_height);
-		}
-		else
-		{
-			create_mesh_3d(mesh, street->street_vertexes, start_height, 10);
-		}
+		// mesh->Material = material
+		create_mesh_2d(mesh, street->street_vertexes, start_height);
 	}
 
 	TSharedPtr<Street> street;
 	bool is_changing = false;
-	bool is_2d;
 	double start_height;
 };
 
@@ -394,35 +351,25 @@ struct DrawingHouse : DrawingObject
 {
 	DrawingHouse(TSharedPtr<House> house_,
 	             AProceduralBlockMeshActor* mesh_,
-	             double start_height_,
-	             bool is_2d_): house(house_)
-	                           , is_2d(is_2d_)
+	             double start_height_): house(house_)
 	                           , start_height(start_height_)
 	{
 		mesh = mesh_;
 		bool is_mesh_exists = true;
-		if (house->get_object_type() == "House") is_mesh_exists = false;
+		if (house->get_type1_name() == "House") is_mesh_exists = false;
 		define_mesh(is_mesh_exists);
 	}
 
-	void draw_me()
+	void draw_me() override
 	{
 		mesh->SetActorLabel(name);
-		// mesh->ProceduralMesh->SetMaterial(0, material_interface);
-		// // mesh->Material = material;
-		// if (is_2d)
-		if (house->get_object_type() != "House")
+		if (house->get_type1_name() != "House")
 		{
 			create_mesh_2d(mesh, house->house_figure, start_height);
 		}
-		// else
-		// {
-		// 	create_mesh_3d(mesh, house->house_figure, start_height, house->height);
-		// }
 	}
 
 	TSharedPtr<House> house;
-	bool is_2d;
 	double start_height;
 };
 
@@ -526,6 +473,7 @@ private:
 	TArray<DrawingDistrict> drawing_districts;
 	TArray<DrawingStreet> drawing_streets;
 	TArray<DrawingHouse> drawing_houses;
+	TArray<TSharedPtr<DrawingObject>> drawing_objects;
 	// TArray<DrawingPointObject> drawing_point_objects;
 	TSharedPtr<TArray<unsigned int>> selected_objects;
 	TSharedPtr<TArray<unsigned int>> prev_selected_objects;

@@ -41,22 +41,25 @@ District::District(TArray<TSharedPtr<Node>> figure_)
 	figure = figure_;
 
 	area = AllGeometry::get_poygon_area(figure);
-	type = district_type::unknown;
+	type = Edistrict_type::Unknown;
 	// if (area < 50000)
 	// {
 	// 	set_type(block_type::empty);
 	// }
 
 	get_self_figure();
+	set_type1_name("District");
+	set_district_type(get_district_type());
 }
 
-void District::set_district_type(district_type type_)
+void District::set_district_type(Edistrict_type type_)
 {
 	type = type_;
 	for (int i = 0; i < figure.Num() - 2; i++)
 	{
 		figure[i]->get_point()->districts_nearby.Add(type_);
 	}
+	type2 = StaticEnum<Edistrict_type>()->GetNameStringByValue(static_cast<int64>(type));
 }
 
 bool District::is_point_in_self_figure(FVector point_)
@@ -112,7 +115,7 @@ TArray<Point> District::shrink_figure_with_roads(
 	{
 		exit_vertices.Add(*vertice->get_point());
 	}
-	if (type == district_type::water)
+	if (type == Edistrict_type::Water)
 	{
 		return exit_vertices;
 	}
@@ -132,12 +135,12 @@ TArray<Point> District::shrink_figure_with_roads(
 		{
 			if (prev_curr->IsValid())
 			{
-				if (prev_curr.GetValue()->street_type() == point_type::road)
+				if (prev_curr.GetValue()->street_type() == EPointType::Road)
 				{
 					road_height1 = road / 2;
 				}
 				else if (prev_curr.GetValue()->street_type() ==
-					point_type::main_road)
+					EPointType::MainRoad)
 				{
 					road_height1 = main_road / 2;
 				}
@@ -149,12 +152,12 @@ TArray<Point> District::shrink_figure_with_roads(
 		{
 			if (curr_next->IsValid())
 			{
-				if (curr_next.GetValue()->street_type() == point_type::road)
+				if (curr_next.GetValue()->street_type() == EPointType::Road)
 				{
 					road_height2 = road / 2;
 				}
 				else if (curr_next.GetValue()->street_type() ==
-					point_type::main_road)
+					EPointType::MainRoad)
 				{
 					road_height2 = main_road / 2;
 				}
@@ -636,6 +639,12 @@ void Node::print_connections()
 	}
 }
 
+void Street::set_street_type(EPointType type_)
+{
+	type = type_;
+	set_type2_name(StaticEnum<EPointType>()->GetNameStringByValue(static_cast<int64>(type_)));
+}
+
 House::~House()
 {
 	house_figure.Empty();
@@ -646,7 +655,7 @@ TArray<TArray<FVector>> House::slice_house(float north, float east, float south,
 	TArray<TArray<FVector>> house_slices;
 	house_slices.SetNum(9);
 
-	if (object_type == "House")
+	if (type1 == "House")
 	{
 		FVector p1 = house_figure[0];
 		FVector p2 = house_figure[1];
@@ -1216,8 +1225,8 @@ float AllGeometry::point_to_seg_distance(const FVector& SegmentStart,
 }
 
 FVector AllGeometry::point_to_seg_distance_get_closest(const FVector& SegmentStart,
-										 const FVector& SegmentEnd,
-										 const FVector& Point)
+                                                       const FVector& SegmentEnd,
+                                                       const FVector& Point)
 {
 	FVector SegmentVector = SegmentEnd - SegmentStart;
 	FVector PointVector = Point - SegmentStart;

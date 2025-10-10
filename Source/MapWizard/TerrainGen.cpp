@@ -256,7 +256,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 		shrink_roads();
 	}
 
-	process_streets(road_nodes, streets_array, point_type::wall, true);
+	process_streets(road_nodes, streets_array, EPointType::Wall, true);
 	double tower_radius = 20;
 	TArray<FVector> towers;
 
@@ -313,8 +313,8 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	{
 		auto central_point = central_node->get_FVector();
 		// central_node = nullptr;
-		create_circle_by_existing_nodes(central_point, 200, 40, district_type::royal,
-		                                point_type::main_road, 50, true, true);
+		create_circle_by_existing_nodes(central_point, 200, 40, Edistrict_type::Royal,
+		                                EPointType::MainRoad, 50, true, true);
 	}
 	// drawing squares
 	for (int i = 0; i < 15; i++)
@@ -325,18 +325,18 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 			i--;
 			continue;
 		}
-		create_circle_by_existing_nodes(point, 75, 75, district_type::tower,
-		                                point_type::road, 8, true, true);
+		create_circle_by_existing_nodes(point, 75, 75, Edistrict_type::Tower,
+		                                EPointType::Road, 8, true, true);
 	}
 
 	for (auto t : towers)
 	{
-		create_circle(t, tower_radius, district_type::tower, point_type::wall,
+		create_circle(t, tower_radius, Edistrict_type::Tower, EPointType::Wall,
 		              8);
 	}
-	process_streets(road_nodes, streets_array, point_type::wall, true);
-	process_streets(road_nodes, streets_array, point_type::river, true);
-	process_streets(road_nodes, streets_array, point_type::main_road, false);
+	process_streets(road_nodes, streets_array, EPointType::Wall, true);
+	process_streets(road_nodes, streets_array, EPointType::River, true);
+	process_streets(road_nodes, streets_array, EPointType::MainRoad, false);
 
 	process_streets(road_nodes, streets_array, {}, false);
 
@@ -356,7 +356,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 			street_fvectors.Add(t->get_FVector());
 		}
 		double width;
-		width = s->type == point_type::road ? map_params.road_width : map_params.main_road_width;
+		width = s->get_type() == EPointType::Road ? map_params.road_width : map_params.main_road_width;
 		s->street_vertexes = AllGeometry::line_to_polygon(
 			street_fvectors, width);
 	}
@@ -369,7 +369,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 			street_fvectors.Add(t->get_FVector());
 		}
 		double width;
-		width = s->type == point_type::road ? map_params.road_width : map_params.main_road_width;
+		width = s->get_type() == EPointType::Road ? map_params.road_width : map_params.main_road_width;
 		s->street_vertexes = AllGeometry::line_to_polygon(
 			street_fvectors, width);
 	}
@@ -427,14 +427,10 @@ void TerrainGen::create_weighted_points(TArray<WeightedPoint>& weighted_points)
 
 void TerrainGen::create_rivers(const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river)
 {
-	double StartTime1 = FPlatformTime::Seconds();
-
 	if (map_params.water_type == EWaterType::river)
 	{
 		create_guiding_rivers(river);
 	}
-	double EndTime1 = FPlatformTime::Seconds();
-	double StartTime3 = FPlatformTime::Seconds();
 	for (int iter = 0; iter < 100; iter++)
 	{
 		for (auto& b : bridges)
@@ -450,7 +446,7 @@ void TerrainGen::create_rivers(const TArray<WeightedPoint>& weighted_points, TAr
 		{
 			r->set_unmovable();
 			r->set_unshrinkable();
-			r->set_type(point_type::river);
+			r->set_type(EPointType::River);
 			river.AddUnique(r);
 		}
 	}
@@ -474,10 +470,10 @@ void TerrainGen::create_guiding_rivers(TArray<TSharedPtr<Node>>& river)
 	auto end_point = MakeShared<Node>(end_river);
 	auto start_point_left = MakeShared<Node>(
 		FVector(0, map_params.y_size / 2 - map_params.av_river_length / 2, 0));
-	start_point_left->set_type(point_type::river);
+	start_point_left->set_type(EPointType::River);
 	auto start_point_right = MakeShared<Node>(
 		FVector(0, map_params.y_size / 2 + map_params.av_river_length / 2, 0));
-	start_point_right->set_type(point_type::river);
+	start_point_right->set_type(EPointType::River);
 	river.Add(start_point_left);
 	river.Add(start_point_right);
 	// guiding_river.Add(start_point);
@@ -534,8 +530,8 @@ void TerrainGen::create_guiding_river_segment(const TSharedPtr<Node>& start_poin
 	{
 		is_ending = true;
 	}
-	end_point_left->set_type(point_type::river);
-	end_point_right->set_type(point_type::river);
+	end_point_left->set_type(EPointType::River);
+	end_point_right->set_type(EPointType::River);
 	river.AddUnique(end_point_left);
 	river.AddUnique(end_point_right);
 
@@ -564,23 +560,23 @@ void TerrainGen::create_guiding_river_segment(const TSharedPtr<Node>& start_poin
 			MakeShared<Node>(start_point_right->get_FVector() +
 				((end_point_right->get_FVector() - start_point_right->
 					get_FVector()) / dist_times * i));
-		node_ptr_left->set_type(point_type::river);
-		node_ptr_right->set_type(point_type::river);
+		node_ptr_left->set_type(EPointType::River);
+		node_ptr_right->set_type(EPointType::River);
 		if (i != dist_times)
 		{
 			create_segment(river, node_ptr_left, old_node_left, true,
-			               point_type::river, map_params.max_river_length);
+			               EPointType::River, map_params.max_river_length);
 			create_segment(river, node_ptr_right, old_node_right, true,
-			               point_type::river, map_params.max_river_length);
+			               EPointType::River, map_params.max_river_length);
 		}
 		else
 		{
 			node_ptr_left = end_point_left;
 			node_ptr_right = end_point_right;
 			create_segment(river, end_point_left, old_node_left, true,
-			               point_type::river, map_params.max_river_length);
+			               EPointType::River, map_params.max_river_length);
 			create_segment(river, end_point_right, old_node_right, true,
-			               point_type::river, map_params.max_river_length);
+			               EPointType::River, map_params.max_river_length);
 			// end_point->add_connection(old_node, false);
 			// old_node->add_connection(end_point, false);
 		}
@@ -588,7 +584,7 @@ void TerrainGen::create_guiding_river_segment(const TSharedPtr<Node>& start_poin
 		river.AddUnique(node_ptr_right);
 		custom_distr_nodes.Add(
 			CustomDistrNodes(node_ptr_left, node_ptr_right, old_node_right));
-		// custom_districts.Add(TTuple<FVector, district_type>((
+		// custom_districts.Add(TTuple<FVector, Edistrict_type>((
 		// 	node_ptr_left->get_FVector() + node_ptr_right->get_FVector()
 		// 	+ old_node_left->get_FVector() + old_node_right->get_FVector()) / 4, water));
 		// create_segment(river, node_ptr_left, node_ptr_right, true, point_type::river, 5000);
@@ -759,7 +755,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 
 	for (auto& r : road_centers)
 	{
-		r->set_type(point_type::main_road);
+		r->set_type(EPointType::MainRoad);
 	}
 	if (map_params.city_plan == ECityPlan::combined)
 	{
@@ -780,7 +776,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 			for (int j = 0; j < local_road.Num() - 1 && success_roads < 4; j++)
 			{
 				success_roads += create_guiding_road_segment(
-					road_centers[i], local_road[j], true, point_type::main_road, river);
+					road_centers[i], local_road[j], true, EPointType::MainRoad, river);
 			}
 		}
 	}
@@ -809,7 +805,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 			{
 				success_roads += create_guiding_road_segment(
 					road_centers[i], local_road[j], true,
-					point_type::main_road, river);
+					EPointType::MainRoad, river);
 			}
 		}
 	}
@@ -887,9 +883,9 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 		trade_path1_end_node->unshrinkable = true;
 		trade_path2_end_node->unshrinkable = true;
 		create_guiding_road_segment(closest_center, trade_path1_end_node, true,
-		                            point_type::main_road, river);
+		                            EPointType::MainRoad, river);
 		create_guiding_road_segment(closest_center, trade_path2_end_node, true,
-		                            point_type::main_road, river);
+		                            EPointType::MainRoad, river);
 
 		TArray<TSharedPtr<Node>> circle_nodes;
 		for (int angle = trade_path_angle + FMath::FRand() * 10 + 20; angle <
@@ -907,10 +903,10 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 				continue;
 			}
 			TSharedPtr<Node> new_node(MakeShared<Node>(new_node_fvec));
-			new_node->set_type(point_type::main_road);
+			new_node->set_type(EPointType::MainRoad);
 			road_nodes.Add(new_node);
 			if (create_guiding_road_segment(closest_center, new_node, true,
-			                                point_type::main_road, river))
+			                                EPointType::MainRoad, river))
 			{
 				road_centers.Add(new_node);
 			}
@@ -928,7 +924,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 				}
 				TSharedPtr<Node> new_wall_node(
 					MakeShared<Node>(new_circle_node_fvec));
-				new_wall_node->set_type(point_type::wall);
+				new_wall_node->set_type(EPointType::Wall);
 				road_nodes.Add(new_wall_node);
 				circle_nodes.Add(new_wall_node);
 			}
@@ -949,10 +945,10 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 				continue;
 			}
 			TSharedPtr<Node> new_node(MakeShared<Node>(new_node_fvec));
-			new_node->set_type(point_type::main_road);
+			new_node->set_type(EPointType::MainRoad);
 			road_nodes.Add(new_node);
 			if (create_guiding_road_segment(closest_center, new_node, true,
-			                                point_type::main_road, river))
+			                                EPointType::MainRoad, river))
 			{
 				road_centers.Add(new_node);
 			}
@@ -970,7 +966,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 				}
 				TSharedPtr<Node> new_wall_node(
 					MakeShared<Node>(new_circle_node_fvec));
-				new_wall_node->set_type(point_type::wall);
+				new_wall_node->set_type(EPointType::Wall);
 				road_nodes.Add(new_wall_node);
 				circle_nodes.Add(new_wall_node);
 			}
@@ -980,7 +976,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 		{
 			create_guiding_road_segment(circle_nodes[i - 1],
 			                            circle_nodes[i % circle_nodes.Num()],
-			                            true, point_type::wall, river);
+			                            true, EPointType::Wall, river);
 		}
 		TArray<TSharedPtr<Node>> local_road;
 		// for (auto bridge_point : bridges)
@@ -1004,7 +1000,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 			for (int j = 0; j < local_road.Num(); j++)
 			{
 				success_roads += create_guiding_road_segment(
-					local_road[i], local_road[j], false, point_type::main_road, river);
+					local_road[i], local_road[j], false, EPointType::MainRoad, river);
 				if (success_roads <= 1) break;
 			}
 		}
@@ -1013,7 +1009,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 
 bool TerrainGen::create_guiding_road_segment(
 	const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
-	bool is_through_river, point_type road_type, const TArray<TSharedPtr<Node>>& river)
+	bool is_through_river, EPointType road_type, const TArray<TSharedPtr<Node>>& river)
 {
 	if (AllGeometry::is_intersect_array(start_point, end_point, river, true).
 		IsSet() && !is_through_river)
@@ -1202,7 +1198,7 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 	for (auto road_node : road_nodes)
 	{
 		if (!road_node->is_used() && road_node->get_node_type() !=
-			point_type::river)
+			EPointType::River)
 		{
 			bool is_end = false;
 			if (road_node->conn.Num() == 1)
@@ -1228,7 +1224,7 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 						angle_in_degrees, length);
 
 					TSharedPtr<Node> new_node = MakeShared<Node>(line1);
-					new_node->set_type(point_type::road);
+					new_node->set_type(EPointType::Road);
 					bool is_possible = false;
 
 					auto check_end = AllGeometry::create_segment_at_angle(
@@ -1264,10 +1260,10 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 						// create_usual_road_segment(add_road, road_node, new_node);
 						auto finish = create_segment(
 							add_road, road_node, new_node, false,
-							point_type::road, map_params.max_road_length);
+							EPointType::Road, map_params.max_road_length);
 						if (finish.IsSet() && (finish.GetValue() != new_node ||
 							finish.GetValue()->get_node_type() ==
-							point_type::river))
+							EPointType::River))
 						{
 							is_end = true;
 						}
@@ -1297,9 +1293,9 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 						road_node->get_FVector(), road_node->get_FVector(),
 						angle_in_degrees, length);
 					TSharedPtr<Node> new_node2 = MakeShared<Node>(line2);
-					new_node2->set_type(point_type::road);
+					new_node2->set_type(EPointType::Road);
 					create_segment(add_road, road_node, new_node2, false,
-					               point_type::road, map_params.max_road_length);
+					               EPointType::Road, map_params.max_road_length);
 				}
 				if (FMath::FRand() * 100 <= map_params.road_right_chance)
 				{
@@ -1321,9 +1317,9 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 						road_node->get_FVector(), road_node->get_FVector(),
 						angle_in_degrees, length);
 					TSharedPtr<Node> new_node3 = MakeShared<Node>(line3);
-					new_node3->set_type(point_type::road);
+					new_node3->set_type(EPointType::Road);
 					create_segment(add_road, road_node, new_node3, false,
-					               point_type::road, map_params.max_road_length);
+					               EPointType::Road, map_params.max_road_length);
 				}
 			}
 		}
@@ -1362,7 +1358,7 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 
 TOptional<TSharedPtr<Node>> TerrainGen::create_segment(
 	TArray<TSharedPtr<Node>>& array, TSharedPtr<Node> start_point,
-	TSharedPtr<Node> end_point, bool to_exect_point, point_type type,
+	TSharedPtr<Node> end_point, bool to_exect_point, EPointType type,
 	double max_length)
 {
 	if (max_length == TNumericLimits<double>::Max())
@@ -1414,8 +1410,8 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(
 
 		while (intersection.IsSet())
 		{
-			if (intersection.GetValue()->get_node_type() == point_type::wall &&
-				type != point_type::wall)
+			if (intersection.GetValue()->get_node_type() == EPointType::Wall &&
+				type != EPointType::Wall)
 			{
 				return TSharedPtr<Node>();
 			}
@@ -1449,7 +1445,7 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(
 			}
 		}
 		bool is_river_intersect = false;
-		if (type == point_type::road)
+		if (type == EPointType::Road)
 		{
 			is_river_intersect = is_point_in_river(end_point->get_FVector());
 		}
@@ -1619,7 +1615,7 @@ void TerrainGen::get_river_figure(const TArray<TSharedPtr<Node>>& river)
 	// });
 	for (auto item : river_fig_array)
 	{
-		item->set_district_type(district_type::water);
+		item->set_district_type(Edistrict_type::Water);
 		river_figures.Add(item);
 	}
 	// river_figures.RemoveAll(
@@ -1628,7 +1624,7 @@ void TerrainGen::get_river_figure(const TArray<TSharedPtr<Node>>& river)
 	// 		bool is_in = false;
 	// 		for (auto point : custom_districts)
 	// 		{
-	// 			if (point.Value == district_type::water && A->
+	// 			if (point.Value == Edistrict_type::Water && A->
 	// 				is_point_in_figure(point.Key))
 	// 			{
 	// 				is_in = true;
@@ -1652,18 +1648,18 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 	bool royal_found = false;
 	for (auto& c : custom_districts)
 	{
-		// if (c.Value == district_type::tower)
+		// if (c.Value == Edistrict_type::Tower)
 		// {
 		debug2_points_array.Add(c.Key);
 		// }
 
-		if (is_point_in_river(c.Key) && c.Value != district_type::water) continue;
+		if (is_point_in_river(c.Key) && c.Value != Edistrict_type::Water) continue;
 		for (auto& d : districts)
 		{
-			if (d->get_district_type() != district_type::unknown) continue;
+			if (d->get_district_type() != Edistrict_type::Unknown) continue;
 			if (d->is_point_in_figure(c.Key))
 			{
-				if (c.Value == district_type::royal)
+				if (c.Value == Edistrict_type::Royal)
 				{
 					royal_found = true;
 				}
@@ -1679,7 +1675,7 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 		FVector center_of_dist;
 		bool is_river = false;
 		bool in_river = false;
-		if (b->get_district_type() == district_type::unknown)
+		if (b->get_district_type() == Edistrict_type::Unknown)
 		{
 			int fig_size = b->figure.Num();
 			for (int i = 2; i < fig_size + 2; i++)
@@ -1696,11 +1692,11 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 			}
 			if (in_river)
 			{
-				b->set_district_type(district_type::water);
+				b->set_district_type(Edistrict_type::Water);
 				continue;
 			}
 		}
-		if (b->get_district_type() == district_type::unknown && !royal_found &&
+		if (b->get_district_type() == Edistrict_type::Unknown && !royal_found &&
 			royal_area == 0)
 		{
 			bool point1 = false;
@@ -1716,66 +1712,66 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 				{
 					point1 = true;
 				}
-				if (p->get_node_type() == point_type::main_road)
+				if (p->get_node_type() == EPointType::MainRoad)
 				{
 					is_in_main++;
 				}
 				if (point1 && is_in_main >= 3)
 				{
-					b->set_district_type(district_type::royal);
+					b->set_district_type(Edistrict_type::Royal);
 					royal_area += b->area;
 					break;
 				}
 			}
 		}
-		if (b->get_district_type() == district_type::unknown && royal_area > 0 && !
+		if (b->get_district_type() == Edistrict_type::Unknown && royal_area > 0 && !
 			royal_found)
 		{
 			for (auto p : b->figure)
 			{
 				for (auto district_near : p->get_point()->districts_nearby)
 				{
-					if (district_near == district_type::royal)
+					if (district_near == Edistrict_type::Royal)
 					{
-						b->set_district_type(district_type::royal);
+						b->set_district_type(Edistrict_type::Royal);
 						royal_area += b->area;
 						break;
 					}
 				}
-				if (b->get_district_type() == district_type::royal)
+				if (b->get_district_type() == Edistrict_type::Royal)
 				{
 					break;
 				}
 			}
 		}
-		if (b->get_district_type() == district_type::royal && royal_area > 1000)
+		if (b->get_district_type() == Edistrict_type::Royal && royal_area > 1000)
 		{
 			royal_found = true;
 		}
-		if (b->get_district_type() == district_type::unknown)
+		if (b->get_district_type() == Edistrict_type::Unknown)
 		{
 			bool is_near_royal = false;
 			bool is_near_dock = false;
 			for (auto p : b->figure)
 			{
 				if (p->get_point()->districts_nearby.Contains(
-					district_type::royal))
+					Edistrict_type::Royal))
 				{
 					is_near_royal = true;
 				}
 				if (p->get_point()->districts_nearby.Contains(
-					district_type::water))
+					Edistrict_type::Water))
 				{
 					is_near_dock = true;
 				}
 			}
 			if (!is_near_royal && is_near_dock)
 			{
-				b->set_district_type(district_type::dock);
+				b->set_district_type(Edistrict_type::Dock);
 			}
 			if (is_near_royal && !is_near_dock && b->area > 6000)
 			{
-				b->set_district_type(district_type::luxury);
+				b->set_district_type(Edistrict_type::Luxury);
 			}
 		}
 	}
@@ -1788,13 +1784,13 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 		named_districts = 0;
 		for (auto& b : districts)
 		{
-			if (b->get_district_type() != district_type::unknown)
+			if (b->get_district_type() != Edistrict_type::Unknown)
 			{
 				named_districts++;
 			}
 			else
 			{
-				TMap<district_type, int32> ElementCount;
+				TMap<Edistrict_type, int32> ElementCount;
 				for (auto& fig : b->figure)
 				{
 					for (auto district : fig->get_point()->districts_nearby)
@@ -1820,35 +1816,35 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 				{
 					switch (el.Key)
 					{
-					case district_type::dock:
+					case Edistrict_type::Dock:
 						{
 							dock_count = el.Value;
 							break;
 						}
-					case district_type::royal:
+					case Edistrict_type::Royal:
 						{
 							royal_count = el.Value;
 							break;
 						}
-					case district_type::luxury:
+					case Edistrict_type::Luxury:
 						{
 							luxury_count = el.Value;
 							break;
 						}
-					case district_type::residential:
+					case Edistrict_type::Residential:
 						{
 							residential_count = el.Value;
 							break;
 						}
-					case district_type::slums:
+					case Edistrict_type::Slums:
 						{
 							slums_count = el.Value;
 							break;
 						}
-					case district_type::tower:
-					case district_type::empty:
-					case district_type::unknown:
-					case district_type::water:
+					case Edistrict_type::Tower:
+					case Edistrict_type::Empty:
+					case Edistrict_type::Unknown:
+					case Edistrict_type::Water:
 					default:
 						break;
 					}
@@ -1863,15 +1859,15 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 
 				if (koeff <= -7 && luxury_count == 0 && royal_count == 0)
 				{
-					b->set_district_type(district_type::slums);
+					b->set_district_type(Edistrict_type::Slums);
 				}
 				else if (koeff >= 0 && koeff < 4)
 				{
-					b->set_district_type(district_type::residential);
+					b->set_district_type(Edistrict_type::Residential);
 				}
 				else if (koeff >= 4 && slums_count != 0 && dock_count != 0)
 				{
-					b->set_district_type(district_type::luxury);
+					b->set_district_type(Edistrict_type::Luxury);
 				}
 				else
 				{
@@ -1879,15 +1875,15 @@ void TerrainGen::process_districts(TArray<TSharedPtr<District>>& districts)
 					rand_val = FMath::FRand() * 100;
 					if (rand_val > 85 && slums_count != 0 && dock_count != 0)
 					{
-						b->set_district_type(district_type::luxury);
+						b->set_district_type(Edistrict_type::Luxury);
 					}
 					else if (rand_val > 50)
 					{
-						b->set_district_type(district_type::residential);
+						b->set_district_type(Edistrict_type::Residential);
 					}
 					else if (luxury_count == 0 && royal_count == 0)
 					{
-						b->set_district_type(district_type::slums);
+						b->set_district_type(Edistrict_type::Slums);
 					}
 				}
 			}
@@ -1908,7 +1904,7 @@ void TerrainGen::process_lights()
 	TArray<FVector> road_lantern_anchors;
 	for (auto& street : streets_array)
 	{
-		if (street->type == point_type::main_road)
+		if (street->get_type() == EPointType::MainRoad)
 		{
 			TArray<TSharedPtr<Node>> street_vertices = street->get_street_vertices();
 			for (int i = 1; i < street->street_vertices.Num(); i++)
@@ -1928,8 +1924,8 @@ void TerrainGen::process_lights()
 
 	for (auto& d : shapes_array)
 	{
-		if (d->get_district_type() == district_type::residential || d->get_district_type() == district_type::luxury ||
-			d->get_district_type() == district_type::royal)
+		if (d->get_district_type() == Edistrict_type::Residential || d->get_district_type() == Edistrict_type::Luxury ||
+			d->get_district_type() == Edistrict_type::Royal)
 		{
 			bool is_found = false;
 
@@ -1965,7 +1961,7 @@ void TerrainGen::process_lights()
 				}
 				if (is_found)
 				{
-					PointObject l(closest_point);
+					PointObject l(closest_point, "Lantern");
 					FVector f2 = closest_point;
 					FVector f3 = closest_point;
 					f3.X += 1000;
@@ -1987,7 +1983,7 @@ void TerrainGen::process_lights()
 
 void TerrainGen::process_houses(TSharedPtr<District> district)
 {
-	if (district->get_district_type() == district_type::water)
+	if (district->get_district_type() == Edistrict_type::Water)
 	{
 		return;
 	}
@@ -2005,7 +2001,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 		up_point = p.point.Y > up_point ? p.point.Y : up_point;
 	}
 	district_center /= district->self_figure.Num();
-	if (district->get_district_type() == district_type::luxury)
+	if (district->get_district_type() == Edistrict_type::Luxury)
 	{
 		for (int i = 1; i <= 100; i++)
 		{
@@ -2028,7 +2024,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 			}
 		}
 	}
-	else if (district->get_district_type() == district_type::residential)
+	else if (district->get_district_type() == Edistrict_type::Residential)
 	{
 		int self_figure_count = district->self_figure.Num();
 		int count_without_end = district->self_figure[0] == district->self_figure[self_figure_count - 1]
@@ -2134,7 +2130,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 			}
 		}
 	}
-	else if (district->get_district_type() == district_type::slums)
+	else if (district->get_district_type() == Edistrict_type::Slums)
 	{
 		for (int i = 1; i <= 100; i++)
 		{
@@ -2159,7 +2155,7 @@ void TerrainGen::process_houses(TSharedPtr<District> district)
 }
 
 void TerrainGen::create_special_district(TArray<FVector>& figure,
-                                         point_type type, FVector point)
+                                         EPointType type, FVector point)
 {
 	TArray<TSharedPtr<Node>> nodes;
 	TArray<TSharedPtr<Point>> points;
@@ -2174,7 +2170,7 @@ void TerrainGen::create_special_district(TArray<FVector>& figure,
 	create_special_district_by_nodes(nodes, type, point);
 }
 
-void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& nodes, point_type type, FVector point)
+void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& nodes, EPointType type, FVector point)
 {
 	for (int i = 1; i <= nodes.Num(); i++)
 	{
@@ -2207,8 +2203,7 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 	road_nodes.RemoveAll(
 		[&, point](const TSharedPtr<Node>& node)
 		{
-			if (AllGeometry::is_point_in_figure(node->get_FVector(), inner_figure)
-			)
+			if (AllGeometry::is_point_in_figure(node->get_FVector(), inner_figure))
 			{
 				// debug_points_array.Add(node->get_FVector());
 				node->delete_me();
@@ -2218,10 +2213,10 @@ void TerrainGen::create_special_district_by_nodes(TArray<TSharedPtr<Node>>& node
 		});
 }
 
-void TerrainGen::create_circle(FVector point, double radius, district_type type,
-                               point_type road_type, int vertex_count)
+void TerrainGen::create_circle(FVector point, double radius, Edistrict_type type,
+                               EPointType road_type, int vertex_count)
 {
-	custom_districts.Add(TTuple<FVector, district_type>(point, type));
+	custom_districts.Add(TTuple<FVector, Edistrict_type>(point, type));
 	FVector left_point = point;
 	left_point.X = 0;
 	TArray<FVector> figure;
@@ -2234,10 +2229,10 @@ void TerrainGen::create_circle(FVector point, double radius, district_type type,
 }
 
 void TerrainGen::create_circle_by_existing_nodes(FVector central_point, double radius, double interval,
-                                                 district_type type, point_type road_type, int vertex_count,
+                                                 Edistrict_type type, EPointType road_type, int vertex_count,
                                                  bool sticky_river, bool sticky_walls)
 {
-	custom_districts.Add(TTuple<FVector, district_type>(central_point, type));
+	custom_districts.Add(TTuple<FVector, Edistrict_type>(central_point, type));
 
 	TArray<TSharedPtr<Node>> road_nodes_near{};
 	for (auto& rn : road_nodes)
@@ -2284,8 +2279,8 @@ void TerrainGen::create_circle_by_existing_nodes(FVector central_point, double r
 			{
 				cur_node = rnr;
 				distance = FVector::Distance(rnr->get_FVector(), central_point);
-				if ((sticky_river && rnr->get_node_type() == point_type::river) || (sticky_walls && rnr->get_node_type()
-					== point_type::wall))
+				if ((sticky_river && rnr->get_node_type() == EPointType::River) || (sticky_walls && rnr->get_node_type()
+					== EPointType::Wall))
 					break;
 			}
 		}
@@ -2306,10 +2301,10 @@ void TerrainGen::create_circle_by_existing_nodes(FVector central_point, double r
 
 void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes,
                                  TArray<TSharedPtr<Street>>& fig_array,
-                                 point_type type, bool is_persistent)
+                                 EPointType type, bool is_persistent)
 {
-	point_type type_used;
-	type_used = type != point_type::unidentified ? type : point_type::road;
+	EPointType type_used;
+	type_used = type != EPointType::Unidentified ? type : EPointType::Road;
 	for (auto node : nodes)
 	{
 		for (auto nconn : node->conn)
@@ -2318,7 +2313,7 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes,
 			{
 				continue;
 			}
-			if (type != point_type::unidentified && (node->get_node_type() !=
+			if (type != EPointType::Unidentified && (node->get_node_type() !=
 				type_used || nconn->node->get_node_type() != type_used))
 			{
 				continue;
@@ -2417,7 +2412,7 @@ void TerrainGen::process_streets(TArray<TSharedPtr<Node>> nodes,
 				continue;
 			}
 			Street street(*street_points);
-			street.type = type_used;
+			street.set_street_type(type_used);
 			auto street_ptr = MakeShared<Street>(street);
 			fig_array.Add(street_ptr);
 			for (auto conn : conn_array)
@@ -2445,7 +2440,7 @@ TArray<TSharedPtr<Street>> TerrainGen::process_segments(
 			                                                       street_vertices.Num() - 1)
 			{
 				cur_street->street_vertices.Add(street->street_vertices[i]);
-				cur_street->type = street->type;
+				cur_street->set_street_type(street->get_type());
 				segments.Add(cur_street);
 				cur_street = TSharedPtr<Street>(
 					MakeShared<Street>(TArray<TSharedPtr<Node>>()));
@@ -2464,7 +2459,7 @@ TArray<TSharedPtr<Street>> TerrainGen::process_segments(
 			}
 			cur_street->street_vertices.Add(street->street_vertices[i]);
 		}
-		cur_street->type = street->type;
+		cur_street->set_street_type(street->get_type());
 		segments.Add(cur_street);
 	}
 	return segments;
@@ -2472,7 +2467,7 @@ TArray<TSharedPtr<Street>> TerrainGen::process_segments(
 
 TSharedPtr<Node> TerrainGen::get_next_road_node(TSharedPtr<Node> first_point,
                                                 TSharedPtr<Node> second_point,
-                                                point_type type,
+                                                EPointType type,
                                                 bool is_persistent)
 {
 	auto third_point = second_point;
