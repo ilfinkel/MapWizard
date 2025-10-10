@@ -85,26 +85,28 @@ public:
 };
 
 
-enum class point_type
+UENUM(BlueprintType)
+enum class EPointType : uint8
 {
-	unidentified = 0,
-	road = 1,
-	main_road = 2,
-	wall = 3,
-	river = 4,
+	Unidentified UMETA(DisplayName = "Unidentified"),
+	Road UMETA(DisplayName = "Road"),
+	MainRoad UMETA(DisplayName = "Main"),
+	Wall UMETA(DisplayName = "Wall"),
+	River UMETA(DisplayName = "River")
 };
 
-enum class district_type
+UENUM(BlueprintType)
+enum class Edistrict_type : uint8
 {
-	water,
-	royal,
-	dock,
-	luxury,
-	residential,
-	slums,
-	tower,
-	empty,
-	unknown
+	Water UMETA(DisplayName="Water"),
+	Royal UMETA(DisplayName="Royal"),
+	Dock UMETA(DisplayName="Dock"),
+	Luxury UMETA(DisplayName="Luxury"),
+	Residential UMETA(DisplayName="Residential"),
+	Slums UMETA(DisplayName="Slums"),
+	Tower UMETA(DisplayName="Tower"),
+	Empty UMETA(DisplayName="Empty"),
+	Unknown UMETA(DisplayName="Unknown")
 };
 
 
@@ -146,9 +148,9 @@ struct Point
 
 	~Point();
 	FVector point;
-	point_type type;
+	EPointType type;
 	bool used = false;
-	TArray<district_type> districts_nearby;
+	TArray<Edistrict_type> districts_nearby;
 	unsigned int point_id = 0;
 
 	Point& operator=(const Point& Other)
@@ -233,15 +235,41 @@ struct SelectableObject
 	}
 
 	virtual FVector get_measure() { return FVector(0, 0, 0); }
-	FString get_object_type() { return object_type; }
+
+	FString get_type1_name()
+	{
+		return type1;
+	}
+
+	FString get_type2_name()
+	{
+		return type2;
+	}
+
+	void set_type1_name(FString name)
+	{
+		type1 = name;
+	}
+
+	void set_type2_name(FString name)
+	{
+		type2 = name;
+	}
+
+	FString get_full_name()
+	{
+		return get_type1_name() + get_type2_name();
+	}
+
 	bool is_selected() { return selected; };
 	bool is_hovered() { return hovered; };
 	bool operator==(SelectableObject& other) const { return this->object_id == other.object_id; }
 
 protected:
+	FString type1 = "";
+	FString type2 = "";
 	bool selected = false;
 	bool hovered = false;
-	FString object_type;
 	unsigned int object_id;
 	float angle = 0;
 };
@@ -250,8 +278,15 @@ struct PointObject : public SelectableObject
 {
 	PointObject(FVector position_)
 	{
-		object_type = "Lighter";
+		set_type1_name("Point");
 		position = position_;
+	};
+
+	PointObject(FVector position_, FString type_)
+	{
+		set_type1_name("Point");
+		position = position_;
+		set_type2_name(type_);
 	};
 	bool operator==(PointObject& other) const { return FVector::DistSquared(this->position, other.position) < 0.1; }
 
@@ -267,18 +302,13 @@ struct Street : public SelectableObject
 {
 	Street()
 	{
-		object_type = "Street";
+		set_type1_name("Street");
 	};
 
 	Street(TArray<TSharedPtr<Node>> points_): street_vertices(points_)
 	{
-		object_type = "Street";
+		set_type1_name("Street");
 	}
-
-	// float get_angle() override
-	// {
-	// 	return angle;
-	// }
 
 	FVector get_measure() override
 	{
@@ -295,10 +325,16 @@ struct Street : public SelectableObject
 		return street_vertices;
 	}
 
+	EPointType get_type() { return type; }
+
+	void set_street_type(EPointType type_);
+
 	TArray<FVector> street_vertexes;
 	TArray<TSharedPtr<Node>> street_vertices;
-	point_type type = point_type::unidentified;
 	FString name;
+
+private:
+	EPointType type = EPointType::Unidentified;
 };
 
 struct House : public SelectableObject
@@ -306,13 +342,13 @@ struct House : public SelectableObject
 	House(TArray<FVector> figure_, double height_) : house_figure(figure_)
 	                                                 , height(height_)
 	{
-		object_type = "House";
+		set_type1_name("House");
 	}
 
 	House(TArray<FVector> figure_, double height_, FString obj_type) : house_figure(figure_)
 	                                                                   , height(height_)
 	{
-		object_type = obj_type;
+		set_type1_name(obj_type);
 	}
 
 	~House();
@@ -354,19 +390,16 @@ struct District : public SelectableObject
 	explicit District(): main_roads(0)
 	                     , is_river_in(false)
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("ditrict(%p)"),this)
-		type = district_type::unknown;
+		type = Edistrict_type::Unknown;
 		area = 0;
 		figure = TArray<TSharedPtr<Node>>();
-
-		object_type = "District";
+		set_type1_name("District");
 	}
 
 	explicit District(TArray<TSharedPtr<Node>> figure_);
 
 	~District()
 	{
-		// UE_LOG(LogTemp, Warning, TEXT("~ditrict"))
 		figure.Empty();
 		self_figure.Empty();
 	}
@@ -403,8 +436,8 @@ struct District : public SelectableObject
 	double area;
 	int main_roads;
 	bool is_river_in;
-	void set_district_type(district_type type_);
-	district_type get_district_type() { return type; }
+	void set_district_type(Edistrict_type type_);
+	Edistrict_type get_district_type() { return type; }
 	bool is_point_in_self_figure(FVector point_);
 	bool is_point_in_figure(FVector point_);
 	void get_self_figure();
@@ -420,7 +453,7 @@ struct District : public SelectableObject
 	bool is_adjacent(TSharedPtr<District> other_district);
 
 private:
-	district_type type;
+	Edistrict_type type;
 };
 
 struct Conn
@@ -449,7 +482,7 @@ struct Conn
 	// point_type street_type = point_type::road;
 	TSharedPtr<TArray<TSharedPtr<Node>>> figure{};
 	// TSharedPtr<TArray<TSharedPtr<Point>>> street{};
-	point_type street_type() { return segment.IsValid() ? segment->type : point_type::road; }
+	EPointType street_type() { return segment.IsValid() ? segment->get_type() : EPointType::Road; }
 
 	bool not_in_figure;
 	bool in_street;
@@ -500,8 +533,8 @@ struct Node : TSharedFromThis<Node>
 	void set_used(bool used_) { point->used = used_; }
 	void set_unmovable() { unmovable = true; }
 	bool is_unmovable() { return unmovable; }
-	point_type get_node_type() { return point->type; }
-	void set_type(point_type type_) { point->type = type_; }
+	EPointType get_node_type() { return point->type; }
+	void set_type(EPointType type_) { point->type = type_; }
 	TOptional<TSharedPtr<Conn>> get_next_point(TSharedPtr<Point> point_);
 	TOptional<TSharedPtr<Conn>> get_prev_point(TSharedPtr<Point> point_);
 	void add_connection(const TSharedPtr<Node>& node_);

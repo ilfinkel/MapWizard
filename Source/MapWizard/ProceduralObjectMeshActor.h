@@ -110,7 +110,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	FString GetObjectType()
 	{
-		return object->get_object_type();
+		return object->get_type1_name();
 	}
 
 	void SetDynamicObject(TSharedPtr<SelectableObject> distr)

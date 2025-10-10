@@ -7,114 +7,6 @@
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
 
-void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh,
-                                   TArray<FVector> BaseVertices,
-                                   float StarterHeight,
-                                   float ExtrusionHeight)
-{
-	Mesh->ProceduralMesh->ClearAllMeshSections();
-	int32 NumVertices = BaseVertices.Num();
-	if (NumVertices < 3)
-	{
-		return; // Нужно хотя бы 3 вершины для создания полигона
-	}
-
-	TArray<FVector> Vertices;
-	TArray<FVector> Base;
-	TArray<int32> Triangles;
-
-	// Добавляем вершины нижней стороны
-	for (auto Vertex : BaseVertices)
-	{
-		auto local_vertex = Mesh->ProceduralMesh->GetComponentTransform().
-		                          InverseTransformPosition(Vertex);
-		Base.Add(local_vertex + FVector(0, 0, StarterHeight));
-		Vertices.Add(local_vertex + FVector(0, 0, StarterHeight));
-	}
-
-	// Добавляем вершины верхней стороны, сдвинутые вверх на ExtrudeHeight
-	for (auto Vertex : BaseVertices)
-	{
-		auto local_vertex = Mesh->ProceduralMesh->GetComponentTransform().
-		                          InverseTransformPosition(Vertex);
-		Vertices.Add(
-			local_vertex + FVector(0, 0, StarterHeight) + FVector(
-				0, 0, ExtrusionHeight));
-	}
-
-	// Используем триангуляцию для нижней стороны
-	TArray<int32> BaseTriangles;
-	AllGeometry::TriangulatePolygon(Base, BaseTriangles);
-
-	// Добавляем триангуляцию для нижней стороны
-	for (int32 i = 0; i < BaseTriangles.Num(); i += 3)
-	{
-		Triangles.Add(BaseTriangles[i]);
-		Triangles.Add(BaseTriangles[i + 1]);
-		Triangles.Add(BaseTriangles[i + 2]);
-	}
-
-	// Добавляем триангуляцию для верхней стороны (с учетом смещения вершин)
-	int32 Offset = NumVertices;
-	for (int32 i = 0; i < BaseTriangles.Num(); i += 3)
-	{
-		Triangles.Add(BaseTriangles[i] + Offset);
-		Triangles.Add(BaseTriangles[i + 2] + Offset);
-		Triangles.Add(BaseTriangles[i + 1] + Offset);
-	}
-
-	// Создаем боковые стороны
-	for (int32 i = 0; i < NumVertices; i++)
-	{
-		int32 NextIndex = (i + 1) % NumVertices;
-
-		// Боковая сторона, первый треугольник
-		Triangles.Add(NextIndex);
-		Triangles.Add(i);
-		Triangles.Add(NumVertices + i);
-
-		// Боковая сторона, второй треугольник
-		Triangles.Add(NumVertices + NextIndex);
-		Triangles.Add(NextIndex);
-		Triangles.Add(NumVertices + i);
-	}
-
-	// Создаем пустые массивы для нормалей, UV-координат и тангенсов
-	TArray<FVector> Normals;
-	TArray<FVector2D> UV0;
-	TArray<FLinearColor> VertexColors;
-	TArray<FProcMeshTangent> Tangents;
-
-	// Создаем меш
-	Mesh->ProceduralMesh->CreateMeshSection_LinearColor(
-		0, Vertices, Triangles, Normals, UV0, VertexColors, Tangents,
-		true);
-}
-
-void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh,
-                                   TArray<TSharedPtr<Node>> BaseVertices,
-                                   float StarterHeight, float ExtrusionHeight)
-{
-	TArray<FVector> vertices;
-	for (auto BaseVertex : BaseVertices)
-	{
-		vertices.Add(BaseVertex->get_FVector());
-	}
-	create_mesh_3d(Mesh, vertices, StarterHeight, ExtrusionHeight);
-}
-
-void DrawingObject::create_mesh_3d(AProceduralBlockMeshActor* Mesh,
-                                   TArray<TSharedPtr<Point>> BaseVertices,
-                                   float StarterHeight, float ExtrusionHeight)
-{
-	TArray<FVector> vertices;
-	for (auto BaseVertex : BaseVertices)
-	{
-		vertices.Add(BaseVertex->point);
-	}
-	create_mesh_3d(Mesh, vertices, StarterHeight, ExtrusionHeight);
-}
-
 void DrawingObject::create_mesh_2d(AProceduralBlockMeshActor* Mesh,
                                    TArray<FVector> BaseVertices,
                                    float StarterHeight)
@@ -238,14 +130,12 @@ void AMainTerrain::RedrawAll(bool is_2d_)
 	{
 		if (s.is_changing)
 		{
-			s.is_2d = is_2d_;
 			// s.delete_mesh();
 			s.draw_me();
 		}
 	}
 	for (auto s : drawing_houses)
 	{
-		s.is_2d = is_2d_;
 		// s.delete_mesh();
 		s.draw_me();
 	}
@@ -290,7 +180,7 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::get_all_houses_of_type_selected
 	for (int i = 0; i < drawing_houses.Num(); i++)
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
-		if (drawing_houses[i].house->is_selected() && drawing_houses[i].house->get_object_type() == type_name)
+		if (drawing_houses[i].house->is_selected() && drawing_houses[i].house->get_type1_name() == type_name)
 		{
 			houses_to_get.Add(drawing_houses[i].mesh);
 		}
@@ -354,7 +244,7 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllPointObjects()
 	TArray<AProceduralBlockMeshActor*> objects_to_get{};
 	for (int i = 0; i < drawing_points.Num(); i++)
 	{
-			objects_to_get.Add(drawing_points[i].mesh);
+		objects_to_get.Add(drawing_points[i].mesh);
 	}
 	return objects_to_get;
 }
@@ -369,7 +259,7 @@ TArray<AProceduralBlockMeshActor*> AMainTerrain::get_all_houses_of_type(FString 
 	TArray<AProceduralBlockMeshActor*> houses_to_get{};
 	for (int i = 0; i < drawing_houses.Num(); i++)
 	{
-		if (drawing_houses[i].house->get_object_type() == type)
+		if (drawing_houses[i].house->get_type1_name() == type)
 		{
 			houses_to_get.Add(drawing_houses[i].mesh);
 		}
@@ -873,114 +763,37 @@ void AMainTerrain::draw_all()
 	DrawingObject obj;
 	obj.create_mesh_2d(Base, map_borders_array, 0.01);
 
-
 	static int32 ActorCounter = 0;
 	for (auto& r : figures_array)
 	{
 		TArray<TSharedPtr<Point>> figure_to_print;
-		if (!r->self_figure.IsEmpty())
-		{
-			for (auto& p : r->self_figure)
-			{
-				figure_to_print.Add(MakeShared<Point>(p));
-			}
-		}
-		else
+		if (r->self_figure.Num() < 3)
 		{
 			continue;
 		}
-		FString ActorName;
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
-		// MeshComponent2->Material = BaseMaterial;
-		if (r->get_district_type() == district_type::water)
-		{
-			ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-			// MeshComponent2->Material = WaterMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-			// create_mesh_2d(MeshComponent2, figure_to_print, 0.02);
-		}
-		else if (r->get_district_type() == district_type::luxury)
-		{
-			ActorName = FString::Printf(TEXT("DistrictLuxury_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, LuxuryMaterial);
-			// MeshComponent2->Material = LuxuryMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		}
-		else if (r->get_district_type() == district_type::dock)
-		{
-			ActorName = FString::Printf(TEXT("DistrictDocks_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, DocsMaterial);
-			// MeshComponent2->Material = DocsMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		}
-		else if (r->get_district_type() == district_type::royal)
-		{
-			ActorName = FString::Printf(TEXT("DistrictRoyal_%d"), ++ActorCounter);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, RoyalMaterial);
-			// MeshComponent2->Material = RoyalMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		}
-		else if (r->get_district_type() == district_type::slums)
-		{
-			ActorName = FString::Printf(TEXT("DistrictSlums_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, SlumsMaterial);
-			// MeshComponent2->Material = SlumsMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		}
-		else if (r->get_district_type() == district_type::residential)
-		{
-			ActorName = FString::Printf(TEXT("DistrictResidence_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, ResidentialMaterial);
-			// MeshComponent2->Material = ResidentialMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		}
-		else if (r->get_district_type() == district_type::tower)
-		{
-			ActorName = FString::Printf(TEXT("Tower_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
-			// MeshComponent2->Material = MainRoadMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		}
-		else
-		{
-			ActorName = FString::Printf(TEXT("DistrictUnknown_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
-			// MeshComponent2->Material = BaseMaterial;
-			drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		}
+
+		FString ActorName = r->get_full_name() + LexToString(r->get_id());
+		MeshComponent2->SetActorLabel(ActorName);
+		drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
+		drawing_objects.Add(MakeShared<DrawingDistrict>(r, MeshComponent2, 0.02));
 
 		int house_count = 0;
 		for (auto& p : r->houses)
 		{
-			FString type = p->get_object_type();
-			FString HouseName = FString::Printf(TEXT("%s_%s_%d"), *ActorName, *type, ++house_count);
+			// FString type = p->get_object_type();
+
+			FString HouseName = ActorName + "_" + p->get_full_name() + LexToString(p->get_id());
 			AProceduralBlockMeshActor* MeshComponent =
 				GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 			MeshComponent->SetSelectedObject(selected_objects, prev_selected_objects);
 			MeshComponent->SetActorLabel(HouseName);
-
-			// if (p->get_object_type() == "House")
-			// 	MeshComponent->ProceduralMesh->SetMaterial(0, BuildingMaterial);
-			// else if (p->get_object_type() == "Pavement")
-			// 	MeshComponent->ProceduralMesh->SetMaterial(0, PavementMaterial);
-			// else
-			// 	MeshComponent->ProceduralMesh->SetMaterial(0, BaseMaterial);
-
-			// MeshComponent->DefaultMaterial = BaseMaterial;
 			MeshComponent->SetDynamicObject(p);
 
-			drawing_houses.Add(DrawingHouse(p, MeshComponent, 0.04, is_2d));
+			drawing_houses.Add(DrawingHouse(p, MeshComponent, 0.04));
+			drawing_objects.Add(MakeShared<DrawingHouse>(p, MeshComponent, 0.04));
 		}
 	}
 	for (auto point_object : point_objects_array)
@@ -988,16 +801,13 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
-		// MeshComponent2->Material = RoadMaterial;
-		// MeshComponent2->DefaultMaterial = BaseMaterial;
 		MeshComponent2->SetDynamicObject(point_object);
-		FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
+		// FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
+
+		FString ActorName = point_object->get_full_name() + LexToString(point_object->get_id());
 		MeshComponent2->SetActorLabel(ActorName);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
-		// MeshComponent2->Material = RoadMaterial;
-		drawing_points.Add(DrawingPoint(point_object, MeshComponent2, 0.05, is_2d));
-		// create_mesh_2d(MeshComponent2, street->street_vertexes, 0.19);
+		drawing_points.Add(DrawingPoint(point_object, MeshComponent2, 0.05));
+		drawing_objects.Add(MakeShared<DrawingPoint>(point_object, MeshComponent2, 0.05));
 	}
 
 	for (auto street : segments_array)
@@ -1005,87 +815,39 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
-		// MeshComponent2->Material = RoadMaterial;
-		// MeshComponent2->DefaultMaterial = BaseMaterial;
+		double height = 0.03;
 		MeshComponent2->SetDynamicObject(street);
-		if (street->type == point_type::road)
+
+		FString ActorName = street->get_full_name() + LexToString(street->get_id());
+		MeshComponent2->SetActorLabel(ActorName);
+		switch (street->get_type())
 		{
-			FString ActorName = FString::Printf(TEXT("Street_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
-			// MeshComponent2->Material = RoadMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.03, is_2d));
-			// create_mesh_2d(MeshComponent2, street->street_vertexes, 0.19);
+		case EPointType::Road: height = 0.03;
+		case EPointType::MainRoad: height = 0.031;
+		case EPointType::River: height = 0.032;
+		case EPointType::Wall: height = 0.033;
+		default: height = 0.034;
 		}
-		else if (street->type == point_type::main_road)
-		{
-			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, MainRoadMaterial);
-			// MeshComponent2->Material = MainRoadMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.031, is_2d));
-			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
-		}
-		else if (street->type == point_type::river)
-		{
-			FString ActorName = FString::Printf(TEXT("StreetMain_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-			// MeshComponent2->Material = WaterMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.032, is_2d));
-			// create_mesh_2d(MeshComponent2, street.street_vertexes, 0.021);
-		}
-		else if (street->type == point_type::wall)
-		{
-			FString ActorName = FString::Printf(TEXT("StreetWall_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, WallMaterial);
-			// MeshComponent2->Material = WallMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.033, is_2d));
-		}
-		else
-		{
-			FString ActorName = FString::Printf(TEXT("StreetUndefined_%d"), ++ActorCounter);
-			MeshComponent2->SetActorLabel(ActorName);
-			// MeshComponent2->ProceduralMesh->SetMaterial(0, BuildingMaterial);
-			// MeshComponent2->Material = BuildingMaterial;
-			drawing_streets.Add(DrawingStreet(street, MeshComponent2, 0.034, is_2d));
-		}
+		drawing_streets.Add(DrawingStreet(street, MeshComponent2, height));
+		drawing_objects.Add(MakeShared<DrawingStreet>(street, MeshComponent2, height));
 	}
-	// for (auto& point_object : point_objects_array)
+	for (auto a : drawing_objects)
+	{
+		a->draw_me();
+	}
+	// for (auto a : drawing_streets)
 	// {
-	// AProceduralBlockMeshActor* MeshComponent2 =
-	// 	GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
-	// FString ActorName = FString::Printf(TEXT("PointLantern_%d"), ++ActorCounter);
-	// // AProceduralBlockMeshActor* MeshComponent2 = GetWorld()->SpawnActor<AProceduralBlockMeshActor>(
-	// // 	AProceduralBlockMeshActor::StaticClass());
-	// MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-	// // MeshComponent2->ProceduralMesh->SetMaterial(0, BaseMaterial);
-	// // MeshComponent2->Material = BaseMaterial;
-	// ActorName = FString::Printf(TEXT("DistrictWater_%d"), ++ActorCounter);
-	// MeshComponent2->SetActorLabel(ActorName);
-	// // MeshComponent2->ProceduralMesh->SetMaterial(0, WaterMaterial);
-	// // MeshComponent2->Material = WaterMaterial;
-	// // MeshComponent2->mesh_exists = false;
-	//
-	// drawing_point_objects.Add(DrawingPointObject(point_object,
-	// 	// MeshComponent2,
-	// 	0.031));
+	// 	a.draw_me();
 	// }
-	for (auto a : drawing_streets)
-	{
-		a.draw_me();
-	}
-	for (auto a : drawing_houses)
-	{
-		a.draw_me();
-	}
-	for (auto a : drawing_districts)
-	{
-		a.draw_me();
-	}
-	// for (auto a : drawing_point_objects)
+	// for (auto a : drawing_houses)
+	// {
+	// 	a.draw_me();
+	// }
+	// for (auto a : drawing_districts)
+	// {
+	// 	a.draw_me();
+	// }
+	// for (auto a : drawing_points)
 	// {
 	// 	a.draw_me();
 	// }

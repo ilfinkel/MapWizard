@@ -58,10 +58,10 @@ public:
 	void create_guiding_roads(TArray<WeightedPoint>& weighted_points, const TArray<TSharedPtr<Node>>& river);
 	void create_usual_roads(const TArray<WeightedPoint>& weighted_points, const TArray<TSharedPtr<Node>>& river);
 	TOptional<TSharedPtr<Node>> create_segment(TArray<TSharedPtr<Node>>& array, TSharedPtr<Node> start_point,
-	                                           TSharedPtr<Node> end_point, bool to_exect_point, point_type type,
+	                                           TSharedPtr<Node> end_point, bool to_exect_point, EPointType type,
 	                                           double max_length);
 	bool create_guiding_road_segment(const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
-	                                 bool is_through_river, point_type road_type,
+	                                 bool is_through_river, EPointType road_type,
 	                                 const TArray<TSharedPtr<Node>>& river);
 	void shrink_roads();
 	void point_shift(FVector& point, TArray<WeightedPoint> weighted_points_);
@@ -71,19 +71,19 @@ public:
 	void process_districts(TArray<TSharedPtr<District>>& districts);
 	void process_lights();
 	void process_houses(TSharedPtr<District> block);
-	void create_special_district(TArray<FVector>& figure, point_type type, FVector point);
-	void create_special_district_by_nodes(TArray<TSharedPtr<Node>>& figure, point_type type, FVector point);
-	void create_circle(FVector point, double radius, district_type type,
-	                   point_type road_type, int vertex_count);
-	void create_circle_by_existing_nodes(FVector central_point, double radius, double interval, district_type type,
-	                                     point_type road_type, int vertex_count, bool sticky_river, bool sticky_walls);
-	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<TSharedPtr<Street>>& fig_array, point_type type,
+	void create_special_district(TArray<FVector>& figure, EPointType type, FVector point);
+	void create_special_district_by_nodes(TArray<TSharedPtr<Node>>& figure, EPointType type, FVector point);
+	void create_circle(FVector point, double radius, Edistrict_type type,
+	                   EPointType road_type, int vertex_count);
+	void create_circle_by_existing_nodes(FVector central_point, double radius, double interval, Edistrict_type type,
+	                                     EPointType road_type, int vertex_count, bool sticky_river, bool sticky_walls);
+	void process_streets(TArray<TSharedPtr<Node>> nodes, TArray<TSharedPtr<Street>>& fig_array, EPointType type,
 	                     bool is_persistent);
 	TArray<TSharedPtr<Street>> process_segments(
 		TArray<TSharedPtr<Street>>& fig_array);
 	TSharedPtr<Node> get_next_road_node(TSharedPtr<Node> first_point,
 	                                    TSharedPtr<Node> second_point,
-	                                    point_type type, bool is_persistent);
+	                                    EPointType type, bool is_persistent);
 
 	void empty_all(TArray<TSharedPtr<Node>>& river)
 	{
@@ -139,7 +139,7 @@ public:
 	TArray<TSharedPtr<Node>> road_nodes{};
 	TArray<FVector> soft_borders_array{};
 	TSharedPtr<Node> central_node;
-	TArray<TTuple<FVector, district_type>> custom_districts;
+	TArray<TTuple<FVector, Edistrict_type>> custom_districts;
 	TArray<CustomDistrNodes> custom_distr_nodes;
 	TArray<FVector> debug_points_array;
 	TArray<FVector> debug2_points_array;
