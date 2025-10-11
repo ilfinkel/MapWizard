@@ -60,6 +60,10 @@ struct FMapParams
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double max_road_length = 95;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double max_segments_diff = 20;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double segment_angle_deviation = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double river_road_distance = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double main_road_width = 6;
@@ -87,6 +91,8 @@ struct FMapParams
 	double road_right_chance = 80;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool is_initialized = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double bridge_indent = 10;
 	FVector center;
 	double av_distance;
 	UPROPERTY(BlueprintReadOnly, Category = "Folders")

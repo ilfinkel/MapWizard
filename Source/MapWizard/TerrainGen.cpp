@@ -828,7 +828,7 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 				!is_point_in_river(r->get_FVector()))
 			{
 				if (!AllGeometry::is_point_near_figure(
-					river_points, r->get_FVector(), 200))
+					river_points, r->get_FVector(), map_params.river_road_distance))
 				{
 					closest_dist = FVector::Distance(r->get_FVector(), map_params.center);
 					closest_center = r;
@@ -848,11 +848,11 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 		auto trade_path1 = AllGeometry::create_segment_at_angle(
 			left_node->get_FVector(), closest_center->get_FVector(),
 			closest_center->get_FVector(),
-			trade_path_angle, 5000);
+			trade_path_angle, (map_params.x_size + map_params.y_size) / 2);
 		auto trade_path2 = AllGeometry::create_segment_at_angle(
 			left_node->get_FVector(), closest_center->get_FVector(),
 			closest_center->get_FVector(),
-			trade_path_angle + 180, 5000);
+			trade_path_angle + 180, (map_params.x_size + map_params.y_size) / 2);
 		FVector trade_path1_end;
 		FVector trade_path2_end;
 		auto trade_path1_end_point = AllGeometry::is_intersect_array(
@@ -888,11 +888,10 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 		                            EPointType::MainRoad, river);
 
 		TArray<TSharedPtr<Node>> circle_nodes;
-		for (int angle = trade_path_angle + FMath::FRand() * 10 + 20; angle <
-		     trade_path_angle + 180 - 20; angle += FMath::FRand() * 10 + 20)
+		for (int angle = trade_path_angle + FMath::RandRange(20, 30); angle < trade_path_angle + 180 - 20; angle +=
+		     FMath::RandRange(20, 30))
 		{
-			double dist_from_center = map_params.av_distance * (FMath::FRand() * 0.5 +
-				0.25);
+			double dist_from_center = map_params.av_distance * (FMath::RandRange(0.25, 0.75));
 			auto new_node_fvec = AllGeometry::create_segment_at_angle(
 				left_node->get_FVector(), closest_center->get_FVector(),
 				closest_center->get_FVector(),
@@ -929,12 +928,10 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 				circle_nodes.Add(new_wall_node);
 			}
 		}
-		for (int angle = trade_path_angle + 180 + FMath::FRand() * 10 + 20;
-		     angle < trade_path_angle + 360 - 20; angle += FMath::FRand() * 10 +
-		     20)
+		for (int angle = trade_path_angle + 180 + FMath::RandRange(20, 30);
+		     angle < trade_path_angle + 360 - 20; angle += FMath::RandRange(20, 30))
 		{
-			double dist_from_center = map_params.av_distance * (FMath::FRand() * 0.5 +
-				0.25);
+			double dist_from_center = map_params.av_distance * (FMath::RandRange(0.25, 0.75));
 			auto new_node_fvec = AllGeometry::create_segment_at_angle(
 				left_node->get_FVector(), closest_center->get_FVector(),
 				closest_center->get_FVector(),
@@ -992,10 +989,8 @@ void TerrainGen::create_guiding_roads(TArray<WeightedPoint>& weighted_points, co
 				[i, this, local_road](const TSharedPtr<Node>& Item1,
 				                      const TSharedPtr<Node>& Item2)
 				{
-					return FVector::Distance(local_road[i]->get_FVector(),
-					                         Item1->get_FVector()) <
-						FVector::Distance(local_road[i]->get_FVector(),
-						                  Item2->get_FVector());
+					return FVector::Distance(local_road[i]->get_FVector(), Item1->get_FVector()) < FVector::Distance(
+						local_road[i]->get_FVector(), Item2->get_FVector());
 				});
 			for (int j = 0; j < local_road.Num(); j++)
 			{
@@ -1011,13 +1006,8 @@ bool TerrainGen::create_guiding_road_segment(
 	const TSharedPtr<Node>& start_point, const TSharedPtr<Node>& end_point,
 	bool is_through_river, EPointType road_type, const TArray<TSharedPtr<Node>>& river)
 {
-	if (AllGeometry::is_intersect_array(start_point, end_point, river, true).
-		IsSet() && !is_through_river)
-	{
-		return false;
-	}
-	if (FVector::Distance(start_point->get_FVector(), end_point->get_FVector())
-		< 0.01)
+	if (start_point == end_point ||
+		(AllGeometry::is_intersect_array(start_point, end_point, river, true).IsSet() && !is_through_river))
 	{
 		return false;
 	}
@@ -1042,26 +1032,18 @@ bool TerrainGen::create_guiding_road_segment(
 			auto point1 = inter_point1->Value.Key;
 			auto point2 = inter_point1->Value.Value;
 			int angle = -90;
-			// auto calc_angle = AllGeometry::calculate_angle_clock(inter_point1->Value.Key->get_FVector(),
-			// 	inter_point1->Key, local_start_point->get_FVector());
-			// if (calc_angle < 180)
-			// {
-			// 	angle = 90;
-			// }
-			if (!is_point_in_river(AllGeometry::create_segment_at_angle(
-				point1->get_FVector(), point2->get_FVector(),
-				inter_point1->Key, angle, 0.1)))
+			if (!is_point_in_river(AllGeometry::create_segment_at_angle(point1->get_FVector(), point2->get_FVector(),
+			                                                            inter_point1->Key, angle,
+			                                                            0.1)))
 			{
 				angle = 90;
 			}
 			road_nodes.AddUnique(local_end_point);
-			TSharedPtr<Node> inter_point2 = MakeShared<Node>(
-				local_end_point->get_FVector());
+			TSharedPtr<Node> inter_point2 = MakeShared<Node>(local_end_point->get_FVector());
 			for (int i = 10; ; i += 5)
 			{
-				auto point_end = AllGeometry::create_segment_at_angle(
-					point1->get_FVector(), point2->get_FVector(),
-					inter_point1->Key, angle, i);
+				auto point_end = AllGeometry::create_segment_at_angle(point1->get_FVector(), point2->get_FVector(),
+				                                                      inter_point1->Key, angle, i);
 				if (!is_point_in_river(point_end))
 				{
 					auto inter = AllGeometry::is_intersect_array(
@@ -1084,24 +1066,19 @@ bool TerrainGen::create_guiding_road_segment(
 			next_start_point = new_node;
 			real_bridge_end = AllGeometry::create_segment_at_angle(
 				local_end_point->get_FVector(), next_start_point->get_FVector(),
-				next_start_point->get_FVector(), 0, 6);
+				next_start_point->get_FVector(), 0, map_params.bridge_indent);
 			next_start_point->set_FVector(real_bridge_end);
 			FVector real_bridge_start = AllGeometry::create_segment_at_angle(
 				next_start_point->get_FVector(), local_end_point->get_FVector(),
-				local_end_point->get_FVector(), 0, 6);
+				local_end_point->get_FVector(), 0, map_params.bridge_indent);
 			local_end_point->set_FVector(real_bridge_start);
 			next_start_point->set_FVector(real_bridge_end);
 			create_segment(road_nodes, local_end_point, next_start_point, true,
-			               road_type, 5000);
-			// if (road_type != wall)
-			// {
-			// 	bridges.Add(TTuple<TSharedPtr<Node>, TSharedPtr<Node>>(local_end_point, next_start_point));
-			// }
+			               road_type, (map_params.x_size + map_params.y_size) / 2);
 		}
 
 		TSharedPtr<Node> old_node = local_start_point;
-		int dist_times = FVector::Distance(local_start_point->get_FVector(),
-		                                   local_end_point->get_FVector()) / (
+		int dist_times = FVector::Distance(local_start_point->get_FVector(), local_end_point->get_FVector()) / (
 			map_params.av_road_length);
 		dist_times = dist_times < 1 ? 1 : dist_times;
 		// UE_LOG(LogTemp, Warning, TEXT("количество раз %d"), dist_times);
@@ -1109,16 +1086,15 @@ bool TerrainGen::create_guiding_road_segment(
 		{
 			TSharedPtr<Node> node = MakeShared<Node>(0, 0, 0);
 			node->set_type(road_type);
-			node->set_FVector(local_start_point->get_FVector() +
-				((local_end_point->get_FVector() - local_start_point->
-					get_FVector()) / dist_times * i));
+			node->set_FVector(
+				local_start_point->get_FVector() + ((local_end_point->get_FVector() - local_start_point->get_FVector())
+					/ dist_times * i));
 			if (i == dist_times)
 			{
 				node = local_end_point;
 			}
 			road_nodes.AddUnique(node);
-			create_segment(road_nodes, old_node, node, true, road_type,
-			               map_params.max_road_length);
+			create_segment(road_nodes, old_node, node, true, road_type, map_params.max_road_length);
 			old_node = node;
 		}
 	}
@@ -1200,15 +1176,15 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 		if (!road_node->is_used() && road_node->get_node_type() !=
 			EPointType::River)
 		{
+			float beg_dist = FVector::Distance(road_node->get_FVector(), road_node->conn[0]->node->get_FVector());
 			bool is_end = false;
+
 			if (road_node->conn.Num() == 1)
 			{
 				if (FMath::FRand() * 100 <= map_params.road_forward_chance)
 				{
-					auto length = FVector::Distance(
-							road_node->get_FVector(),
-							road_node->conn[0]->node->get_FVector()) +
-						(FMath::FRand() * 40) - 20;
+					auto length = beg_dist + FMath::RandRange(-map_params.max_segments_diff,
+					                                          map_params.max_segments_diff);
 					if (length < map_params.min_new_road_length)
 					{
 						length = map_params.min_new_road_length;
@@ -1217,11 +1193,12 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 					{
 						length = map_params.max_road_length;
 					}
-					double angle_in_degrees = (FMath::FRand() * 10) - 5;
-					auto line1 = AllGeometry::create_segment_at_angle(
-						road_node->conn[0]->node->get_FVector(),
-						road_node->get_FVector(), road_node->get_FVector(),
-						angle_in_degrees, length);
+					double angle_in_degrees = FMath::RandRange(-map_params.segment_angle_deviation,
+					                                           map_params.segment_angle_deviation);
+					auto line1 = AllGeometry::create_segment_at_angle(road_node->conn[0]->node->get_FVector(),
+					                                                  road_node->get_FVector(),
+					                                                  road_node->get_FVector(), angle_in_degrees,
+					                                                  length);
 
 					TSharedPtr<Node> new_node = MakeShared<Node>(line1);
 					new_node->set_type(EPointType::Road);
@@ -1235,8 +1212,7 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 					{
 						if (!soft_borders_array.IsEmpty())
 						{
-							if (AllGeometry::is_point_in_figure(
-								line1, soft_borders_array))
+							if (AllGeometry::is_point_in_figure(line1, soft_borders_array))
 							{
 								is_possible = true;
 							}
@@ -1245,8 +1221,8 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 						{
 							for (auto rc : road_centers)
 							{
-								if (FVector::Distance(rc->get_FVector(), line1)
-									< rc->conn.Num() * (map_params.y_size / 28))
+								if (FVector::Distance(rc->get_FVector(), line1) <
+									rc->conn.Num() * (map_params.y_size / 28))
 								{
 									is_possible = true;
 									break;
@@ -1259,10 +1235,8 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 					{
 						// create_usual_road_segment(add_road, road_node, new_node);
 						auto finish = create_segment(
-							add_road, road_node, new_node, false,
-							EPointType::Road, map_params.max_road_length);
-						if (finish.IsSet() && (finish.GetValue() != new_node ||
-							finish.GetValue()->get_node_type() ==
+							add_road, road_node, new_node, false, EPointType::Road, map_params.max_road_length);
+						if (finish.IsSet() && (finish.GetValue() != new_node || finish.GetValue()->get_node_type() ==
 							EPointType::River))
 						{
 							is_end = true;
@@ -1270,15 +1244,12 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 					}
 				}
 			}
-			if ((road_node->conn.Num() == 2 || road_node->conn.Num() == 1) && !
-				is_end)
+			if ((road_node->conn.Num() == 2 || road_node->conn.Num() == 1) && !is_end)
 			{
 				if (FMath::FRand() * 100 <= map_params.road_left_chance)
 				{
-					auto length = FVector::Distance(
-							road_node->get_FVector(),
-							road_node->conn[0]->node->get_FVector()) +
-						(FMath::FRand() * 40) - 20;
+					auto length = beg_dist + FMath::RandRange(-map_params.max_segments_diff,
+					                                          map_params.max_segments_diff);
 					if (length < map_params.min_new_road_length)
 					{
 						length = map_params.min_new_road_length;
@@ -1287,11 +1258,12 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 					{
 						length = map_params.max_road_length;
 					}
-					double angle_in_degrees = 90 + (FMath::FRand() * 10) - 5;
-					auto line2 = AllGeometry::create_segment_at_angle(
-						road_node->conn[0]->node->get_FVector(),
-						road_node->get_FVector(), road_node->get_FVector(),
-						angle_in_degrees, length);
+					double angle_in_degrees = 90 + FMath::RandRange(-map_params.segment_angle_deviation,
+					                                                map_params.segment_angle_deviation);
+					auto line2 = AllGeometry::create_segment_at_angle(road_node->conn[0]->node->get_FVector(),
+					                                                  road_node->get_FVector(),
+					                                                  road_node->get_FVector(), angle_in_degrees,
+					                                                  length);
 					TSharedPtr<Node> new_node2 = MakeShared<Node>(line2);
 					new_node2->set_type(EPointType::Road);
 					create_segment(add_road, road_node, new_node2, false,
@@ -1299,10 +1271,8 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 				}
 				if (FMath::FRand() * 100 <= map_params.road_right_chance)
 				{
-					auto length = FVector::Distance(
-							road_node->get_FVector(),
-							road_node->conn[0]->node->get_FVector()) +
-						(FMath::FRand() * 40) - 20;
+					auto length = beg_dist + FMath::RandRange(-map_params.max_segments_diff,
+					                                          map_params.max_segments_diff);
 					if (length < map_params.min_new_road_length)
 					{
 						length = map_params.min_new_road_length;
@@ -1311,7 +1281,8 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 					{
 						length = map_params.max_road_length;
 					}
-					double angle_in_degrees = -90 + (FMath::FRand() * 10) - 5;
+					double angle_in_degrees = -90 + FMath::RandRange(-map_params.segment_angle_deviation,
+					                                                 map_params.segment_angle_deviation);
 					auto line3 = AllGeometry::create_segment_at_angle(
 						road_node->conn[0]->node->get_FVector(),
 						road_node->get_FVector(), road_node->get_FVector(),

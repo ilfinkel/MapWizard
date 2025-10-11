@@ -457,7 +457,7 @@ void AMainTerrain::ReinitializeActor(FMapParams& map_params,
 		//                               (MapParams.x_size + MapParams.y_size) /
 		//                               2);
 		// OrthographicCamera->SetActorLocation(NewLocation);
-		// FRotator DownwardRotation = FRotator(0.00, -90.00, 0.00);
+		// FRotator DownwardRotation = FRotator(0.00, -90.00,0);
 		// OrthographicCamera->SetActorRotation(DownwardRotation);
 
 		TerrainGen gen(MapParams, ResidentialHousesParams, LuxuryHousesParams, SlumsHousesParams);
@@ -653,7 +653,7 @@ void AMainTerrain::DivideDistricts()
 			// MeshComponent2->ProceduralMesh->SetMaterial(0, RoadMaterial);
 			// MeshComponent2->Material = RoadMaterial;
 			// MeshComponent2->DefaultMaterial = BaseMaterial;
-			// DrawingStreet ds(street, MeshComponent2, 0.03, true);
+			// DrawingStreet ds(street, MeshComponent2,3, true);
 			// ds.redraw_me(3);
 			// drawing_streets.Add(ds);
 			drawing_districts[i].delete_mesh();
@@ -738,7 +738,7 @@ void AMainTerrain::draw_all()
 	// 	Start.Z = -10;
 	// 	End.Z = 100;
 
-	// 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 0.0f, 0, 2.0f);
+	// 	DrawDebugLine(GetWorld(), Start, End, FColor::Red, true,f, 0, 2.0f);
 	// }
 	// for (auto& p : debug_points_array)
 	// {
@@ -747,7 +747,7 @@ void AMainTerrain::draw_all()
 	// 	Start.Z = -10;
 	// 	End.Z = 100;
 
-	// 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 0.0f, 0, 2.0f);
+	// 	DrawDebugLine(GetWorld(), Start, End, FColor::Green, true,f, 0, 2.0f);
 	// }
 
 	int ind = 0;
@@ -761,7 +761,7 @@ void AMainTerrain::draw_all()
 
 	// Создаем физическое тело для коллизии
 	DrawingObject obj;
-	obj.create_mesh_2d(Base, map_borders_array, 0.01);
+	obj.create_mesh_2d(Base, map_borders_array, 1);
 
 	static int32 ActorCounter = 0;
 	for (auto& r : figures_array)
@@ -777,8 +777,9 @@ void AMainTerrain::draw_all()
 
 		FString ActorName = r->get_full_name() + LexToString(r->get_id());
 		MeshComponent2->SetActorLabel(ActorName);
-		drawing_districts.Add(DrawingDistrict(r, MeshComponent2, 0.02));
-		drawing_objects.Add(MakeShared<DrawingDistrict>(r, MeshComponent2, 0.02));
+		DrawingDistrict dd(r, MeshComponent2, 2);
+		drawing_districts.Add(dd);
+		drawing_objects.Add(MakeShared<DrawingDistrict>(dd));
 
 		int house_count = 0;
 		for (auto& p : r->houses)
@@ -792,8 +793,9 @@ void AMainTerrain::draw_all()
 			MeshComponent->SetActorLabel(HouseName);
 			MeshComponent->SetDynamicObject(p);
 
-			drawing_houses.Add(DrawingHouse(p, MeshComponent, 0.04));
-			drawing_objects.Add(MakeShared<DrawingHouse>(p, MeshComponent, 0.04));
+			DrawingHouse dh(p, MeshComponent, 4);
+			drawing_objects.Add(MakeShared<DrawingHouse>(dh));
+			drawing_houses.Add(dh);
 		}
 	}
 	for (auto point_object : point_objects_array)
@@ -806,8 +808,11 @@ void AMainTerrain::draw_all()
 
 		FString ActorName = point_object->get_full_name() + LexToString(point_object->get_id());
 		MeshComponent2->SetActorLabel(ActorName);
-		drawing_points.Add(DrawingPoint(point_object, MeshComponent2, 0.05));
-		drawing_objects.Add(MakeShared<DrawingPoint>(point_object, MeshComponent2, 0.05));
+
+
+		DrawingPoint dp(point_object, MeshComponent2, 5);
+		drawing_objects.Add(MakeShared<DrawingPoint>(dp));
+		drawing_points.Add(dp);
 	}
 
 	for (auto street : segments_array)
@@ -815,21 +820,23 @@ void AMainTerrain::draw_all()
 		AProceduralBlockMeshActor* MeshComponent2 =
 			GetWorld()->SpawnActor<AProceduralBlockMeshActor>(AProceduralBlockMeshActor::StaticClass());
 		MeshComponent2->SetSelectedObject(selected_objects, prev_selected_objects);
-		double height = 0.03;
+		double height = 3;
 		MeshComponent2->SetDynamicObject(street);
 
 		FString ActorName = street->get_full_name() + LexToString(street->get_id());
 		MeshComponent2->SetActorLabel(ActorName);
 		switch (street->get_type())
 		{
-		case EPointType::Road: height = 0.03;
-		case EPointType::MainRoad: height = 0.031;
-		case EPointType::River: height = 0.032;
-		case EPointType::Wall: height = 0.033;
-		default: height = 0.034;
+		case EPointType::Road: height = 3;
+		case EPointType::MainRoad: height = 3.1;
+		case EPointType::River: height = 3.2;
+		case EPointType::Wall: height = 3.3;
+		default: height = 3.4;
 		}
-		drawing_streets.Add(DrawingStreet(street, MeshComponent2, height));
-		drawing_objects.Add(MakeShared<DrawingStreet>(street, MeshComponent2, height));
+		
+		DrawingStreet ds(street, MeshComponent2, height);
+		drawing_objects.Add(MakeShared<DrawingStreet>(ds));
+		drawing_streets.Add(ds);
 	}
 	for (auto a : drawing_objects)
 	{
