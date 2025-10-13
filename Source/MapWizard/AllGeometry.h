@@ -71,6 +71,7 @@ public:
 	static void TriangulatePolygon(const TArray<FVector>& Polygon,
 	                               TArray<int32>& Triangles);
 	static bool is_point_in_figure(FVector point_, TArray<FVector> figure);
+	static bool is_point_in_figure(TSharedPtr<Node> point_, TArray<TSharedPtr<Node>> figure);
 	static float point_to_seg_distance(const FVector& SegmentStart,
 	                                   const FVector& SegmentEnd,
 	                                   const FVector& Point);

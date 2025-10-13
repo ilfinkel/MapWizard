@@ -77,8 +77,6 @@ struct FMapParams
 	EDrawStage draw_stage = EDrawStage::process_houses;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water Type")
 	EWaterType water_type = EWaterType::river;
-
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double x_size = 4000;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -93,6 +91,8 @@ struct FMapParams
 	bool is_initialized = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double bridge_indent = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int max_road_nodes = -1;
 	FVector center;
 	double av_distance;
 	UPROPERTY(BlueprintReadOnly, Category = "Folders")
@@ -228,6 +228,15 @@ struct FSlumsHousesParams
 	float MaxHouseSidesRatio = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxArea = 90;
+};
+
+
+USTRUCT(BlueprintType)
+struct FRoyalDistrictParams
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Radius = 2000;
 };
 
 USTRUCT(BlueprintType)
@@ -399,6 +408,8 @@ public:
 	FLuxuryHousesParams LuxuryHousesParams;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSlumsHousesParams SlumsHousesParams;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRoyalDistrictParams RoyalDistrictParams;
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vertices", meta = (AllowPrivateAccess = "true"))
 	// TArray<FVector> VerticesRemembered;
 

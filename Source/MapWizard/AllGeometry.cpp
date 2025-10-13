@@ -930,22 +930,17 @@ TOptional<FVector> AllGeometry::is_intersect_array_clear(
 		       : inter_segment->Value.Value->get_FVector();
 }
 
-FVector AllGeometry::create_segment_at_angle(const FVector& line_begin,
-                                             const FVector& line_end,
-                                             const FVector& line_beginPoint,
-                                             double angle_in_degrees,
-                                             double length)
+FVector AllGeometry::create_segment_at_angle(const FVector& line_begin, const FVector& line_end,
+                                             const FVector& line_beginPoint, double angle_in_degrees, double length)
 {
 	FVector line_direction = (line_end - line_begin).GetSafeNormal();
-	FVector rotated_direction = line_direction.RotateAngleAxis(
-		angle_in_degrees, FVector(0.f, 0.f, 1.f));
+	FVector rotated_direction = line_direction.RotateAngleAxis(angle_in_degrees, FVector(0.f, 0.f, 1.f));
 	FVector line_endPoint = line_beginPoint + rotated_direction * length;
 
 	return line_endPoint;
 }
 
-float AllGeometry::calculate_angle(const FVector& A, const FVector& B,
-                                   const FVector& C, bool is_clockwork)
+float AllGeometry::calculate_angle(const FVector& A, const FVector& B, const FVector& C, bool is_clockwork)
 {
 	FVector BA = A - B;
 	FVector BC = C - B;
@@ -1183,7 +1178,7 @@ bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 {
 	FVector point = point_;
 	FVector point2 = point_;
-	point2.Y += 5000;
+	point2.Y += 99999999;
 	if (figure.Num() < 3) return false;
 	FVector figure0 = figure[0];
 	if (figure[0] != figure.Last())
@@ -1203,6 +1198,18 @@ bool AllGeometry::is_point_in_figure(FVector point_, TArray<FVector> figure)
 		}
 	}
 	return intersected;
+}
+
+bool AllGeometry::is_point_in_figure(TSharedPtr<Node> point_, TArray<TSharedPtr<Node>> figure)
+{
+	TArray<FVector> figure_points;
+	for (auto& point : figure)
+	{
+		figure_points.Add(point->get_FVector());
+		if (point==point_) return false;
+	}
+	return is_point_in_figure(point_->get_FVector(), figure_points);
+	
 }
 
 float AllGeometry::point_to_seg_distance(const FVector& SegmentStart,
@@ -1319,10 +1326,10 @@ TArray<FVector> AllGeometry::shrink_polygon(const TArray<FVector> cur_polygon, d
 			road_height2);
 		FVector parralel1_end =
 			AllGeometry::create_segment_at_angle(
-				cur_polygon[Prev], cur_polygon[Curr], parralel1_beg, 0, 5000);
+				cur_polygon[Prev], cur_polygon[Curr], parralel1_beg, 0, 9999999);
 		FVector parralel2_end =
 			AllGeometry::create_segment_at_angle(
-				cur_polygon[Next], cur_polygon[Curr], parralel2_beg, 0, 5000);
+				cur_polygon[Next], cur_polygon[Curr], parralel2_beg, 0, 9999999);
 		parralel1_beg.Z = 0;
 		parralel2_beg.Z = 0;
 		parralel1_end.Z = 0;

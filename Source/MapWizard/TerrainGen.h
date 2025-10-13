@@ -23,17 +23,19 @@ public:
 	FResidentialHousesParams rh_params;
 	FLuxuryHousesParams lh_params;
 	FSlumsHousesParams sh_params;
+	FRoyalDistrictParams rd_params;
 	bool did_river_multiplied = false;
 
 	TArray<TSharedPtr<District>> river_figures;
 
 	TerrainGen(FMapParams& map_params_,
 	           FResidentialHousesParams& residential_houses_params_, FLuxuryHousesParams& luxury_houses_params_, 
-	           FSlumsHousesParams& slums_houses_params_) :
+	           FSlumsHousesParams& slums_houses_params_, FRoyalDistrictParams& royal_district_params) :
 		map_params(map_params_),
 	rh_params(residential_houses_params_),
 	lh_params(luxury_houses_params_),
-	sh_params(slums_houses_params_)
+	sh_params(slums_houses_params_),
+	rd_params(royal_district_params)
 	{
 	}
 
