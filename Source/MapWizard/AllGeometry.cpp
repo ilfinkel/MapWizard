@@ -744,14 +744,10 @@ TOptional<FVector> AllGeometry::is_intersect(const FVector& line1_begin,
 			return intersectionPoint;
 		}
 		if (!is_opened &&
-			(FVector::Distance(intersectionPoint, line2_begin) > TNumericLimits<
-					double>::Min() &&
-				FVector::Distance(intersectionPoint, line2_end) > TNumericLimits
-				<double>::Min() &&
-				FVector::Distance(intersectionPoint, line1_begin) >
-				TNumericLimits<double>::Min() &&
-				FVector::Distance(intersectionPoint, line1_end) > TNumericLimits
-				<double>::Min()))
+			!FMath::IsNearlyZero(FVector::Distance(intersectionPoint, line2_begin)) &&
+			!FMath::IsNearlyZero(FVector::Distance(intersectionPoint, line2_end)) &&
+			!FMath::IsNearlyZero(FVector::Distance(intersectionPoint, line1_begin)) &&
+			!FMath::IsNearlyZero(FVector::Distance(intersectionPoint, line1_end)))
 		{
 			return intersectionPoint;
 		}
@@ -845,13 +841,11 @@ AllGeometry::is_intersect_array(
 		};
 		return final_tuple;
 	}
-	return TOptional<TTuple<FVector, TTuple<
-		                        TSharedPtr<Node>, TSharedPtr<Node>>>>();
+	return TOptional<TTuple<FVector, TTuple<TSharedPtr<Node>, TSharedPtr<Node>>>>();
 }
 
-TOptional<FVector> AllGeometry::is_intersect_array(
-	FVector line_begin, FVector line_end,
-	const TArray<FVector>& array_point, bool is_opened)
+TOptional<FVector> AllGeometry::is_intersect_array(FVector line_begin, FVector line_end,
+                                                   const TArray<FVector>& array_point, bool is_opened)
 {
 	int NumVertices = array_point.Num();
 	double dist = TNumericLimits<double>::Max();
@@ -1206,10 +1200,9 @@ bool AllGeometry::is_point_in_figure(TSharedPtr<Node> point_, TArray<TSharedPtr<
 	for (auto& point : figure)
 	{
 		figure_points.Add(point->get_FVector());
-		if (point==point_) return false;
+		if (point == point_) return false;
 	}
 	return is_point_in_figure(point_->get_FVector(), figure_points);
-	
 }
 
 float AllGeometry::point_to_seg_distance(const FVector& SegmentStart,

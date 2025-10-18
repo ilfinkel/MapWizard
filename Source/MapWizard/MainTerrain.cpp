@@ -123,6 +123,72 @@ int AMainTerrain::GetSeed()
 	return seed;
 }
 
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHousesOfDistrict(int id)
+{
+	TArray<TSharedPtr<District>> districts_to_get{};
+	
+	TArray<int> houses_ids{};
+	TArray<AProceduralBlockMeshActor*> houses_to_get{};
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
+		if (drawing_districts[i].district->get_id()==id)
+		{
+			districts_to_get.Add(drawing_districts[i].district);
+			break;
+		}
+	}
+	for (auto& distr : districts_to_get)
+	{
+		for (auto& h:distr->houses)
+		{
+			houses_ids.Add(h->get_id());
+		}
+	}
+	for (auto& d_h:drawing_houses)
+	{
+		if (houses_ids.Contains(d_h.house->get_id()))
+		{
+			houses_to_get.Add(d_h.mesh);
+		}
+	}
+	return houses_to_get;
+}
+
+TArray<AProceduralBlockMeshActor*> AMainTerrain::GetAllHousesOfCurrentDistricts(TArray<int> ids)
+{
+	TArray<TSharedPtr<District>> districts_to_get{};
+	
+	TArray<int> houses_ids{};
+	TArray<AProceduralBlockMeshActor*> houses_to_get{};
+	int found = 0;
+	for (int i = 0; i < drawing_districts.Num(); i++)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("for in %i: %p"), i, drawing_districts[i].district.Get())
+		if (ids.Contains(drawing_districts[i].district->get_id()))
+		{
+			districts_to_get.Add(drawing_districts[i].district);
+			found++;
+			if (found == ids.Num()) break;
+		}
+	}
+	for (auto& distr : districts_to_get)
+	{
+		for (auto& h:distr->houses)
+		{
+			houses_ids.Add(h->get_id());
+		}
+	}
+	for (auto& d_h:drawing_houses)
+	{
+		if (houses_ids.Contains(d_h.house->get_id()))
+		{
+			houses_to_get.Add(d_h.mesh);
+		}
+	}
+	return houses_to_get;
+}
+
 void AMainTerrain::RedrawAll(bool is_2d_)
 {
 	is_2d = is_2d_;
@@ -833,7 +899,7 @@ void AMainTerrain::draw_all()
 		case EPointType::Wall: height = 3.3;
 		default: height = 3.4;
 		}
-		
+
 		DrawingStreet ds(street, MeshComponent2, height);
 		drawing_objects.Add(MakeShared<DrawingStreet>(ds));
 		drawing_streets.Add(ds);

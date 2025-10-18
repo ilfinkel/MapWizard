@@ -81,7 +81,7 @@ public:
 	{
 		return object->get_center();
 	}
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	TArray<FVectorArrayWrapper> SliceHouse(float north, float east, float south, float west)
 	{
@@ -96,7 +96,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Custom")
-	float GetID()
+	int GetID()
 	{
 		return object->get_id();
 	}

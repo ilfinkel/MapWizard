@@ -215,11 +215,11 @@ struct SelectableObject
 	{
 		auto vertexes = get_object_vertexes();
 		int num = vertexes.Num();
-		if (vertexes[0] == vertexes[num - 1] && num > 3)
+		if (num > 3 && vertexes[0] == vertexes[num - 1])
 		{
 			num -= 1;
 		}
-		FVector sum_of_points;
+		FVector sum_of_points = FVector::Zero();
 		for (int i = 0; i < num; i++)
 		{
 			sum_of_points += vertexes[i];

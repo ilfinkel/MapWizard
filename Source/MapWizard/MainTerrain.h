@@ -415,6 +415,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	int GetSeed();
+	
+	UFUNCTION(BlueprintCallable, Category = "CustomDistricts")
+	TArray<AProceduralBlockMeshActor*> GetAllHousesOfDistrict(int id);
+	UFUNCTION(BlueprintCallable, Category = "CustomDistricts")
+	TArray<AProceduralBlockMeshActor*> GetAllHousesOfCurrentDistricts(TArray<int> ids);
 	UFUNCTION(BlueprintCallable, Category = "Custom")
 	void RedrawAll(bool is_2d);
 	UFUNCTION(BlueprintCallable, Category = "Custom")

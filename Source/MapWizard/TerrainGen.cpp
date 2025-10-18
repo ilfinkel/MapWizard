@@ -136,8 +136,7 @@ void TerrainGen::move_road(const TSharedPtr<Node>& node, const TArray<WeightedPo
 
 	for (auto conn : node->conn)
 	{
-		if (FVector::Distance(conn->node->get_FVector(), point) >
-			map_params.max_road_length)
+		if (FVector::Distance(conn->node->get_FVector(), point) > map_params.max_road_length)
 		{
 			return;
 		}
@@ -232,10 +231,7 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	}
 	river.Empty();
 
-	if (map_params.draw_stage >= EDrawStage::shrink_roads)
-	{
-		shrink_roads();
-	}
+	shrink_roads();
 
 	process_streets(road_nodes, streets_array, EPointType::Wall, true);
 	double tower_radius = rd_params.Radius / 10;
@@ -1216,14 +1212,10 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 				{
 					auto length = beg_dist + FMath::RandRange(-map_params.max_segments_diff,
 					                                          map_params.max_segments_diff);
-					if (length < map_params.min_new_road_length)
-					{
-						length = map_params.min_new_road_length;
-					}
-					if (length > map_params.max_road_length)
-					{
-						length = map_params.max_road_length;
-					}
+					
+					if (length < map_params.min_new_road_length) length = map_params.min_new_road_length;
+					if (length > map_params.max_road_length) length = map_params.max_road_length;
+					
 					double angle_in_degrees = 90 + FMath::RandRange(-map_params.segment_angle_deviation,
 					                                                map_params.segment_angle_deviation);
 					auto line2 = AllGeometry::create_segment_at_angle(road_node->conn[0]->node->get_FVector(),
@@ -1238,15 +1230,11 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 				if (FMath::FRand() * 100 <= map_params.road_right_chance)
 				{
 					auto length = beg_dist + FMath::RandRange(-map_params.max_segments_diff,
-					                                          map_params.max_segments_diff);
-					if (length < map_params.min_new_road_length)
-					{
-						length = map_params.min_new_road_length;
-					}
-					if (length > map_params.max_road_length)
-					{
-						length = map_params.max_road_length;
-					}
+					map_params.max_segments_diff);
+					
+					if (length < map_params.min_new_road_length) length = map_params.min_new_road_length;
+					if (length > map_params.max_road_length) length = map_params.max_road_length;
+					
 					double angle_in_degrees = -90 + FMath::RandRange(-map_params.segment_angle_deviation,
 					                                                 map_params.segment_angle_deviation);
 					auto line3 = AllGeometry::create_segment_at_angle(

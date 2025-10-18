@@ -5,10 +5,8 @@
 
 struct CustomDistrNodes
 {
-	CustomDistrNodes(TSharedPtr<Node> node1_, TSharedPtr<Node> node2_,
-	                 TSharedPtr<Node> node3_): node1(node1_)
-	                                           , node2(node2_)
-	                                           , node3(node3_)
+	CustomDistrNodes(TSharedPtr<Node> node1_, TSharedPtr<Node> node2_, TSharedPtr<Node> node3_)
+		: node1(node1_), node2(node2_), node3(node3_)
 	{
 	};
 	TSharedPtr<Node> node1;
@@ -29,20 +27,21 @@ public:
 	TArray<TSharedPtr<District>> river_figures;
 
 	TerrainGen(FMapParams& map_params_,
-	           FResidentialHousesParams& residential_houses_params_, FLuxuryHousesParams& luxury_houses_params_, 
+	           FResidentialHousesParams& residential_houses_params_, FLuxuryHousesParams& luxury_houses_params_,
 	           FSlumsHousesParams& slums_houses_params_, FRoyalDistrictParams& royal_district_params) :
 		map_params(map_params_),
-	rh_params(residential_houses_params_),
-	lh_params(luxury_houses_params_),
-	sh_params(slums_houses_params_),
-	rd_params(royal_district_params)
+		rh_params(residential_houses_params_),
+		lh_params(luxury_houses_params_),
+		sh_params(slums_houses_params_),
+		rd_params(royal_district_params)
 	{
 	}
 
 	void create_terrain(TArray<TSharedPtr<Node>>& roads_, TArray<TSharedPtr<District>>& figures_array_,
 	                    TArray<TSharedPtr<Street>>& streets_array_, TArray<TSharedPtr<Street>>& segments_array_,
 	                    TArray<TSharedPtr<District>>& river_figure_, TArray<TSharedPtr<Node>>& map_borders_array_,
-	                    TArray<TSharedPtr<PointObject>>& point_objects_array, TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_);
+	                    TArray<TSharedPtr<PointObject>>& point_objects_array, TArray<FVector>& debug_points_array_,
+	                    TArray<FVector>& debug2_points_array_);
 	void create_weighted_points(TArray<WeightedPoint>& weighted_points);
 	void create_rivers(const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
 	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
