@@ -1,12 +1,11 @@
 ﻿#include "TerrainGen.h"
 
-void TerrainGen::add_conn(const TSharedPtr<Node>& node1,
-                          const TSharedPtr<Node>& node2)
+void TerrainGen::add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2)
 {
-	if (FVector::Distance(node1->get_FVector(), node2->get_FVector()) < 0.01)
-	{
-		return;
-	}
+	// if (FVector::Distance(node1->get_FVector(), node2->get_FVector()) < 0.01)
+	// {
+	// 	return;
+	// }
 
 	if (!node1->get_next_point(node2->get_point()).IsSet())
 	{
@@ -17,6 +16,18 @@ void TerrainGen::add_conn(const TSharedPtr<Node>& node1,
 		node2->add_connection(node1);
 	}
 }
+
+// void TerrainGen::del_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2)
+// {
+// 	if (node1->get_next_point(node2->get_point()).IsSet())
+// 	{
+// 		node1->del_connection(node2);
+// 	}
+// 	if (node2->get_next_point(node1->get_point()).IsSet())
+// 	{
+// 		node2->del_connection(node1);
+// 	}
+// }
 
 TSharedPtr<Node> TerrainGen::insert_conn(
 	const TSharedPtr<Node>& node1_to_insert,
@@ -108,51 +119,51 @@ void TerrainGen::move_river(const TSharedPtr<Node>& node1,
 void TerrainGen::move_road(const TSharedPtr<Node>& node, const TArray<WeightedPoint>& weighted_points,
                            const TArray<TSharedPtr<Node>>& river)
 {
-	if (node->is_used() || node->is_unmovable())
-	{
-		return;
-	}
-
-	FVector point = node->get_FVector();
-	FVector backup_point = node->get_FVector();
-
-	if (node->conn.Num() == 2)
-	{
-		if (!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
-		                                     node->conn[1]->node->get_FVector(),
-		                                     river, true).IsSet() &&
-			!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
-			                                 node->conn[1]->node->get_FVector(),
-			                                 map_borders_array, true).IsSet() &&
-			!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
-			                                 node->conn[1]->node->get_FVector(),
-			                                 road_nodes, false).IsSet())
-		{
-			point = node->conn[0]->node->get_FVector() + node->conn[1]->node->get_FVector() / 2;
-		}
-	}
-
-	point_shift(point, weighted_points);
-
-	for (auto conn : node->conn)
-	{
-		if (FVector::Distance(conn->node->get_FVector(), point) > map_params.max_road_length)
-		{
-			return;
-		}
-	}
-
-
-	if (!AllGeometry::is_intersect_array(backup_point, point, river, true).
-		IsSet() &&
-		!AllGeometry::is_intersect_array(backup_point, point, map_borders_array,
-		                                 true).IsSet() &&
-		!AllGeometry::is_intersect_array(backup_point, point, road_nodes, false).
-		IsSet())
-	{
-		node->set_FVector(point);
-		return;
-	}
+	// if (node->is_used() || node->is_unmovable())
+	// {
+	// 	return;
+	// }
+	//
+	// FVector point = node->get_FVector();
+	// FVector backup_point = node->get_FVector();
+	//
+	// if (node->conn.Num() == 2)
+	// {
+	// 	if (!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
+	// 	                                     node->conn[1]->node->get_FVector(),
+	// 	                                     river, true).IsSet() &&
+	// 		!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
+	// 		                                 node->conn[1]->node->get_FVector(),
+	// 		                                 map_borders_array, true).IsSet() &&
+	// 		!AllGeometry::is_intersect_array(node->conn[0]->node->get_FVector(),
+	// 		                                 node->conn[1]->node->get_FVector(),
+	// 		                                 road_nodes, false).IsSet())
+	// 	{
+	// 		point = node->conn[0]->node->get_FVector() + node->conn[1]->node->get_FVector() / 2;
+	// 	}
+	// }
+	//
+	// point_shift(point, weighted_points);
+	//
+	// for (auto conn : node->conn)
+	// {
+	// 	if (FVector::Distance(conn->node->get_FVector(), point) > map_params.max_road_length)
+	// 	{
+	// 		return;
+	// 	}
+	// }
+	//
+	//
+	// if (!AllGeometry::is_intersect_array(backup_point, point, river, true).
+	// 	IsSet() &&
+	// 	!AllGeometry::is_intersect_array(backup_point, point, map_borders_array,
+	// 	                                 true).IsSet() &&
+	// 	!AllGeometry::is_intersect_array(backup_point, point, road_nodes, false).
+	// 	IsSet())
+	// {
+	// 	node->set_FVector(point);
+	// 	return;
+	// }
 }
 
 void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
@@ -162,7 +173,8 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
                                 TArray<TSharedPtr<District>>& river_figure_,
                                 TArray<TSharedPtr<Node>>& map_borders_array_,
                                 TArray<TSharedPtr<PointObject>>& point_objects_array_,
-                                TArray<FVector>& debug_points_array_, TArray<FVector>& debug2_points_array_)
+                                TArray<FVector>& debug_points_array_,
+                                TArray<FVector>& debug2_points_array_)
 {
 	// river.Empty();
 	road_nodes.Empty();
@@ -186,7 +198,6 @@ void TerrainGen::create_terrain(TArray<TSharedPtr<Node>>& roads_,
 	map_borders_array.Add(map_node3);
 	map_borders_array.Add(map_node2);
 	map_borders_array.Add(map_node1);
-
 
 	TArray<WeightedPoint> weighted_points{};
 	create_weighted_points(weighted_points);
@@ -1063,45 +1074,74 @@ bool TerrainGen::create_guiding_road_segment(
 
 void TerrainGen::shrink_roads()
 {
+	for (int i = 0; i < road_nodes.Num(); i++)
+	{
+		for (int j = i + 1; j < road_nodes.Num(); j++)
+		{
+			if (FVector::Distance(road_nodes[i]->get_FVector(), road_nodes[j]->get_FVector())
+				< map_params.min_road_length - 1)
+			{
+				add_conn(road_nodes[i], road_nodes[j]);
+			}
+		}
+	}
+	// for (auto& node : road_nodes)
+	// {
+	// 	if (node->get_node_type() != EPointType::Road && node->get_node_type() != EPointType::MainRoad && node->
+	// 		get_node_type() != EPointType::Wall)
+	// 	{
+	// 		break;
+	// 	}
+	// 	for (auto& conn : node->conn)
+	// 	{
+	// 		if (conn->node->get_node_type() != EPointType::Road && conn->node->get_node_type() != EPointType::MainRoad
+	// 			&& conn->node->get_node_type() != EPointType::Wall)
+	// 		{
+	// 			continue;
+	// 		}
+	// 		if (FVector::Distance(node->get_FVector(), conn->node->get_FVector()) > map_params.main_road_width)
+	// 		{
+	// 			del_conn(node, conn->node);
+	// 		}
+	// 	}
+	// }
+
 	int road_points = road_nodes.Num();
 	int old_road_points = TNumericLimits<int>::Max();
 	while (road_points != old_road_points)
 	{
 		old_road_points = road_nodes.Num();
 		auto array = road_nodes;
-		road_nodes.RemoveAll(
-			[&](const TSharedPtr<Node>& node)
+		road_nodes.RemoveAll([&](const TSharedPtr<Node>& node)
+		{
+			if (node->unshrinkable || node->unmovable)
 			{
-				if (node->unshrinkable || node->unmovable)
-				{
-					return false;
-				}
-				TSharedPtr<Node> target_node = nullptr;
-				for (auto conn : node->conn)
-				{
-					if (FVector::Dist(node->get_FVector(),
-					                  conn->node->get_FVector()) <
-						map_params.min_road_length)
-					{
-						target_node = conn->node;
-						break;
-					}
-				}
-
-				if (target_node.IsValid() && node.IsValid() && node->
-					get_node_type() < target_node->get_node_type())
-				{
-					for (auto del_node : node->conn)
-					{
-						add_conn(del_node->node, target_node);
-					}
-					node->delete_me();
-					return true;
-				}
 				return false;
-			});
+			}
+			TSharedPtr<Node> target_node = nullptr;
+			for (auto conn : node->conn)
+			{
+				if (FVector::Dist(node->get_FVector(), conn->node->get_FVector()) < map_params.min_road_length)
+				{
+					target_node = conn->node;
+					break;
+				}
+			}
+
+			if (target_node.IsValid() && node.IsValid() && node->get_node_type() < target_node->get_node_type())
+			{
+				for (auto del_node : node->conn)
+				{
+					add_conn(del_node->node, target_node);
+				}
+				node->delete_me();
+				return true;
+			}
+			return false;
+		});
 		road_points = road_nodes.Num();
 	}
+
 	road_points = road_nodes.Num();
 	old_road_points = TNumericLimits<int>::Max();
 	while (road_points != old_road_points)
@@ -1117,6 +1157,8 @@ void TerrainGen::shrink_roads()
 				}
 				return false;
 			});
+
+
 		road_points = road_nodes.Num();
 	}
 }
@@ -1212,10 +1254,10 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 				{
 					auto length = beg_dist + FMath::RandRange(-map_params.max_segments_diff,
 					                                          map_params.max_segments_diff);
-					
+
 					if (length < map_params.min_new_road_length) length = map_params.min_new_road_length;
 					if (length > map_params.max_road_length) length = map_params.max_road_length;
-					
+
 					double angle_in_degrees = 90 + FMath::RandRange(-map_params.segment_angle_deviation,
 					                                                map_params.segment_angle_deviation);
 					auto line2 = AllGeometry::create_segment_at_angle(road_node->conn[0]->node->get_FVector(),
@@ -1230,11 +1272,11 @@ void TerrainGen::create_usual_roads(const TArray<WeightedPoint>& weighted_points
 				if (FMath::FRand() * 100 <= map_params.road_right_chance)
 				{
 					auto length = beg_dist + FMath::RandRange(-map_params.max_segments_diff,
-					map_params.max_segments_diff);
-					
+					                                          map_params.max_segments_diff);
+
 					if (length < map_params.min_new_road_length) length = map_params.min_new_road_length;
 					if (length > map_params.max_road_length) length = map_params.max_road_length;
-					
+
 					double angle_in_degrees = -90 + FMath::RandRange(-map_params.segment_angle_deviation,
 					                                                 map_params.segment_angle_deviation);
 					auto line3 = AllGeometry::create_segment_at_angle(
@@ -1285,12 +1327,12 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(
 	TSharedPtr<Node> end_point, bool to_exect_point, EPointType type,
 	double max_length)
 {
-	if (max_length == TNumericLimits<double>::Max())
-	{
-		add_conn(start_point, end_point);
-		array.AddUnique(end_point);
-		return end_point;
-	}
+	// if (max_length == TNumericLimits<double>::Max())
+	// {
+	// 	add_conn(start_point, end_point);
+	// 	array.AddUnique(end_point);
+	// 	return end_point;
+	// }
 
 	// if (!soft_borders_array.IsEmpty())
 	// {
@@ -1361,10 +1403,10 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(
 				backup_endpoint->get_FVector(), array, false);
 			if (presise_intersect.IsSet())
 			{
-				end_point =
-					insert_conn(presise_intersect->Value.Key,
-					            presise_intersect->Value.Value,
-					            presise_intersect->Key);
+				end_point = insert_conn(
+					presise_intersect->Value.Key,
+					presise_intersect->Value.Value,
+					presise_intersect->Key);
 				end_point->set_type(type);
 			}
 		}
@@ -1388,10 +1430,9 @@ TOptional<TSharedPtr<Node>> TerrainGen::create_segment(
 		}
 		start_point = end_point;
 	}
-	while (FVector::Distance(end_point->get_FVector(),
-	                         backup_endpoint->get_FVector()) > 0.01);
+	while (FVector::Distance(end_point->get_FVector(), backup_endpoint->get_FVector()) > 0.0001);
 
-	if (end_point->get_FVector() == backup_endpoint->get_FVector())
+	if (FVector::Distance(end_point->get_FVector(), backup_endpoint->get_FVector()) < 0.001)
 	{
 		end_point = backup_endpoint;
 	}

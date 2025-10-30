@@ -538,6 +538,17 @@ struct Node : TSharedFromThis<Node>
 	void set_type(EPointType type_) { point->type = type_; }
 	TOptional<TSharedPtr<Conn>> get_next_point(TSharedPtr<Point> point_);
 	TOptional<TSharedPtr<Conn>> get_prev_point(TSharedPtr<Point> point_);
+	void del_connection(const TSharedPtr<Node>& node_)
+	{
+		for (int i = 0; i< conn.Num();i++)
+		{
+			if (conn[i]->node == node_)
+			{
+				conn.RemoveAt(i);
+				break;
+			}
+		}
+	}
 	void add_connection(const TSharedPtr<Node>& node_);
 
 	void delete_me();

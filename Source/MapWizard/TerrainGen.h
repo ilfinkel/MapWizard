@@ -45,6 +45,7 @@ public:
 	void create_weighted_points(TArray<WeightedPoint>& weighted_points);
 	void create_rivers(const TArray<WeightedPoint>& weighted_points, TArray<TSharedPtr<Node>>& river);
 	static void add_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
+	static void del_conn(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2);
 	static TSharedPtr<Node> insert_conn(const TSharedPtr<Node>& node1_to_insert,
 	                                    const TSharedPtr<Node>& node2_to_insert, FVector node3_point);
 	void move_river(const TSharedPtr<Node>& node1, const TSharedPtr<Node>& node2,
